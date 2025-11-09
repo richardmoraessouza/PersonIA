@@ -1,0 +1,40 @@
+.containerPerfil {
+    width: 100vw;
+    height: 100dvh;
+}
+
+.containerItemsPerfil {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.descricao {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+}
+
+.btnStatus {
+    width: 100vw;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btnStatus button {
+    cursor: pointer;
+    margin: 5px 0px;
+}
+
+
+
+@media (max-width: 560px) {
+    .descricao {
+        width: 100%;
+    }
+}
