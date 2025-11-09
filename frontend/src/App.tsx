@@ -57,11 +57,13 @@ function App() {
 
   useEffect(() => {
     const nomeCriado = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3000/nomeCriador/${personagem.usuario_id}`)
-        setNome(res.data)
-      } catch (err) {
-        console.error('Erro ao carregar o nome do criador', err);
+      if (personagem) {
+        try {
+          const res = await axios.get(`http://localhost:3000/nomeCriador/${personagem.usuario_id}`)
+          setNome(res.data)
+        } catch (err) {
+          console.error('Erro ao carregar o nome do criador', err);
+        }
       }
     }
 
