@@ -89,13 +89,13 @@
 }
 
 .descricao {
-  word-wrap: break-word;
   font-family: 'Orbitron', sans-serif;
-  word-break: break-word;
   padding: 5px 0px 5px 10px;
+  font-size: 14px;
+  word-wrap: break-word;
+  word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-  font-size: 14px;
 }
 
 .containerMensagem {

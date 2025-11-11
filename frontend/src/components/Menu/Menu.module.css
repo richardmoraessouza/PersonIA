@@ -31,7 +31,7 @@
     }
 }
 
- .navegacaoPerson {
+.navegacaoPerson {
     max-height: 550px;
     overflow-y: auto; 
 }
@@ -76,6 +76,14 @@
     -ms-overflow-style: none;
     padding-bottom: 680px;
 }
+
+.nomeTruncado {
+    white-space: nowrap;      
+    overflow: hidden;         
+    text-overflow: ellipsis;   
+    max-width: 150px;          
+}
+
 
 .containerPerson::-webkit-scrollbar {
     width: 0;

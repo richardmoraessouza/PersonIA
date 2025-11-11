@@ -67,7 +67,7 @@ function Perfil() {
         }
 
         try {
-            const res = await axios.put<UserUpdateResponse>(`http://localhost:3000/editar/${usuarioId}`, {
+            const res = await axios.put<UserUpdateResponse>(`https://api-personia.onrender.com/editar/${usuarioId}`, {
                 nome: novoNome || nomeAtualContexto,
                 foto_perfil: imgPerfil,
                 descricao
@@ -112,7 +112,7 @@ function Perfil() {
     // Busca os dados do usuário ao montar o componente
     useEffect(() => {
         if (usuarioId && token) {
-            axios.get(`http://localhost:3000/usuario/${usuarioId}`, {
+            axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
                 headers: {
                     Authorization: `Bearer ${token}` 
                 }
@@ -138,20 +138,7 @@ function Perfil() {
             {/* Cabeçalho */}
             <section className={styles.containerItemsPerfil}>
                 <div className="flex flex-col items-center mt-10 gap-2">
-                    {imgPerfil ? (
-                        <img
-                            src={imgPerfil}
-                            alt="Foto de Perfil"
-                            className="w-28 h-28 rounded-full object-cover" 
-                        />
-                    ) : (
-                        <div 
-                            className="w-28 h-28 rounded-full bg-gradient-to-b bg-blue-600 flex items-center justify-center text-4xl font-bold"
-                        >
-                            {inicialNome}
-                        </div>
-                    )}
-
+                    <img src={imgPerfil || '/public/image/semPerfil.png'}  alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
                     <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
                     {/* Botões de status */}
                     <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-1 ${styles.btnStatus}`}>
