@@ -14,8 +14,11 @@ function CriacaoPerson() {
     const [descricao, setDescricao] = useState<string>("")
     const [estilo, setEstilo] = useState<string>('');
     const [nome, setNome] = useState<string>('');
+
     const [erro, setErro] = useState<string>('');
+
     const { token } = useAuth();
+
     const navigate = useNavigate();
 
     // Função para converter imagem para Base64
@@ -35,6 +38,7 @@ function CriacaoPerson() {
 
     const form = async (e: React.FormEvent) => {
         e.preventDefault();
+
         // Não pode ter caracteres especiais
         if (/[^A-Za-zÀ-ú0-9 ]/.test(nome)) {
             setErro("O nome contém caracteres inválidos.");
@@ -42,12 +46,12 @@ function CriacaoPerson() {
         }
         // Deve ter pelo menos uma letra
         if (!/[A-Za-zÀ-ú]/.test(nome)) {
-            setErro("O nome deve conter pelo menos uma letra.");
+            setErro("O nome deve conter letras.");
             return;
         }
 
+        //Pega os dados do formulário e envia para a API
         try {
-
             const res = await axios.post('https://api-personia.onrender.com/criacao', {
             fotoia,
             nome,
@@ -100,6 +104,7 @@ function CriacaoPerson() {
                                 alt="Pré-visualização da imagem" 
                                 className='w-28 h-28 rounded-full object-cover'
                             />
+                            
                             <div className='absolute bottom-0 right-4 bg-gray-900 w-9 h-9 text-xl rounded-full flex justify-center items-center'>
                                 <label htmlFor="foto" title="Adicionar imagem">
                                     <i className="fa-solid fa-pen cursor-pointer"></i>
@@ -112,14 +117,16 @@ function CriacaoPerson() {
                                     className="hidden" 
                                 />
                             </div>
+                            
                         </div>
+                     {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
                     </div>
 
                     <div>
                         <label htmlFor="nome">Nome</label>
                         <input
                             type="text"
-                            placeholder="Digite o nome da personagem"
+                            placeholder="Digite o nome do personagem"
                             required
                             value={nome}
                             id="nome"
@@ -127,7 +134,6 @@ function CriacaoPerson() {
                             minLength={2}
                             onChange={(e) => {
                                 const valor = e.target.value;
-                                // Permite letras, números e espaços, mas bloqueia símbolos
                                 const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9 ]/g, '');
                                 setNome(filtrado);
                             }}
@@ -136,7 +142,6 @@ function CriacaoPerson() {
                         <p className="text-gray-400 text-sm flex justify-end">
                             {nome.length}/25 caracteres
                         </p>
-                        {erro && <p className="text-red-500 text-sm">{erro}</p>}
                     </div>
 
 
@@ -151,8 +156,8 @@ function CriacaoPerson() {
                             maxLength={20}
                         />
                          <p className="text-gray-400 text-sm flex justify-end">
-                                {genero.length}/20 caracteres
-                            </p>
+                            {genero.length}/20 caracteres
+                        </p>
                     </div>
 
                     <div>

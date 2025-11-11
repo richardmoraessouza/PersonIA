@@ -18,6 +18,7 @@ interface Seguidor {
 }
 
 function OutroPerfil() {
+
     const [usuarioInfor, setUsuarioInfor] = useState<OutroUsuario | null>(null);
     const [listaSeguidores, setListaSeguidores] = useState<Seguidor[]>([]);
     const [listaSeguindo, setListaSeguindo] = useState<Seguidor[]>([]);
@@ -25,12 +26,14 @@ function OutroPerfil() {
     const [abrirSeguidores, setAbrirSeguidores] = useState<boolean>(false);
     const [abrirSeguindo, setAbrirSeguindo] = useState<boolean>(false);
 
+    // Pega o id do usuário e do usuario visitado
     const { id } = useParams<{ id: string }>();
     const { usuarioId } = useAuth();
 
     useEffect(() => {
         if (!id) return;
 
+        // Função para buscar os dados do perfil, seguidores e seguindo
         const fetchData = async () => {
             try {
                 const perfilRes = await axios.get(`https://api-personia.onrender.com/perfil/${id}`);
@@ -52,6 +55,7 @@ function OutroPerfil() {
         fetchData();
     }, [id, usuarioId]);
 
+    // Função para seguir/deixar de seguir o usuário
     const seguirUsuario = async () => {
         try {
             if (estaSeguindo) {
@@ -92,6 +96,7 @@ function OutroPerfil() {
                         <img src={usuarioInfor.foto_perfil || '/public/image/semPerfil.png'} alt="" className="w-28 h-28 rounded-full shadow-md"/>
                         <h1 className="mt-4 text-xl font-semibold">{usuarioInfor.nome}</h1>
                         <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
+                            {/* btn de abrir modal de seguidores e seguindo */}
                             <button onClick={() => setAbrirSeguidores(true)}>
                                 <strong className="text-neutral-300">{listaSeguidores.length}</strong> seguidores
                             </button>
