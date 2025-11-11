@@ -26,6 +26,19 @@ function Authentication({ verificar }: SituacaoProps) {
         e.preventDefault();
         setLoginErro(''); 
 
+
+        // Não pode ter caracteres especiais
+        if (/[^A-Za-zÀ-ú0-9 ]/.test(nome)) {
+            setLoginErro("O nome contém caracteres inválidos.");
+            return;
+        }
+        // Deve ter pelo menos uma letra
+        if (!/[A-Za-zÀ-ú]/.test(nome)) {
+            setLoginErro("O nome deve conter letras.");
+            return;
+        }
+
+
         try {
             if (condicaoUsuario) { // Rota de ENTRAR na conta
 
@@ -35,7 +48,7 @@ function Authentication({ verificar }: SituacaoProps) {
                 navigate('/', { replace: true });
                 
             } else { // Rota de CADASTRA
-                await axios.post('https://api-personia.onrender.com/cadastra', { nome, gmail, senha })
+                await axios.post('http://localhost:3000/cadastra', { nome, gmail, senha })
                 navigate('/entrar', { replace: true });
             }
 
@@ -69,7 +82,14 @@ function Authentication({ verificar }: SituacaoProps) {
                                 required
                                 placeholder='Digite seu nome' 
                                 value={nome} 
-                                onChange={(e) => setNome(e.target.value)} 
+                                maxLength={50}
+                                minLength={2}
+                                onChange={e => {
+                                    const valor = e.target.value;
+                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9]/g, '');
+                                    setNome(filtrado);
+                                }}
+                            
                             />
                         </>
                     )}
@@ -82,7 +102,7 @@ function Authentication({ verificar }: SituacaoProps) {
                         required
                         placeholder='Digite seu Gmail' 
                         value={gmail} 
-                        onChange={(e) => setGmail(e.target.value)} 
+                        onChange={(e) => setGmail(e.target.value)}
                     />
 
                     <label htmlFor="senha">Senha</label>

@@ -91,7 +91,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     {personagens.map((item) => (
                                         <li key={item.id} >
                                             <button className="w-full " onClick={() => {setPersonId(item.id);}}>
-                                                <img src={item.fotoia || '/public/image/semPerfil.png'} alt="Foto de perfil" className='w-8 h-8 rounded-full'/>
+                                                <img src={item.fotoia || '/image/semPerfil.png'} alt="Foto de perfil" className='w-8 h-8 rounded-full'/>
                                                 <p className={styles.nomeTruncado}>{item.nome}</p>
                                             </button>
                                         </li>
@@ -108,13 +108,13 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <div className={styles.person}>
                                 {estaLogado ? (
                                     <div className='flex flex-row items-center gap-2'>
-                                        <img src={fotoPerfil || '/public/image/semPerfil.png'} alt='Erro ao carregar imagem' className='w-9 h-9 rounded-full'/>
+                                        <img src={fotoPerfil || '/image/semPerfil.png'} alt='Erro ao carregar imagem' className='w-9 h-9 rounded-full'/>
                                          <p className='truncate w-48'>{usuario}</p>
                                     </div>
                                 ): (
                                     <div className='flex flex-row items-center'>
                                         <div>
-                                            <img src="public/image/semPerfil.png" alt="" className='w-9 h-9 rounded-full'/>
+                                            <img src="image/semPerfil.png" alt="" className='w-9 h-9 rounded-full'/>
                                         </div>
                                         <p>visitante</p>
                                     </div>
