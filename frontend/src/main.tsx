@@ -16,11 +16,11 @@ import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
 import OutroPerfil from "./components/OutroPerfil/OutroPerfil.tsx";
 
 const router = createBrowserRouter([
+  // Rotas com layout principal
   {
     path: "/",
     element: <Layout />,
     children: [
-      // Rotas protegidas 
       {
         element: <ProtectedRouter />,
         children: [
@@ -34,19 +34,24 @@ const router = createBrowserRouter([
           },
           {
             path: "/OutroPerfil/:id",
-            element: <OutroPerfil/>
+            element: <OutroPerfil />,
           },
         ],
       },
+      // Rota do personagem (App) pode ficar acessível sem proteção
+      {
+        path: "personagem/:id",
+        element: <App />,
+      },
     ],
   },
-  // Rotas sem layout
+  // Rotas sem layout (públicas)
   {
     element: <NoLayout />,
     children: [
       {
         index: true,
-        element: <App />,
+        element: <App />, // Home
       },
       {
         element: <PublicRoute />,
@@ -64,6 +69,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

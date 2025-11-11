@@ -1,66 +1,80 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import axios from 'axios';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ModalSeguidores from '../ModalSeguidores/ModalSeguidores';
 
 interface UserUpdateResponse {
-    success: boolean;
-    error?: string;
-    usuario_atualizado?: {
-        id: number;
-        nome: string;
-        gmail: string;
-        foto_perfil?: string;
-        descricao?: string;
-    };
+    success: boolean;
+    error?: string;
+    usuario_atualizado?: {
+        id: number;
+        nome: string;
+        gmail: string;
+        foto_perfil?: string;
+        descricao?: string;
+    };
 }
 
-interface seguindor {
+interface Seguindor {
     id: number;
     nome?: string;
     foto_perfil?: string | null;
 }
 
 function Perfil() {
-    // 1. OBTENDO DADOS E FUNÇÕES DO CONTEXTO
-    const { 
-        usuario: nomeAtualContexto, 
-        usuarioId, 
-        fotoPerfil: fotoAtualContexto, 
-        token, 
-        login,
-        logout,
+    const { 
+        usuario: nomeAtualContexto, 
+        usuarioId, 
+        fotoPerfil: fotoAtualContexto, 
+        token, 
+        login,
+        logout,
         descricao: descricaoAtualContexto
-    } = useAuth();
-    
-    // dados do usuário para edição
-    const [imgPerfil, setImgPerfil] = useState<string | null>(fotoAtualContexto || null);
-    const [novoNome, setNovoNome] = useState<string>(nomeAtualContexto || ''); 
-    const [descricao, setDescricao] = useState<string>(descricaoAtualContexto || '');
-    const [erro, setErro] = useState<string>('');
-    // dados seguidores e seguindo
-    const [seguidores, setSeguidores] = useState<seguindor[]>([]);
-    const [seguindo, setSeguindo] = useState<seguindor[]>([]);
+    } = useAuth();
 
-    const navigate = useNavigate(); 
-    const [modalDefinicoes, setModalDefinicoes] = useState<boolean>(false); 
-    
-    // Função para garantir o usuario colocar png ou jpg
-    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png"];
-            if (!tiposPermitidos.includes(file.type)) {
-                alert("Apenas imagens PNG ou JPEG são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => setImgPerfil(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    }
-    // Busca seguidores e seguindo
+    const [imgPerfil, setImgPerfil] = useState<string | null>(fotoAtualContexto || null);
+    const [novoNome, setNovoNome] = useState<string>(nomeAtualContexto || ''); 
+    const [descricao, setDescricao] = useState<string>(descricaoAtualContexto || '');
+    const [erro, setErro] = useState<string>('');
+
+    const [seguidores, setSeguidores] = useState<Seguindor[]>([]);
+    const [seguindo, setSeguindo] = useState<Seguindor[]>([]);
+
+    const [abrirSeguidores, setAbrirSeguidores] = useState<boolean>(false);
+    const [abrirSeguindo, setAbrirSeguindo] = useState<boolean>(false);
+    const [modalDefinicoes, setModalDefinicoes] = useState<boolean>(false); 
+
+    const navigate = useNavigate(); 
+
+    function abrirModalSeguidores() {
+        setAbrirSeguidores(prev => !prev);
+    }
+
+    function abrirModalSeguindo() {
+        setAbrirSeguindo(prev => !prev);
+    }
+
+    function definicoes() {
+        setModalDefinicoes(prev => !prev);
+    }
+
+    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const tiposPermitidos = ["image/jpeg", "image/png"];
+        if (!tiposPermitidos.includes(file.type)) {
+            alert("Apenas imagens PNG ou JPEG são permitidas!");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => setImgPerfil(reader.result as string);
+        reader.readAsDataURL(file);
+    }
+
     useEffect(() => {
         const dadosSeguidores = async () => {
             try {
@@ -69,234 +83,176 @@ function Perfil() {
 
                 const seguindoRes = await axios.get(`https://api-personia.onrender.com/seguindo/${usuarioId}`);
                 setSeguindo(seguindoRes.data.seguindo || []);
-
             } catch (err) {
                 console.error("Erro ao carregar seguidores e seguindo:", err);
             }
         };
-
         dadosSeguidores(); 
     }, [usuarioId, token]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErro(''); 
+    useEffect(() => {
+        if (usuarioId && token) {
+            axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(res => {
+                setNovoNome(res.data.nome || nomeAtualContexto);
+                setImgPerfil(res.data.foto_perfil || fotoAtualContexto);
+                setDescricao(res.data.descricao || '');
+            })
+            .catch(err => console.error("Erro ao buscar detalhes do perfil:", err));
+        }
+    }, [usuarioId, token, nomeAtualContexto, fotoAtualContexto]);
 
-        if (!usuarioId || !token) {
-            setErro("Você precisa estar logado para editar o perfil.");
-            return;
-        }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErro('');
 
-        // avaliação de nome
-        if (!novoNome || novoNome.length < 8) {
-            setErro("O nome deve ter pelo menos 8 caracteres.");
+        if (!usuarioId || !token) {
+            setErro("Você precisa estar logado para editar o perfil.");
             return;
         }
-        // Não pode ter caracteres especiais
+        
         if (/[^A-Za-zÀ-ú0-9 ]/.test(novoNome)) {
             setErro("O nome contém caracteres inválidos.");
             return;
         }
-        // Deve ter pelo menos uma letra
+
         if (!/[A-Za-zÀ-ú]/.test(novoNome)) {
-            setErro("O nome deve conter pelo menos uma letra.");
+            setErro("O nome deve conter letras.");
             return;
         }
 
-        try {
-            const res = await axios.put<UserUpdateResponse>(`https://api-personia.onrender.com/editar/${usuarioId}`, {
-                nome: novoNome || nomeAtualContexto,
-                foto_perfil: imgPerfil,
-                descricao
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+        try {
+            const res = await axios.put<UserUpdateResponse>(
+                `https://api-personia.onrender.com/editar/${usuarioId}`,
+                { nome: novoNome, foto_perfil: imgPerfil, descricao },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-            if (res.data.success && res.data.usuario_atualizado) {
-                const dadosAtualizados = res.data.usuario_atualizado;
-                
-                // ATUALIZA O CONTEXTO com os novos dados
-                login({ 
-                    ...dadosAtualizados, 
-                    token: token, 
-                    id: usuarioId,
-                    gmail: dadosAtualizados.gmail || '' 
-                });
-                
-                setNovoNome(dadosAtualizados.nome);
-                setImgPerfil(dadosAtualizados.foto_perfil || null);
-                setDescricao(dadosAtualizados.descricao || '');
-                
-                setModalDefinicoes(false);
-                
-            } else {
-                setErro(res.data.error || "Erro ao atualizar perfil.");
-            }
-        } catch (error) {
-            console.error("Erro no envio do formulário:", error);
-            if (axios.isAxiosError(error) && error.response?.status === 401) {
-                alert("Sua sessão expirou. Você será redirecionado para o login.");
-                logout();
-                navigate('/entrar'); 
-            } else {
-                    setErro("Ops! Tivemos um problema ao carregar seu perfil. Tente novamente mais tarde.");
-            }
-        }
-    };
+            if (res.data.success && res.data.usuario_atualizado) {
+                const dadosAtualizados = res.data.usuario_atualizado;
+                login({ ...dadosAtualizados, token, id: usuarioId, gmail: dadosAtualizados.gmail || '' });
+                setNovoNome(dadosAtualizados.nome);
+                setImgPerfil(dadosAtualizados.foto_perfil || null);
+                setDescricao(dadosAtualizados.descricao || '');
+                setModalDefinicoes(false);
+            } else {
+                setErro(res.data.error || "Erro ao atualizar perfil.");
+            }
+        } catch (error) {
+            console.error("Erro no envio do formulário:", error);
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                alert("Sua sessão expirou. Você será redirecionado para o login.");
+                logout();
+                navigate('/entrar'); 
+            } else {
+                setErro("Ops! Tivemos um problema ao carregar seu perfil. Tente novamente mais tarde.");
+            }
+        }
+    };
 
-    // Busca os dados do usuário ao montar o componente
-    useEffect(() => {
-        if (usuarioId && token) {
-            axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}` 
-                }
-            })
-            .then(res => {
-                // Atualiza o estado local, que pode vir mais recente do servidor
-                setNovoNome(res.data.nome || nomeAtualContexto);
-                setImgPerfil(res.data.foto_perfil || fotoAtualContexto);
-                setDescricao(res.data.descricao || '');
-            })
-            .catch(err => {
-                console.error("Erro ao buscar detalhes do perfil:", err);
-            });
-        }
-    }, [usuarioId, token, navigate, logout, nomeAtualContexto, fotoAtualContexto]);
+    return (
+        <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
+            <section className={styles.containerItemsPerfil}>
+                <div className="flex flex-col items-center mt-10 gap-2">
+                    <img src={imgPerfil || '/image/semPerfil.png'} alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
+                    <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
+                    <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
+                        <button onClick={abrirModalSeguidores}>{seguidores.length} Seguidores</button>
+                        <button onClick={abrirModalSeguindo}>{seguindo.length} Seguindo</button>
+                        {abrirSeguidores && (
+                            <ModalSeguidores 
+                                tipo="seguidores" 
+                                lista={seguidores} 
+                                onClose={() => setAbrirSeguidores(false)} 
+                                usuario={Number(usuarioId)}
+                            />
+                        )}
+                        {abrirSeguindo && (
+                            <ModalSeguidores 
+                                tipo="seguindo" 
+                                lista={seguindo} 
+                                onClose={() => setAbrirSeguindo(false)} 
+                                usuario={Number(usuarioId)}
+                            />
+                        )}
+                    </div>
+                    <button
+                        className={`mt-4 px-4 py-2 rounded-lg hover:bg-gray-700 transition cursor-pointer ${styles.definicoesPerfil}`}
+                        onClick={definicoes}
+                    >
+                        <i className="fa-solid fa-pen"></i> Editar Perfil
+                    </button>
+                    <div className={styles.descricao}>
+                        {descricao ? <p>{descricao}</p> : <p>{nomeAtualContexto} ainda não tem uma descrição</p>}
+                    </div>
+                </div>
+            </section>
 
-    function definicoes() {
-        setModalDefinicoes(prev => !prev);
-    }
+            {modalDefinicoes && (
+                <section className={`${styles.editarPerfil}`}>
+                    <button 
+                        className='absolute top-3.5 right-3 bg-gray-800 hover:bg-gray-900 rounded-full min-w-[2rem] min-h-[2rem] cursor-pointer' 
+                        onClick={definicoes}
+                    >
+                        <i className="fa-solid fa-xmark"></i>
+                    </button>
+                    <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+                        <div className={`flex flex-col justify-center items-center ${styles.containerFoto}`}>
+                            <div className='relative'>
+                                <img src={imgPerfil || '/image/semPerfil.png'} alt="Foto de Perfil" className="w-28 h-28 rounded-full object-cover"/>
+                                <div className="absolute bottom-0 right-1 bg-gray-900 w-9 h-9 text-xl rounded-full flex justify-center items-center">
+                                    <label htmlFor="foto" title="Alterar foto">
+                                        <i className="fa-solid fa-pen cursor-pointer"></i>
+                                    </label>
+                                    <input id="foto" type="file" accept="image/*" onChange={converterBase64} className="hidden"/>
+                                </div>
+                            </div>
+                            <p className='text-red-500 w-auto'>{erro}</p>
+                        </div>
 
-    return (
-        <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
-            {/* Cabeçalho */}
-            <section className={styles.containerItemsPerfil}>
-                <div className="flex flex-col items-center mt-10 gap-2">
-                    <img src={imgPerfil || '/public/image/semPerfil.png'}  alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
-                    <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
-                    {/* Botões de status */}
-                    <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
-                        <button>{seguidores.length} Seguidores</button>
-                        <button>{seguindo.length} Seguindo</button>
-                        <button></button>
-                    </div>
-
-                    <button
-                        className={`mt-4 px-4 py-2 rounded-lg hover:bg-gray-700 transition cursor-pointer ${styles.definicoesPerfil}`}
-                        onClick={definicoes}
-                    >
-                        <i className="fa-solid fa-pen"></i> Editar Perfil
-                    </button>
-
-                    <div className={styles.descricao}>
-                        {descricao ? (
-                            <p>{descricao}</p>
-                        ) : (
-                            <p>{nomeAtualContexto} ainda não tem uma descrição</p>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* Modal de edição de perfil */}
-            {modalDefinicoes && (
-                <section className={`${styles.editarPerfil}`}>
-                    {/* Botão de Fechar Modal */}
-                    <button 
-                        className='absolute top-3.5 right-3 bg-gray-800 hover:bg-gray-900 rounded-full min-w-[2rem] min-h-[2rem] cursor-pointer' 
-                        onClick={definicoes}
-                    >
-                        <i className="fa-solid fa-xmark"></i>
-                    </button>
-                    
-                    <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-                        
-                        {/* Foto de Perfil na Edição */}
-                        <div className={`flex flex-col justify-center items-center ${styles.containerFoto}`}>
-                           
-                                <div className='relative'>
-                                    <img
-                                        src={imgPerfil || '/public/image/semPerfil.png'}
-                                        alt="Foto de Perfil"
-                                        className="w-28 h-28 rounded-full object-cover"
-                                    />
-                                    <div className="absolute bottom-0 right-1 bg-gray-900 w-9 h-9 text-xl rounded-full flex justify-center items-center">
-                                        <label htmlFor="foto" title="Alterar foto">
-                                            <i className="fa-solid fa-pen cursor-pointer"></i>
-                                        </label>
-                                        <input
-                                            id="foto"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={converterBase64}
-                                            className="hidden"
-                                        />
-                                    </div>
-                                </div>
-                          
-                            {/*caso da erro aparece aqui*/}
-                            <p className='text-red-500 w-auto'>{erro}</p>
-                        </div>
-
-                        {/* Nome */}
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="nome">Nome</label>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="nome">Nome</label>
                             <input
                                 type="text"
                                 id="nome"
                                 placeholder="Nome"
                                 value={novoNome}
                                 maxLength={50}
+                                minLength={2}
                                 onChange={e => {
                                     const valor = e.target.value;
-                                    // Remove caracteres especiais indesejados
-                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú ]/g, '');
+                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9]/g, '');
                                     setNovoNome(filtrado);
                                 }}
-                                onBlur={() => {
-                                    // Verifica mínimo de 8 caracteres ao sair do input
-                                    if (novoNome.length < 8) {
-                                        setErro('O nome deve ter pelo menos 8 caracteres.');
-                                    } else {
-                                        setErro('');
-                                    }
-                                }}
                             />
-                             <p className="text-gray-400 text-sm flex justify-end">
-                                {novoNome.length}/50 caracteres
-                            </p>
-                        </div>
+                            <p className="text-gray-400 text-sm flex justify-end">{novoNome.length}/50 caracteres</p>
+                        </div>
 
-                        {/* Descrição */}
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="descricao">Descrição</label>
-                            <textarea
-                                id="descricao"
-                                placeholder="Descrição"
-                                className={styles.editarDescricao}
-                                value={descricao}
-                                onChange={e => setDescricao(e.target.value)}
-                                maxLength={1000}
-                            ></textarea>
-                            <p className="text-gray-400 text-sm flex justify-end">
-                                {descricao.length}/1000 caracteres
-                            </p>
-                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="descricao">Descrição</label>
+                            <textarea
+                                id="descricao"
+                                placeholder="Descrição"
+                                className={styles.editarDescricao}
+                                value={descricao}
+                                onChange={e => setDescricao(e.target.value)}
+                                maxLength={1000}
+                            ></textarea>
+                            <p className="text-gray-400 text-sm flex justify-end">{descricao.length}/1000 caracteres</p>
+                        </div>
 
-                        <input
-                            type="submit"
-                            value="Salvar" 
-                            className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition"
-                        />
-                    </form>
-                </section>
-            )}
-        </main>
-    );
+                        <input
+                            type="submit"
+                            value="Salvar" 
+                            className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition"
+                        />
+                    </form>
+                </section>
+            )} 
+        </main>
+    );
 }
 
 export default Perfil;
-
