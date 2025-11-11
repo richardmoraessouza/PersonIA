@@ -51,11 +51,11 @@ function OutroPerfil() {
     const fetchData = async () => {
         try {
             // Buscar perfil
-            const perfilRes = await axios.get(`https://api-personia.onrender.com//perfil/${id}`);
+            const perfilRes = await axios.get(`https://api-personia.onrender.com/perfil/${id}`);
             setUsuarioInfor(perfilRes.data);
 
             // Buscar seguidores
-            const seguidoresRes = await axios.get(`https://api-personia.onrender.com//seguidores/${id}`);
+            const seguidoresRes = await axios.get(`https://api-personia.onrender.com/seguidores/${id}`);
             setListaSeguidores(seguidoresRes.data.seguidores || []);
 
             // Verificar se o usuário logado já segue este perfil
@@ -63,7 +63,7 @@ function OutroPerfil() {
             setEstaSeguindo(jaSegue);
 
             // Buscar quem ele está seguindo
-            const seguindoRes = await axios.get(`https://api-personia.onrender.com//seguindo/${id}`);
+            const seguindoRes = await axios.get(`https://api-personia.onrender.com/seguindo/${id}`);
             setListaSeguindo(seguindoRes.data.seguindo || []);
 
         } catch (error) {
@@ -79,7 +79,7 @@ function OutroPerfil() {
     try {
         if (estaSeguindo) {
             // Deixar de seguir
-            await axios.post("https://api-personia.onrender.com//deixar-de-seguir", {
+            await axios.post("https://api-personia.onrender.com/deixar-de-seguir", {
                 seguidor_id: Number(usuarioId),
                 seguido_id: Number(id),
             });
@@ -88,12 +88,12 @@ function OutroPerfil() {
             setListaSeguidores(prev => prev.filter(s => s.id !== Number(usuarioId)));
         } else {
             // Seguir
-            await axios.post("https://api-personia.onrender.com//seguir", {
+            await axios.post("https://api-personia.onrender.com/seguir", {
                 seguidor_id: Number(usuarioId),
                 seguido_id: Number(id),
             });
 
-            const res = await axios.get(`https://api-personia.onrender.com//perfil/${usuarioId}`);
+            const res = await axios.get(`https://api-personia.onrender.com/perfil/${usuarioId}`);
             
             setEstaSeguindo(true);
             setListaSeguidores(prev => {

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import axios from 'axios';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-// Definindo o tipo da resposta de atualização
 interface UserUpdateResponse {
     success: boolean;
     error?: string;
@@ -15,6 +14,12 @@ interface UserUpdateResponse {
         foto_perfil?: string;
         descricao?: string;
     };
+}
+
+interface seguindor {
+    id: number;
+    nome?: string;
+    foto_perfil?: string | null;
 }
 
 function Perfil() {
@@ -29,19 +34,18 @@ function Perfil() {
         descricao: descricaoAtualContexto
     } = useAuth();
     
-    const navigate = useNavigate(); 
-    const [modalDefinicoes, setModalDefinicoes] = useState<boolean>(false);
-    
-    // Inicializados com os valores do Contexto para persistência
+    // dados do usuário para edição
     const [imgPerfil, setImgPerfil] = useState<string | null>(fotoAtualContexto || null);
     const [novoNome, setNovoNome] = useState<string>(nomeAtualContexto || ''); 
     const [descricao, setDescricao] = useState<string>(descricaoAtualContexto || '');
     const [erro, setErro] = useState<string>('');
-    
-    // Variável de pegar primeira letra do nome para coloca no perfil
-    const inicialNome = nomeAtualContexto?.charAt(0).toUpperCase() || "?"; 
-    
+    // dados seguidores e seguindo
+    const [seguidores, setSeguidores] = useState<seguindor[]>([]);
+    const [seguindo, setSeguindo] = useState<seguindor[]>([]);
 
+    const navigate = useNavigate(); 
+    const [modalDefinicoes, setModalDefinicoes] = useState<boolean>(false); 
+    
     // Função para garantir o usuario colocar png ou jpg
     function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -56,6 +60,23 @@ function Perfil() {
             reader.readAsDataURL(file);
         }
     }
+    // Busca seguidores e seguindo
+    useEffect(() => {
+        const dadosSeguidores = async () => {
+            try {
+                const seguidoresRes = await axios.get(`https://api-personia.onrender.com/seguidores/${usuarioId}`);
+                setSeguidores(seguidoresRes.data.seguidores || []);
+
+                const seguindoRes = await axios.get(`https://api-personia.onrender.com/seguindo/${usuarioId}`);
+                setSeguindo(seguindoRes.data.seguindo || []);
+
+            } catch (err) {
+                console.error("Erro ao carregar seguidores e seguindo:", err);
+            }
+        };
+
+        dadosSeguidores(); 
+    }, [usuarioId, token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,6 +86,22 @@ function Perfil() {
             setErro("Você precisa estar logado para editar o perfil.");
             return;
         }
+
+        // avaliação de nome
+        if (!novoNome || novoNome.length < 8) {
+            setErro("O nome deve ter pelo menos 8 caracteres.");
+            return;
+        }
+        // Não pode ter caracteres especiais
+        if (/[^A-Za-zÀ-ú0-9 ]/.test(novoNome)) {
+            setErro("O nome contém caracteres inválidos.");
+            return;
+        }
+        // Deve ter pelo menos uma letra
+        if (!/[A-Za-zÀ-ú]/.test(novoNome)) {
+            setErro("O nome deve conter pelo menos uma letra.");
+            return;
+        }
 
         try {
             const res = await axios.put<UserUpdateResponse>(`https://api-personia.onrender.com/editar/${usuarioId}`, {
@@ -141,10 +178,10 @@ function Perfil() {
                     <img src={imgPerfil || '/public/image/semPerfil.png'}  alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
                     <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
                     {/* Botões de status */}
-                    <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-1 ${styles.btnStatus}`}>
-                        <button>0 seguidores · </button>
-                        <button>0 a seguir · </button>
-                        <button>0 Personagens</button>
+                    <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
+                        <button>{seguidores.length} Seguidores</button>
+                        <button>{seguindo.length} Seguindo</button>
+                        <button></button>
                     </div>
 
                     <button
@@ -179,10 +216,10 @@ function Perfil() {
                         
                         {/* Foto de Perfil na Edição */}
                         <div className={`flex flex-col justify-center items-center ${styles.containerFoto}`}>
-                            {imgPerfil ? (
+                           
                                 <div className='relative'>
                                     <img
-                                        src={imgPerfil}
+                                        src={imgPerfil || '/public/image/semPerfil.png'}
                                         alt="Foto de Perfil"
                                         className="w-28 h-28 rounded-full object-cover"
                                     />
@@ -199,37 +236,38 @@ function Perfil() {
                                         />
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="w-28 h-28 rounded-full bg-gradient-to-b bg-blue-600 relative flex items-center justify-center text-4xl font-bold">
-                                    {inicialNome}
-                                    <div className="absolute bottom-0 right-0 bg-gray-900 w-10 h-10 text-xl rounded-full flex justify-center items-center">
-                                        <label htmlFor="foto" title="Alterar foto">
-                                            <i className="fa-solid fa-pen cursor-pointer"></i>
-                                        </label>
-                                        <input
-                                            id="foto"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={converterBase64}
-                                            className="hidden"
-                                        />
-                                    </div>
-                                </div>
-                            )} 
-                           {/*caso da erro aparece aqui*/}
+                          
+                            {/*caso da erro aparece aqui*/}
                             <p className='text-red-500 w-auto'>{erro}</p>
                         </div>
 
                         {/* Nome */}
                         <div className="flex flex-col gap-2">
                             <label htmlFor="nome">Nome</label>
-                            <input
-                                type="text"
-                                id="nome"
-                                placeholder="Nome"
-                                value={novoNome}
-                                onChange={e => setNovoNome(e.target.value)}
-                            />
+                            <input
+                                type="text"
+                                id="nome"
+                                placeholder="Nome"
+                                value={novoNome}
+                                maxLength={50}
+                                onChange={e => {
+                                    const valor = e.target.value;
+                                    // Remove caracteres especiais indesejados
+                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú ]/g, '');
+                                    setNovoNome(filtrado);
+                                }}
+                                onBlur={() => {
+                                    // Verifica mínimo de 8 caracteres ao sair do input
+                                    if (novoNome.length < 8) {
+                                        setErro('O nome deve ter pelo menos 8 caracteres.');
+                                    } else {
+                                        setErro('');
+                                    }
+                                }}
+                            />
+                             <p className="text-gray-400 text-sm flex justify-end">
+                                {novoNome.length}/50 caracteres
+                            </p>
                         </div>
 
                         {/* Descrição */}
@@ -243,6 +281,9 @@ function Perfil() {
                                 onChange={e => setDescricao(e.target.value)}
                                 maxLength={1000}
                             ></textarea>
+                            <p className="text-gray-400 text-sm flex justify-end">
+                                {descricao.length}/1000 caracteres
+                            </p>
                         </div>
 
                         <input
@@ -258,3 +299,4 @@ function Perfil() {
 }
 
 export default Perfil;
+
