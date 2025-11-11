@@ -48,6 +48,7 @@ function Perfil() {
 
     const navigate = useNavigate(); 
 
+    // função para abrir modais de definições, seguidores e seguindo
     function abrirModalSeguidores() {
         setAbrirSeguidores(prev => !prev);
     }
@@ -75,6 +76,7 @@ function Perfil() {
         reader.readAsDataURL(file);
     }
 
+    // Busca seguidores e seguindo para exibir quantos o usuário tem
     useEffect(() => {
         const dadosSeguidores = async () => {
             try {
@@ -90,6 +92,7 @@ function Perfil() {
         dadosSeguidores(); 
     }, [usuarioId, token]);
 
+    // Carrega os dados atuais do perfil
     useEffect(() => {
         if (usuarioId && token) {
             axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
@@ -108,6 +111,7 @@ function Perfil() {
         e.preventDefault();
         setErro('');
 
+        // Validações do nome
         if (!usuarioId || !token) {
             setErro("Você precisa estar logado para editar o perfil.");
             return;
@@ -158,7 +162,9 @@ function Perfil() {
                 <div className="flex flex-col items-center mt-10 gap-2">
                     <img src={imgPerfil || '/image/semPerfil.png'} alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
                     <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
+
                     <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
+                        {/* btn de abrir modal de seguidores e seguindo */}
                         <button onClick={abrirModalSeguidores}>{seguidores.length} Seguidores</button>
                         <button onClick={abrirModalSeguindo}>{seguindo.length} Seguindo</button>
                         {abrirSeguidores && (
@@ -178,6 +184,8 @@ function Perfil() {
                             />
                         )}
                     </div>
+
+                    {/* botão para abrir o modal de definições */}
                     <button
                         className={`mt-4 px-4 py-2 rounded-lg hover:bg-gray-700 transition cursor-pointer ${styles.definicoesPerfil}`}
                         onClick={definicoes}
@@ -192,12 +200,14 @@ function Perfil() {
 
             {modalDefinicoes && (
                 <section className={`${styles.editarPerfil}`}>
+                    {/* botão para fechar o modal de definições */}
                     <button 
                         className='absolute top-3.5 right-3 bg-gray-800 hover:bg-gray-900 rounded-full min-w-[2rem] min-h-[2rem] cursor-pointer' 
                         onClick={definicoes}
                     >
                         <i className="fa-solid fa-xmark"></i>
                     </button>
+
                     <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                         <div className={`flex flex-col justify-center items-center ${styles.containerFoto}`}>
                             <div className='relative'>

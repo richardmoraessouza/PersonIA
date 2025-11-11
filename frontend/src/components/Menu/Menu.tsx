@@ -72,6 +72,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <ul className={styles.menuItems}>
                                 <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar Person</Link></li>
 
+                                {/* Caso o usuario nao esteja logado */}
                                 {!estaLogado && (
                                     <>
                                         <li><Link to={'/entrar'}><i className="fa-solid fa-right-to-bracket"></i> Entrar</Link></li>
@@ -83,6 +84,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                     </section>
                     <hr className={styles.separacaoCriacao} />
 
+                    {/* Mostra todos os personagens criados */}
                     <section>
                         <h2 className={styles.subTitulo}>Personagens</h2>
                         <nav>
@@ -103,7 +105,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
                     <section>
 
-                        
+                        {/* Perfil do usuario logado ou não */}
                         <div onClick={sobreConta} className={`absolute bottom-0 left-0 p-11 w-full cursor-pointer ${styles.containerConta}`}>
                             <div className={styles.person}>
                                 {estaLogado ? (
@@ -122,7 +124,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             </div>
                         </div>
 
-
+                        {/* Modal de situação do usuario logado ou não*/}
                         {abrirConta && (
                             <nav className={`absolute bottom-20 left-0 w-full ${styles.navegacaoConta}`}>
                                 <ul className={styles.items}>

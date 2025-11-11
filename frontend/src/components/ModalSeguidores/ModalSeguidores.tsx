@@ -11,9 +11,9 @@ interface Seguindor {
 
 interface ModalSeguidoresProps {
     tipo: 'seguidores' | 'seguindo';
-    lista?: Seguindor[];  // opcional, caso já tenha passado a lista
+    lista?: Seguindor[];  
     onClose: () => void;
-    usuario: number; // ID do perfil que está sendo exibido
+    usuario: number;
 }
 
 function ModalSeguidores({ tipo, lista = [], onClose, usuario }: ModalSeguidoresProps) {
@@ -70,7 +70,7 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario }: ModalSeguidores
                                     } else {
                                         navigate(`/outroperfil/${item.id}`); // Vai para outro perfil
                                     }
-                                    onClose(); // fecha o modal ao clicar
+                                    onClose();
                                 }}
                             >
                                 <img
