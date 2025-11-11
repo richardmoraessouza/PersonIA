@@ -14,6 +14,7 @@ function CriacaoPerson() {
     const [descricao, setDescricao] = useState<string>("")
     const [estilo, setEstilo] = useState<string>('');
     const [nome, setNome] = useState<string>('');
+    const [erro, setErro] = useState<string>('');
     const { token } = useAuth();
     const navigate = useNavigate();
 
@@ -34,6 +35,21 @@ function CriacaoPerson() {
 
     const form = async (e: React.FormEvent) => {
         e.preventDefault();
+
+         if (!nome || nome.length < 8) {
+            setErro("O nome deve ter pelo menos 8 caracteres.");
+            return;
+        }
+        // Não pode ter caracteres especiais
+        if (/[^A-Za-zÀ-ú0-9 ]/.test(nome)) {
+            setErro("O nome contém caracteres inválidos.");
+            return;
+        }
+        // Deve ter pelo menos uma letra
+        if (!/[A-Za-zÀ-ú]/.test(nome)) {
+            setErro("O nome deve conter pelo menos uma letra.");
+            return;
+        }
 
         try {
 
@@ -111,9 +127,26 @@ function CriacaoPerson() {
                             placeholder="Digite o nome da personagem" 
                             required 
                             value={nome}
-                            onChange={(e) => setNome(e.target.value)} 
                             id='nome'
+                            maxLength={50}
+                            onChange={e => {
+                                    const valor = e.target.value;
+                                    // Remove caracteres especiais indesejados
+                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú ]/g, '');
+                                    setNome(filtrado);
+                                }}
+                                onBlur={() => {
+                                    // Verifica mínimo de 8 caracteres ao sair do input
+                                    if (nome.length < 8) {
+                                        setErro('O nome deve ter pelo menos 8 caracteres.');
+                                    } else {
+                                        setErro('');
+                                    }
+                                }}
                         />
+                         <p className="text-gray-400 text-sm flex justify-end">
+                                {nome.length}/50 caracteres
+                        </p>
                     </div>
 
                     <div>
@@ -124,7 +157,26 @@ function CriacaoPerson() {
                             value={genero}
                             onChange={(e) => setGenero(e.target.value)}
                             id='genero'
+                            maxLength={20}
+
                         />
+                         <p className="text-gray-400 text-sm flex justify-end">
+                                {genero.length}/20 caracteres
+                            </p>
+                    </div>
+
+                    <div>
+                        <label htmlFor="descricao">Descrição</label>
+                        <textarea 
+                            id="descricao" 
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
+                            maxLength={500}
+                            placeholder="Escreva uma descrição do seu personagem, que aparecerá no perfil do personagem."
+                        ></textarea>
+                         <p className="text-gray-400 text-sm flex justify-end">
+                                {descricao.length}/500 caracteres
+                        </p>
                     </div>
 
                     <div>
@@ -175,16 +227,6 @@ function CriacaoPerson() {
                             value={regras}
                             onChange={(e) => setRegras(e.target.value)} 
                             placeholder='Digite as regras'
-                        ></textarea>
-                    </div>
-
-                    <div>
-                        <label htmlFor="descricao">Descrição</label>
-                        <textarea 
-                            id="descricao" 
-                            value={descricao}
-                            onChange={(e) => setDescricao(e.target.value)}
-                            placeholder="Escreva uma descrição do seu personagem, que aparecerá no perfil do personagem."
                         ></textarea>
                     </div>
 
