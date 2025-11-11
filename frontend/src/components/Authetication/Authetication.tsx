@@ -29,13 +29,13 @@ function Authentication({ verificar }: SituacaoProps) {
         try {
             if (condicaoUsuario) { // Rota de ENTRAR na conta
 
-                const res = await axios.post('http://localhost:3000/entrar', { gmail, senha });
+                const res = await axios.post('https://api-personia.onrender.com/entrar', { gmail, senha });
                 const usuarioData = res.data; 
                 login(usuarioData); 
                 navigate('/', { replace: true });
                 
             } else { // Rota de CADASTRA
-                await axios.post('http://localhost:3000/cadastra', { nome, gmail, senha })
+                await axios.post('https://api-personia.onrender.com/cadastra', { nome, gmail, senha })
                 navigate('/entrar', { replace: true });
             }
 

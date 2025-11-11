@@ -59,7 +59,7 @@ function App() {
     const nomeCriado = async () => {
       if (personagem) {
         try {
-          const res = await axios.get(`http://localhost:3000/nomeCriador/${personagem.usuario_id}`)
+          const res = await axios.get(`https://api-personia.onrender.com/nomeCriador/${personagem.usuario_id}`)
           setNome(res.data)
         } catch (err) {
           console.error('Erro ao carregar o nome do criador', err);
@@ -74,7 +74,7 @@ function App() {
     const buscarPersonagemId = async () => {
 
       try {
-        const res = await axios.get(`http://localhost:3000/personagens/${personId}`);
+        const res = await axios.get(`https://api-personia.onrender.com/personagens/${personId}`);
         setPersonagem(res.data)
       } catch (err) {
         console.error('Erro ao carregar os dados do personagem', err);
@@ -103,7 +103,7 @@ function App() {
       const payload: any = { message: userMsg };
       if (usuarioId) payload.userId = usuarioId;
 
-      const res = await axios.post<ChatResponse>(`http://localhost:3000/chat/${personId}`, payload);
+      const res = await axios.post<ChatResponse>(`https://api-personia.onrender.com/chat/${personId}`, payload);
 
       const botReply = res.data;
 
@@ -147,6 +147,7 @@ function App() {
                   </div>
                 </div>
               )}
+
               {perfilPerson && (
                 <div className={styles.modalOverlay} onClick={() => setPerfilPerson(false)}>
                   <div className={`${styles.modalPerfil}`} onClick={(e) => e.stopPropagation()}>
@@ -159,9 +160,19 @@ function App() {
                         <h3 className='text-gray-950'>Descrição</h3>
                         <p className={styles.descricao}>{personagem.descricao || "Sem Descrição."}</p>
                         <h3 className='text-gray-950'>Criador</h3>
-                        <button className={styles.btnCriador} onClick={() => navigate(`/OutroPerfil/${personagem.usuario_id}`)}>
-                            {nome && nome.nome}
-                        </button>
+                        <button
+                        className={styles.btnCriador}
+                        onClick={() => {
+                          if (personagem.usuario_id === usuarioId) {
+                            navigate(`/perfil/${usuarioId}`); // leva ao próprio perfil
+                          } else {
+                            navigate(`/OutroPerfil/${personagem.usuario_id}`); // leva ao perfil de outro usuário
+                          }
+                        }}
+                      >
+                        {nome && nome.nome}
+                      </button>
+
                       </div>
                     )}
                   </div>

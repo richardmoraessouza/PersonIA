@@ -37,7 +37,7 @@ function CriacaoPerson() {
 
         try {
 
-            const res = await axios.post('http://localhost:3000/criacao', {
+            const res = await axios.post('https://api-personia.onrender.com/criacao', {
             fotoia,
             nome,
             genero,

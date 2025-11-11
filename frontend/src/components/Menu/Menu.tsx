@@ -20,14 +20,11 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
     const [personagens, setPersonagens] = useState<Personagem[]>([])
-    
-    // Variável que pega o primeira palavra do nome do usuario
-    const inicialNome = usuario?.charAt(0).toLocaleUpperCase() || "?";
 
     useEffect(() => {
         const mostraPersonagens =  async () => {
             try {
-                const res = await axios("http://localhost:3000/personagens")
+                const res = await axios("https://api-personia.onrender.com/personagens")
                 setPersonagens(res.data)
             } catch (err) {
                 console.error("Erro ao carregar usuários")
@@ -92,11 +89,10 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <ul className={styles.menuItems}>
                                 <div className={styles.containerPerson}>
                                     {personagens.map((item) => (
-                                        <li key={item.id}>
-                                            <button className="w-full" onClick={() => {setPersonId(item.id);}}
-                                                >
-                                            <img src={item.fotoia || '/public/image/semPerfil.png'} alt="Foto de perfil" className='w-8 h-8 rounded-full'/>
-                                                {item.nome}
+                                        <li key={item.id} >
+                                            <button className="w-full " onClick={() => {setPersonId(item.id);}}>
+                                                <img src={item.fotoia || '/public/image/semPerfil.png'} alt="Foto de perfil" className='w-8 h-8 rounded-full'/>
+                                                <p className={styles.nomeTruncado}>{item.nome}</p>
                                             </button>
                                         </li>
                                     ))}
@@ -112,13 +108,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <div className={styles.person}>
                                 {estaLogado ? (
                                     <div className='flex flex-row items-center gap-2'>
-                                        {fotoPerfil ? (
-                                            <img src={fotoPerfil} alt="" className='w-8 h-8 rounded-full'/>
-                                        ): (
-                                            <div className='rounded-full w-8 h-8 gap=2 flex items-center justify-center bg-cyan-500'>
-                                                {inicialNome}
-                                            </div>
-                                        )}
+                                        <img src={fotoPerfil || '/public/image/semPerfil.png'} alt='Erro ao carregar imagem' className='w-9 h-9 rounded-full'/>
                                          <p className='truncate w-48'>{usuario}</p>
                                     </div>
                                 ): (

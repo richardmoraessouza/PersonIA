@@ -17,11 +17,15 @@
 
 .descricao {
     margin: 20px 0px;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 60%;
+    padding: 10px;
+    height: auto;
+    width: 80vw;
+    max-width: 600px;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; 
+    text-align: center;
 }
 
 .editarDescricao {
