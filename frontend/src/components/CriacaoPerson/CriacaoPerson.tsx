@@ -122,32 +122,33 @@ function CriacaoPerson() {
 
                     <div>
                         <label htmlFor="nome">Nome</label>
-                        <input 
-                            type="text" 
-                            placeholder="Digite o nome da personagem" 
-                            required 
-                            value={nome}
-                            id='nome'
-                            maxLength={50}
-                            onChange={e => {
-                                    const valor = e.target.value;
-                                    // Remove caracteres especiais indesejados
-                                    const filtrado = valor.replace(/[^A-Za-zÀ-ú ]/g, '');
-                                    setNome(filtrado);
-                                }}
-                                onBlur={() => {
-                                    // Verifica mínimo de 8 caracteres ao sair do input
-                                    if (nome.length < 8) {
-                                        setErro('O nome deve ter pelo menos 8 caracteres.');
-                                    } else {
-                                        setErro('');
-                                    }
-                                }}
+                        <input
+                        type="text"
+                        placeholder="Digite o nome da personagem"
+                        required
+                        value={nome}
+                        id="nome"
+                        maxLength={50}
+                        onChange={(e) => {
+                            const valor = e.target.value;
+                            // Permite letras, números e espaços, mas bloqueia símbolos
+                            const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9 ]/g, '');
+                            setNome(filtrado);
+                        }}
+                        onBlur={() => {
+                            if (nome.length < 8) {
+                            setErro("O nome deve ter pelo menos 8 caracteres.");
+                            } else {
+                            setErro("");
+                            }
+                        }}
                         />
-                         <p className="text-gray-400 text-sm flex justify-end">
-                                {nome.length}/50 caracteres
+                        <p className="text-gray-400 text-sm flex justify-end">
+                            {nome.length}/50 caracteres
                         </p>
+                        {erro && <p className="text-red-500 text-sm">{erro}</p>}
                     </div>
+
 
                     <div>
                         <label htmlFor="genero">Gênero</label>
@@ -158,7 +159,6 @@ function CriacaoPerson() {
                             onChange={(e) => setGenero(e.target.value)}
                             id='genero'
                             maxLength={20}
-
                         />
                          <p className="text-gray-400 text-sm flex justify-end">
                                 {genero.length}/20 caracteres
