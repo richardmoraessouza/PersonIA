@@ -115,9 +115,9 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                          <p className='truncate w-48'>{usuario}</p>
                                     </div>
                                 ): (
-                                    <div className='flex flex-row items-center'>
+                                    <div className='flex flex-row items-center gap-2'>
                                         <div>
-                                            <img src="/image/semPerfil.jpg" alt="Erro ao carregar imagem" className='w-9 h-9 rounded-ful object-cover'/>
+                                            <img src="/image/semPerfil.jpg" alt="Erro ao carregar imagem" className='w-9 h-9 rounded-full object-cover'/>
                                         </div>
                                         <p>visitante</p>
                                     </div>
