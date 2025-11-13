@@ -78,7 +78,7 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
                                 <img
                                     src={item.foto_perfil || '/image/semPerfil.jpg'}
                                     alt={item.nome || `Usuário ${item.id}`}
-                                    className={`w-8 h-8 rounded-full ${styles.fotoPerfil}`}
+                                    className={`w-8 h-8 rounded-full object-cover shadow-md ${styles.fotoPerfil}`}
                                 />
                                 {item.nome || `Usuário ${item.id}`}
                             </li>
