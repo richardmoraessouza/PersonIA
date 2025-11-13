@@ -29,7 +29,7 @@
 }
 
 .editarDescricao {
-    border: 2px solid  rgba(0, 0, 0, 0.37);
+    border: 1px solid var(--fundoHover);
     border-radius: 20px;
     height: 300px;
     padding: 20px;
@@ -49,7 +49,7 @@
 }
 
 .editarPerfil input {
-    border: 2px solid  rgba(0, 0, 0, 0.37);
+    border: 1px solid  var(--fundoHover);
     border-radius: 20px;
     width: 100%;
     height: 45px;

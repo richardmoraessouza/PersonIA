@@ -34,6 +34,12 @@
   z-index: 2;
 }
 
+.erroMensagem {
+  color: rgb(228, 60, 60);
+  font-weight: bold;
+}
+
+
 .contantoPerson.menuFechado {
   left: 0 !important;
   padding: 5px 5px 5px 50px !important;

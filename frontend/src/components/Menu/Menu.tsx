@@ -24,7 +24,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     useEffect(() => {
         const mostraPersonagens =  async () => {
             try {
-                const res = await axios("https://api-personia.onrender.com/personagens")
+                const res = await axios("https://api-personia.onrender.com/personagens");
                 setPersonagens(res.data)
             } catch (err) {
                 console.error("Erro ao carregar usuários")
@@ -65,12 +65,13 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
             {modalOpen && (
                 <aside className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
-                    <h1><a href="/" className='flex justify-center items-center w-full'><img src="/public/image/PersonIA.png" alt="PersonIA" className={styles.logo} /></a></h1>
+                    <h1><a href="/" className='flex justify-center items-center w-full'><img src="/image/PersonIA.png" alt="PersonIA" className={styles.logo} /></a></h1>
                     <section>
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
                             <ul className={styles.menuItems}>
-                                <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar Person</Link></li>
+                                <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Personagem</Link></li>
+                                <li><Link to={'/person-ficticio'}><i className="fa-solid fa-user"></i> Fictício</Link></li>
 
                                 {/* Caso o usuario nao esteja logado */}
                                 {!estaLogado && (
@@ -93,7 +94,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     {personagens.map((item) => (
                                         <li key={item.id} >
                                             <button className="w-full " onClick={() => {setPersonId(item.id);}}>
-                                                <img src={item.fotoia || '/image/semPerfil.png'} alt="Foto de perfil" className='w-8 h-8 rounded-full'/>
+                                                <img src={item.fotoia || '/image/semPerfil.jpg'} alt="Foto de perfil" className='w-8 h-8 rounded-full object-cover'/>
                                                 <p className={styles.nomeTruncado}>{item.nome}</p>
                                             </button>
                                         </li>
@@ -110,13 +111,13 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <div className={styles.person}>
                                 {estaLogado ? (
                                     <div className='flex flex-row items-center gap-2'>
-                                        <img src={fotoPerfil || '/image/semPerfil.png'} alt='Erro ao carregar imagem' className='w-9 h-9 rounded-full'/>
+                                        <img src={fotoPerfil || '/image/semPerfil.jpg'} alt='Erro ao carregar imagem' className='w-9 h-9 rounded-full object-cover'/>
                                          <p className='truncate w-48'>{usuario}</p>
                                     </div>
                                 ): (
                                     <div className='flex flex-row items-center'>
                                         <div>
-                                            <img src="image/semPerfil.png" alt="" className='w-9 h-9 rounded-full'/>
+                                            <img src="image/semPerfil.png" alt="" className='w-9 h-9 rounded-ful'/>
                                         </div>
                                         <p>visitante</p>
                                     </div>

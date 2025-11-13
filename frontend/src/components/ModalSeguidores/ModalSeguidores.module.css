@@ -127,6 +127,10 @@
     text-align: center;
 }
 
+.separacao {
+    margin: 10px 0px;
+}
+
 .listaUsuarios {
     display: flex;
     align-items: center;

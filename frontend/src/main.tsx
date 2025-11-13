@@ -14,6 +14,7 @@ import ProtectedRouter from "./components/BloqueamentoNoLogin/BloqueamentoNoLogi
 import CriacaoPerson from "./components/CriacaoPerson/CriacaoPerson.tsx";
 import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
 import OutroPerfil from "./components/OutroPerfil/OutroPerfil.tsx";
+import Person_Ficticio from './components/Person_Ficticio/Person_Ficticio.tsx';
 
 const router = createBrowserRouter([
   // Rotas com layout principal
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
           {
             path: "/criacao-person",
             element: <CriacaoPerson />,
+          },
+          {
+            path: "/person-ficticio",
+            element: <Person_Ficticio/>,
           },
           {
             path: "/OutroPerfil/:id",

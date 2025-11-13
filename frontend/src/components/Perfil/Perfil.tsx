@@ -160,7 +160,7 @@ function Perfil() {
         <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
             <section className={styles.containerItemsPerfil}>
                 <div className="flex flex-col items-center mt-10 gap-2">
-                    <img src={imgPerfil || '/image/semPerfil.png'} alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
+                    <img src={imgPerfil || '/image/semPerfil.jpg'} alt='erro ao carregar imagem' className="w-28 h-28 rounded-full object-cover"/>
                     <h1 className="mt-4 text-xl font-semibold">{nomeAtualContexto}</h1>
 
                     <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
@@ -173,6 +173,7 @@ function Perfil() {
                                 lista={seguidores} 
                                 onClose={() => setAbrirSeguidores(false)} 
                                 usuario={Number(usuarioId)}
+                                usuarioLogado={Number(usuarioId)}
                             />
                         )}
                         {abrirSeguindo && (
@@ -181,6 +182,7 @@ function Perfil() {
                                 lista={seguindo} 
                                 onClose={() => setAbrirSeguindo(false)} 
                                 usuario={Number(usuarioId)}
+                                usuarioLogado={Number(usuarioId)}
                             />
                         )}
                     </div>
@@ -211,7 +213,7 @@ function Perfil() {
                     <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                         <div className={`flex flex-col justify-center items-center ${styles.containerFoto}`}>
                             <div className='relative'>
-                                <img src={imgPerfil || '/image/semPerfil.png'} alt="Foto de Perfil" className="w-28 h-28 rounded-full object-cover"/>
+                                <img src={imgPerfil || '/image/semPerfil.jpg'} alt="Foto de Perfil" className="w-28 h-28 rounded-full object-cover"/>
                                 <div className="absolute bottom-0 right-1 bg-gray-900 w-9 h-9 text-xl rounded-full flex justify-center items-center">
                                     <label htmlFor="foto" title="Alterar foto">
                                         <i className="fa-solid fa-pen cursor-pointer"></i>
@@ -229,7 +231,7 @@ function Perfil() {
                                 id="nome"
                                 placeholder="Nome"
                                 value={novoNome}
-                                maxLength={50}
+                                maxLength={20}
                                 minLength={2}
                                 onChange={e => {
                                     const valor = e.target.value;
@@ -237,7 +239,7 @@ function Perfil() {
                                     setNovoNome(filtrado);
                                 }}
                             />
-                            <p className="text-gray-400 text-sm flex justify-end">{novoNome.length}/50 caracteres</p>
+                            <p className="text-gray-400 text-sm flex justify-end">{novoNome.length}/20 caracteres</p>
                         </div>
 
                         <div className="flex flex-col gap-2">

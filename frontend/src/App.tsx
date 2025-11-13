@@ -26,18 +26,18 @@ interface ChatResponse {
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
+  isError?: boolean;
 }
 
 function App() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [personId, setPersonId] = useState<number>(1);
+  const [personId, setPersonId] = useState<number>(20);
   const [menuOpen, setMenuOpen] = useState<boolean>(true);
   const [personagem, setPersonagem] = useState<Personagem | null>(null);
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
   const [nome, setNome] = useState<CriadorNome | null>(null);
-  
   // Pega o id do usuario logado
   const { usuarioId } = useAuth();
 
@@ -111,13 +111,17 @@ function App() {
         payload.anonId = localStorage.getItem("anonId");
       }
 
-      const res = await axios.post<ChatResponse>(`http://localhost:3000/chat/${personId}`, payload);
+      const res = await axios.post<ChatResponse>(`https://api-personia.onrender.com/chat/${personId}`, payload);
       const botReply = res.data;
 
       setChatHistory(prev => [...prev, { sender: 'bot', text: botReply.reply }]);
     } catch (err) {
-      console.error('Erro ao conectar com o servidor:', err);
-      setChatHistory(prev => [...prev, { sender: 'bot', text: '⚠️ Erro ao carregar a mensagem.' }]);
+     console.error('Erro ao conectar com o servidor:', err);
+     setChatHistory(prev => [
+       ...prev,
+       { sender: 'bot', text: 'Ocorreu um erro, tente novamente mais tarde.', isError: true }
+     ]);
+
     } finally {
       setIsLoading(false);
     }
@@ -138,10 +142,12 @@ function App() {
           <section className={`fixed top-0  ${styles.contantoPerson} ${!menuOpen ? styles.menuFechado : ''}`}>
             {personagem && (
               <div className='mx-auto text-center flex flex-row items-center gap-2' onClick={modalPerfil}>
-                <img src={personagem.fotoia || '/image/semPerfil.png'} alt={personagem.nome} className={`w-10 h-10 rounded-full`} />
+                <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className={`w-10 h-10 rounded-full object-cover shadow-2xl`} />
                 <div className='flex flex-col gap-0 items-center justify-center'>
                   <h2>{personagem.nome}</h2>
-                  <p className={styles.online}>Online</p>
+                  <div className='w-full flex items-start'>
+                    <p className={styles.online}>Online</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -152,7 +158,7 @@ function App() {
                   {personagem && (
                     <div className={`${styles.containerPerfil}`}>
                       <div className={`w-full flex items-center justify-center flex-col gap-1`}>
-                        <img src={personagem.fotoia || '/image/semPerfil.png'} alt={personagem.nome} className='w-20 h-20 rounded-full shadow-2xl' />
+                        <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className='w-20 h-20 rounded-full shadow-2xl' />
                         <h2 className='text-xl'><strong>{personagem.nome}</strong></h2>
                       </div>
                       <h3 className='text-gray-950'>Descrição</h3>
@@ -182,10 +188,22 @@ function App() {
           {/* Chat */}
           <section className={styles.conversas}>
             {chatHistory.map((msg, idx) => (
-              <article key={idx} className={`${styles.message} ${msg.sender === 'user' ? styles.userMessage : styles.botMessage}`}>
-                <div className={styles.bubble}><p>{msg.text}</p></div>
+              <article
+                key={idx}
+                className={`${styles.message} ${
+                  msg.sender === 'user' ? styles.userMessage : styles.botMessage
+                }`}
+              >
+                <div
+                  className={`${styles.bubble} ${
+                    msg.isError ? styles.erroMensagem : ''
+                  }`}
+                >
+                  <p>{msg.text}</p>
+                </div>
               </article>
             ))}
+
 
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>

@@ -93,7 +93,7 @@ function OutroPerfil() {
             <section className={styles.containerItemsPerfil}>
                 {usuarioInfor ? (
                     <div className="flex flex-col items-center mt-10 gap-2">
-                        <img src={usuarioInfor.foto_perfil || '/image/semPerfil.png'} alt="" className="w-28 h-28 rounded-full shadow-md"/>
+                        <img src={usuarioInfor.foto_perfil || '/image/semPerfil.jpg'} alt="" className="w-28 h-28 rounded-full shadow-md"/>
                         <h1 className="mt-4 text-xl font-semibold">{usuarioInfor.nome}</h1>
                         <div className={`text-gray-400 text-sm mt-1 flex flex-row gap-5 ${styles.btnStatus}`}>
                             {/* btn de abrir modal de seguidores e seguindo */}
@@ -110,6 +110,7 @@ function OutroPerfil() {
                                     lista={listaSeguidores} 
                                     onClose={() => setAbrirSeguidores(false)} 
                                     usuario={Number(id)}
+                                    usuarioLogado={Number(usuarioId)}
                                 />
                             )}
 
@@ -119,6 +120,7 @@ function OutroPerfil() {
                                     lista={listaSeguindo} 
                                     onClose={() => setAbrirSeguindo(false)} 
                                     usuario={Number(id)}
+                                    usuarioLogado={Number(usuarioId)}
                                 />
                             )}
                         </div>

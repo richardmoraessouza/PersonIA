@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
-import styles from './CriacaoPerson.module.css';
+import styles from './Person_ficticio.module.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../AuthContext/AuthContext';
 
 function CriacaoPerson() {
-    const [historia, setHistoria] = useState<string>('');
-    const [personalidade, setPersonalidade] = useState<string>('');
     const [fotoia, setFotoia] = useState<string>('');
-    const [comportamento, setComportamento] = useState<string>('');
     const [regras, setRegras] = useState<string>('');
-    const [genero, setGenero] = useState<string>('');
     const [descricao, setDescricao] = useState<string>("")
-    const [estilo, setEstilo] = useState<string>('');
-    const [tipo_personagem, setTipo_personagem] = useState<string>('person');
     const [nome, setNome] = useState<string>('');
-
     const [erro, setErro] = useState<string>('');
+    const [personalidade, setPersonalidade] = useState<string>('');
+    const [feitos, setFeitos] = useState<string>('');
+    const [obra, setObra] = useState<string>('');
+    const [tipo_personagem, setTipo_personagem] = useState<string>('ficcional');
+    const [historia, setHistoria] = useState<string>('');
+
 
     const { token } = useAuth();
 
@@ -26,7 +25,7 @@ function CriacaoPerson() {
     function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png", "image/jpg"];
+            const tiposPermitidos = ["image/jpeg", "image/png"];
             if (!tiposPermitidos.includes(file.type)) {
                 alert("Apenas imagens PNG ou JPEG são permitidas!");
                 return;
@@ -50,20 +49,24 @@ function CriacaoPerson() {
             setErro("O nome deve conter letras.");
             return;
         }
+        
+        if (!/[A-Za-zÀ-ú0-9]/.test(obra)) {
+        setErro("O nome da obra deve conter letras");
+        return;
+        }
+
 
         //Pega os dados do formulário e envia para a API
         try {
             const res = await axios.post('https://api-personia.onrender.com/criacao', {
             fotoia,
             nome,
-            genero,
-            personalidade,
-            comportamento,
-            estilo,
-            historia,
             regras,
             descricao,
-            tipo_personagem
+            obra,
+            historia,
+            tipo_personagem,
+            personalidade,
         }, {
             headers: {
                 Authorization: `Bearer ${token}` 
@@ -71,16 +74,16 @@ function CriacaoPerson() {
         });
 
             navigate(`/`);
+            console.log(res.data);
             // Limpar campos
             setNome('');
-            setGenero('');
             setDescricao('')
-            setPersonalidade('');
-            setComportamento('');
             setRegras('');
-            setEstilo('');
-            setHistoria('');
             setFotoia('');
+            setFeitos('');
+            setPersonalidade('');
+            setObra('');
+            setErro('')
 
         } catch (err) {
             console.error('Erro ao criar personagem:', err);
@@ -91,6 +94,7 @@ function CriacaoPerson() {
     return (
         <main className={styles.criacaoPerson}>
             <section className={styles.containerCriacaoPerson}>
+
 
                 <form className='flex flex-col gap-4' onSubmit={form}>
 
@@ -114,12 +118,12 @@ function CriacaoPerson() {
                                     accept="image/*" 
                                     className="hidden" 
                                 />
-                            </div>  
+                            </div>
                         </div>
-                     <h1 className="text-center text-1x1 font-bold my-6">
-                        Crie Seu personagem 
-                     </h1>
-                     {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
+                      <h1 className="text-center text-1xl font-bold my-6">
+                         Crie Seu Personagem fictício
+                      </h1>
+                      {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
                     </div>
 
                     <div>
@@ -144,19 +148,23 @@ function CriacaoPerson() {
                         </p>
                     </div>
 
-
                     <div>
-                        <label htmlFor="genero">Gênero</label>
-                        <input 
-                            type="text" 
-                            placeholder="Digite o gênero da personagem" 
-                            value={genero}
-                            onChange={(e) => setGenero(e.target.value)}
-                            id='genero'
-                            maxLength={20}
-                        />
+                        <label htmlFor="obra">Obra</label>
+                        <textarea 
+                            id="obra"
+                            value={obra}
+                            placeholder='Digite Nome da obra'
+                            required
+                            minLength={2}
+                            maxLength={50}
+                            onChange={(e) => {
+                                const valor = e.target.value;
+                                const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9 ]/g, '');
+                                setObra(filtrado);
+                            }}
+                        ></textarea>
                          <p className="text-gray-400 text-sm flex justify-end">
-                            {genero.length}/20 caracteres
+                            {obra.length}/50 caracteres
                         </p>
                     </div>
 
@@ -167,7 +175,7 @@ function CriacaoPerson() {
                             value={descricao}
                             onChange={(e) => setDescricao(e.target.value)}
                             maxLength={500}
-                            placeholder="Escreva uma descrição do seu personagem, que aparecerá no perfil do personagem."
+                            placeholder="Aparecerá no perfil do personagem"
                         ></textarea>
                          <p className="text-gray-400 text-sm flex justify-end">
                                 {descricao.length}/500 caracteres
@@ -179,42 +187,21 @@ function CriacaoPerson() {
                         <textarea 
                             id="historia"
                             value={historia}
-                            onChange={(e) => setHistoria(e.target.value)}
-                            placeholder='Digite a história da personagem'
+                            onChange={(e) => setHistoria(e.target.value)} 
+                            placeholder='Digite uma Nova história'
                         ></textarea>
                     </div>
 
                     <div>
                         <label htmlFor="personalidade">Personalidade</label>
                         <textarea 
-                            id="personalidade" 
+                            id="personalidade"
                             value={personalidade}
-                            onChange={(e) => setPersonalidade(e.target.value)}
-                            placeholder='Digite a personalidade da personagem'
+                            onChange={(e) => setPersonalidade(e.target.value)} 
+                            placeholder='Digite uma nova personalidade'
                         ></textarea>
                     </div>
-
-                    <div>
-                        <label htmlFor="estilo">Estilo</label>
-                        <textarea 
-                            id="estilo"
-                            value={estilo}
-                            onChange={(e) => setEstilo(e.target.value)}
-                            placeholder='Digite o estilo do seu personagem'
-                        ></textarea>
-                    </div>
-
-                    <div>
-                        <label htmlFor="agir">Comportamento e modo de agir</label>
-                        <textarea 
-                            id="agir" 
-                            value={comportamento}
-                            onChange={(e) => setComportamento(e.target.value)}
-                            placeholder='Digite o comportamento e modo de agir'
-                        ></textarea>
-                    </div>
-
-
+                    
                     <div>
                         <label htmlFor="regras">Regras</label>
                         <textarea 
