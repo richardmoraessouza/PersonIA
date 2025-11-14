@@ -32,7 +32,7 @@ function Authentication({ verificar }: SituacaoProps) {
     try {
       if (condicaoUsuario) {
         // Entrar
-        const res = await axios.post('http://localhost:3000/entrar', { gmail, senha });
+        const res = await axios.post('https://api-personia.onrender.com/entrar', { gmail, senha });
         const usuarioData = res.data;
 
         if (usuarioData.email_verificado === false) {
@@ -53,7 +53,7 @@ function Authentication({ verificar }: SituacaoProps) {
           return;
         }
 
-        await axios.post('http://localhost:3000/cadastra', { nome, gmail, senha });
+        await axios.post('https://api-personia.onrender.com/cadastra', { nome, gmail, senha });
         setAvisoCadastro("Verifique seu e-mail para cadastrar a conta antes de logar.");
       }
     } catch (err) {
@@ -75,7 +75,7 @@ function Authentication({ verificar }: SituacaoProps) {
     }
 
     try {
-      await axios.post('http://localhost:3000/esqueci-senha', { gmail });
+      await axios.post('https://api-personia.onrender.com/esqueci-senha', { gmail });
       setRecuperacaoMensagem('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
     } catch (err) {
       console.error(err);

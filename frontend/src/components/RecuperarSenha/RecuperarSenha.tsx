@@ -42,7 +42,7 @@ function RecuperarSenha() {
     }
 
     try {
-      await axios.post('http://localhost:3000/esqueci-senha', { gmail });
+      await axios.post('https://api-personia.onrender.com/esqueci-senha', { gmail });
       setMensagem('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
       // Não muda automaticamente a fase; espera token
     } catch (err) {
@@ -77,7 +77,7 @@ function RecuperarSenha() {
     }
 
     try {
-      await axios.post('http://localhost:3000/nova-senha', { token, senha });
+      await axios.post('/nova-senha', { token, senha });
       setMensagem('Senha atualizada com sucesso! Faça login.');
       setFase('enviarEmail');
       setSenha('');
