@@ -59,7 +59,7 @@ function Authentication({ verificar }: SituacaoProps) {
     } catch (err) {
       console.error(err);
       if (axios.isAxiosError<ErrorResponse>(err) && err.response) {
-        setLoginErro(err.response.data.error || 'Credenciais inválidas.');
+        setLoginErro(err.response.data.error || 'Este Gmail já foi cadastrado!');
       } else {
         setLoginErro("Erro de conexão. Tente novamente mais tarde.");
       }
