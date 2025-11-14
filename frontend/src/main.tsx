@@ -15,6 +15,7 @@ import CriacaoPerson from "./components/CriacaoPerson/CriacaoPerson.tsx";
 import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
 import OutroPerfil from "./components/OutroPerfil/OutroPerfil.tsx";
 import Person_Ficticio from './components/Person_Ficticio/Person_Ficticio.tsx';
+import RecuperarSenha from "./components/RecuperarSenha/RecuperarSenha.tsx";
 
 const router = createBrowserRouter([
   // Rotas com layout principal
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         element: <PublicRoute />,
         children: [
+          {
+            path: "/nova-senha",
+            element: <RecuperarSenha/>,
+          },
           {
             path: "/cadastra",
             element: <Cadastra />,
