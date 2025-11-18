@@ -1,0 +1,156 @@
+.containerPerfil {
+    width: 100vw;
+    height: 100dvh;
+}
+
+.containerItemsPerfil {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.descricao {
+    margin: 20px 0px;
+    padding: 10px;
+    height: auto;
+    width: 100vw; 
+    max-width: 600px; 
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; 
+     text-align: center;
+}
+
+.btnStatus {
+    width: 100vw;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btnStatus button {
+    cursor: pointer;
+    margin: 5px 0px;
+}
+
+.estaSeguindo {
+   padding: 15px;
+}
+
+.btnSeguir {
+  background-color: #3b82f6; 
+  color: white;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnSeguir:hover {
+  background-color: #2563eb; 
+}
+
+.btnDeixarSeguir {
+  background-color: #6b7280; 
+  color: white;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnDeixarSeguir:hover {
+  background-color: #4b5563;
+}
+
+.modalVerUsuarios {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+    position: absolute;
+    background-color: var(--fundoClaro);
+    padding: 20px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.modalVerUsuarios::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+}
+
+.modalVerUsuarios::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modalVerUsuarios::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.modalVerUsuarios::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+
+.modalVerUsuarios {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.3) transparent;
+}
+
+.btnFecharModal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    &:hover {
+        background-color: var(--fundoHover);
+    }
+}
+
+.titulo {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.separacao {
+    margin: 10px 0px;
+}
+
+.listaUsuarios {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 14px;
+    padding: 10px;
+    cursor: pointer;
+    margin-bottom: 3px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    &:hover {
+        background-color: var(--fundoHover);
+    }
+}
+
+@media (max-width: 560px) {
+    .descricao {
+        width: 100%;
+    }
+}
+
+
