@@ -1,7 +1,5 @@
 # PersonIA
 
-## Descrição
-
 PersonIA é uma plataforma web inovadora para criação e interação com personagens virtuais. Os usuários podem criar seus próprios personagens, definindo sua aparência, personalidade, história e regras de interação. A plataforma também permite a interação com esses personagens através de um sistema de chat, proporcionando uma experiência imersiva e personalizada.
 
 ## 🔗 Link do Site
