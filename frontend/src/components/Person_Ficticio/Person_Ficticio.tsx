@@ -117,6 +117,7 @@ function CriacaoPerson() {
             setIsSubmitting(false);
         }
     };
+    console.log("teste")
 
     return (
         <main className={styles.criacaoPerson}>
