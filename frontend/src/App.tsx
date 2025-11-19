@@ -111,7 +111,7 @@ function App() {
         payload.anonId = localStorage.getItem("anonId");
       }
 
-      const res = await axios.post<ChatResponse>(`http://localhost:3000/chat/${personId}`, payload);
+      const res = await axios.post<ChatResponse>(`https://api-personia.onrender.com/chat/${personId}`, payload);
       const botReply = res.data;
 
       setChatHistory(prev => [...prev, { sender: 'bot', text: botReply.reply }]);

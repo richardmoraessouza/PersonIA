@@ -98,15 +98,15 @@ function Perfil() {
         const carregarDados = async () => {
             try {
                 const [seguidoresRes, seguindoRes] = await Promise.all([
-                    axios.get(`http://localhost:3000/seguidores/${usuarioId}`),
-                    axios.get(`http://localhost:3000/seguindo/${usuarioId}`)
+                    axios.get(`https://api-personia.onrender.com/seguidores/${usuarioId}`),
+                    axios.get(`https://api-personia.onrender.com/seguindo/${usuarioId}`)
                 ]);
 
                 setSeguidores(seguidoresRes.data.seguidores || []);
                 setSeguindo(seguindoRes.data.seguindo || []);
 
                 // Carregar dados completos do usuário
-                const usuarioRes = await axios.get(`http://localhost:3000/usuario/${usuarioId}`, {
+                const usuarioRes = await axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -165,7 +165,7 @@ function Perfil() {
 
         try {
             const res = await axios.put<UserUpdateResponse>(
-                `http://localhost:3000/editar/${usuarioId}`,
+                `https://api-personia.onrender.com/editar/${usuarioId}`,
                 {
                     nome: novoNome || nomeAtualContexto,
                     foto_perfil: imgPerfil,
