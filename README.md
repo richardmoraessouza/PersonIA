@@ -40,7 +40,12 @@ PersonIA é uma plataforma web inovadora para criação e interação com person
 *   **Node.js:** Ambiente de tempo de execução JavaScript.
 *   **Express:** Framework para construção de APIs web.
 *   **Render:** Plataforma de hospedagem.
+*   
+---
 
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
 
   ## 🌍 Contato
 
@@ -49,4 +54,3 @@ PersonIA é uma plataforma web inovadora para criação e interação com person
 - 📱 [WhatsApp](https://wa.me/5547999326217?text=Olá%20Richard%2C%20encontrei%20seu%20perfil%20no%20GitHub!)
 - 📧 richardmoraessouza2006@gmail.com
 
----
