@@ -24,7 +24,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     useEffect(() => {
         const mostraPersonagens =  async () => {
             try {
-                const res = await axios("http://localhost:3000/personagens")
+                const res = await axios("https://api-personia.onrender.com/personagens")
                 setPersonagens(res.data)
             } catch (err) {
                 console.error("Erro ao carregar usuários")
@@ -65,7 +65,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
             {modalOpen && (
                 <aside className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
-                    <h1><a href="/" className='flex justify-center items-center w-full'><img src="/public/image/PersonIA.png" alt="PersonIA" className={styles.logo} /></a></h1>
+                    <h1><a href="/" className='flex justify-center items-center w-full'><img src="/image/PersonIA.png" alt="PersonIA" className={styles.logo} /></a></h1>
                     <section>
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>

@@ -71,7 +71,7 @@ function Authentication({ verificar }: SituacaoProps) {
     useEffect(() => {
         const buscarDados = async () => {
             try {
-                const res = await axios.get(`http://localhost:3000/gmail/${gmail}`);
+                const res = await axios.get(`https://api-personia.onrender.com/buscarUsuario/${gmail}`);
                 const dados = res.data
                 setDados(dados)
             } catch (err) {
@@ -107,14 +107,14 @@ function Authentication({ verificar }: SituacaoProps) {
         try {
             if (condicaoUsuario) { // Rota de ENTRAR na conta
 
-                const res = await axios.post('http://localhost:3000/entrar', { gmail });
+                const res = await axios.post('https://api-personia.onrender.com/entrar', { gmail });
                 const usuarioData = res.data; 
                 login(usuarioData); 
                 navigate('/', { replace: true });
                 // localStorage.removeItem('ultimoGmail');
                 
             } else { // Rota de CADASTRA
-                await axios.post('http://localhost:3000/cadastra', { gmail, nome, imgPerfil })
+                await axios.post('https://api-personia.onrender.com/cadastra', { gmail, nome, imgPerfil })
                 localStorage.setItem('ultimoGmail', gmail); 
                 navigate('/entrar', { replace: true });
             }

@@ -38,10 +38,10 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
         const fetchUsuarios = async () => {
             try {
                 if (tipo === 'seguidores') {
-                    const res = await axios.get(`http://localhost:3000/seguidores/${usuario}`);
+                    const res = await axios.get(`https://api-personia.onrender.com/seguidores/${usuario}`);
                     setUsuarios(res.data.seguidores || []);
                 } else {
-                    const res = await axios.get(`http://localhost:3000/seguindo/${usuario}`);
+                    const res = await axios.get(`https://api-personia.onrender.com/seguindo/${usuario}`);
                     setUsuarios(res.data.seguindo || []);
                 }
             } catch (error) {

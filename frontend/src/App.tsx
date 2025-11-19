@@ -66,7 +66,7 @@ function App() {
     const nomeCriado = async () => {
       if (personagem) {
         try {
-          const res = await axios.get(`http://localhost:3000/nomeCriador/${personagem.usuario_id}`);
+          const res = await axios.get(`https://api-personia.onrender.com/nomeCriador/${personagem.usuario_id}`);
           setNome(res.data);
         } catch (err) {
           console.error('Erro ao carregar o nome do criador', err);
@@ -80,7 +80,7 @@ function App() {
   useEffect(() => {
     const buscarPersonagemId = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/personagens/${personId}`);
+        const res = await axios.get(`https://api-personia.onrender.com/personagens/${personId}`);
         setPersonagem(res.data);
       } catch (err) {
         console.error('Erro ao carregar os dados do personagem', err);

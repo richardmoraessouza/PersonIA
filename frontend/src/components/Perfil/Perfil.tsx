@@ -80,7 +80,7 @@ function Perfil() {
         const carregarPersonagens = async () => {
             try {
                 
-                const personagensRes = await axios.get(`http://localhost:3000/richard/${usuarioId}`, {
+                const personagensRes = await axios.get(`https://api-personia.onrender.com/buscarPerson/${usuarioId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 

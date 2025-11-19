@@ -30,7 +30,7 @@ function CriacaoPerson() {
         const fetchPersonagem = async () => {
             if (modoEdicao && id) {
                 try {
-                    const response = await axios.get(`http://localhost:3000/dadosPersonagem/${id}`, {
+                    const response = await axios.get(`https://api-personia.onrender.com/dadosPersonagem/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     const p = response.data.personagem;
@@ -100,9 +100,9 @@ function CriacaoPerson() {
         try {
             const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem };
             if (modoEdicao && id) {
-                await axios.put(`http://localhost:3000/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.put(`https://api-personia.onrender.com/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
-                await axios.post('http://localhost:3000/criacao', data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.post('https://api-personia.onrender.com/criacao', data, { headers: { Authorization: `Bearer ${token}` } });
             }
             navigate(`/`);
         } catch (err) {
