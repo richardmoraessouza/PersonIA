@@ -33,7 +33,7 @@ function App() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [personId, setPersonId] = useState<number>(1);
+  const [personId, setPersonId] = useState<number>(29);
   const [menuOpen, setMenuOpen] = useState<boolean>(true);
   const [personagem, setPersonagem] = useState<Personagem | null>(null);
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
@@ -223,7 +223,7 @@ function App() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={`Converse com ${personagem && personagem.nome}`}
+              placeholder={personagem ? `Converse com ${personagem.nome}` : "Fale com o personagem"}
               disabled={isLoading}
             />
             <button onClick={enviarMensagem} disabled={isLoading}>
