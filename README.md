@@ -100,10 +100,6 @@ PersonIA/
 └── README.md
 ```
 
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
-
 ## 🌍 Contato
 
 - 💼 [LinkedIn](https://www.linkedin.com/in/richard-moraes-souza-998539338/)
