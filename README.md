@@ -50,6 +50,7 @@ PersonIA é um site onde você pode:
 ### Backend
 - API hospedada no Render
 - Node.js + Express
+- PostgreSQL hospedado no Neon
 - 🔗 [Repositório da API](https://github.com/richardmoraessouza/api-personia)
 
 ### Deploy
