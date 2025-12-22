@@ -17,6 +17,7 @@ function CriacaoPerson() {
     const [tipo_personagem, setTipo_personagem] = useState('person');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [erro, setErro] = useState('');
+    const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
     const location = useLocation();
     const modoEdicao = location.state?.editar || false;
@@ -44,6 +45,7 @@ function CriacaoPerson() {
                     setEstilo(p.estilo || '');
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
+                    setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
                     alert('Não foi possível carregar os dados do personagem.');
@@ -59,6 +61,7 @@ function CriacaoPerson() {
                 setEstilo(personagemState.estilo || '');
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
+                setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""])
             }
         };
 
@@ -85,6 +88,25 @@ function CriacaoPerson() {
         }
     }
 
+        function converterFigurinha(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+            const file = e.target.files?.[0];
+            if (file) {
+                const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+                if (!tiposPermitidos.includes(file.type)) {
+                   alert("Apenas imagens PNG, JPEG ou WEBP são permitidas!");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const novasFigurinhas = [...figurinhas];
+                    novasFigurinhas[index] = reader.result as string;
+                    setFigurinhas(novasFigurinhas);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -98,7 +120,7 @@ function CriacaoPerson() {
         }
 
         try {
-            const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem };
+            const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== "") };
             if (modoEdicao && id) {
                 await axios.put(`https://api-personia.onrender.com/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
@@ -181,6 +203,28 @@ function CriacaoPerson() {
                         <label htmlFor='regras'>Regras</label>
                         <textarea id="regras" placeholder="Digite as regras para seu personagem" value={regras} onChange={(e) => setRegras(e.target.value)} />
                     </div>
+
+                     <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
+                    <section className={`gap-3 ${styles.containerFigurinhas}`}>
+                        <section className={`gap-3 ${styles.containerFigurinhas}`}>
+                            {figurinhas.map((img, index) => (
+                                <label key={index} className={styles.figurinhas}>
+                                {img ? (
+                                    <img src={img} alt={`Figurinha ${index + 1}`} className="w-full h-full object-cover" />
+                                ) : (
+                                    <img src="/image/adicionar.png" alt="Adicionar" className="w-15" />
+                                )}
+
+                                <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    hidden
+                                    onChange={(e) => converterFigurinha(e, index)}
+                                />
+                                </label>
+                            ))}
+                        </section>
+                    </section>
 
                     <input type="submit" value={isSubmitting ? "Salvando..." : modoEdicao ? "Salvar" : "Criar"} disabled={isSubmitting} className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition" />
                 </form>

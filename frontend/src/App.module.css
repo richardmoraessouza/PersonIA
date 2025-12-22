@@ -153,7 +153,7 @@
 }
 
 .bubble {
-  max-width: 90%;
+  max-width: 50%;
   padding: 10px;
   border-radius: 10px;
 }
@@ -188,6 +188,15 @@
   gap: 6px;
   height: 20px;
   padding: 4px 10px;
+}
+
+.figurinha {
+  width: 100%;
+  max-height: 150px; 
+  width: auto;      
+  height: auto;      
+  margin-top: 5px;
+  border-radius: 8px;
 }
 
 .typingIndicator span {
@@ -241,5 +250,11 @@
   .contantoPerson.menuFechado {
     left: 0 !important;
     padding: 5px 5px 5px 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .figurinha {
+    width: 90%;
   }
 }

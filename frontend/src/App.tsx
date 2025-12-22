@@ -12,6 +12,7 @@ interface Personagem {
   descricao?: string;
   criador?: string;
   usuario_id: number;
+  figurinhas?: string[];
   [key: string]: any;
 }
 
@@ -21,12 +22,14 @@ interface CriadorNome {
 
 interface ChatResponse {
   reply: string;
+  figurinha?: string;
 }
 
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
   isError?: boolean;
+  figurinha?: string | null;
 }
 
 function App() {
@@ -38,18 +41,14 @@ function App() {
   const [personagem, setPersonagem] = useState<Personagem | null>(null);
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
   const [nome, setNome] = useState<CriadorNome | null>(null);
-  // Pega o id do usuario logado
-  const { usuarioId } = useAuth();
 
+  const { usuarioId } = useAuth();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  
-  
-  const modalPerfil = () => {
-    setPerfilPerson(prev => !prev);
-  };
 
-  // Gera ou recupera ID anônimo no localStorage
+  const modalPerfil = () => setPerfilPerson(prev => !prev);
+
+  // Gera ou recupera ID anônimo
   useEffect(() => {
     if (!localStorage.getItem("anonId")) {
       localStorage.setItem("anonId", crypto.randomUUID());
@@ -57,9 +56,7 @@ function App() {
   }, []);
 
   // Limpa chat ao trocar de personagem
-  useEffect(() => {
-    setChatHistory([]);
-  }, [personId]);
+  useEffect(() => setChatHistory([]), [personId]);
 
   // Busca nome do criador
   useEffect(() => {
@@ -95,7 +92,7 @@ function App() {
   }, [chatHistory, isLoading]);
 
   const enviarMensagem = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !personagem) return;
 
     const userMsg = message;
     setMessage('');
@@ -105,23 +102,26 @@ function App() {
       setIsLoading(true);
 
       const payload: any = { message: userMsg };
-      if (usuarioId) {
-        payload.userId = usuarioId;
-      } else {
-        payload.anonId = localStorage.getItem("anonId");
-      }
+      if (usuarioId) payload.userId = usuarioId;
+      else payload.anonId = localStorage.getItem("anonId");
 
       const res = await axios.post<ChatResponse>(`https://api-personia.onrender.com/chat/${personId}`, payload);
       const botReply = res.data;
 
-      setChatHistory(prev => [...prev, { sender: 'bot', text: botReply.reply }]);
+      setChatHistory(prev => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: botReply.reply,
+          figurinha: botReply.figurinha || null
+        }
+      ]);
     } catch (err) {
-     console.error('Erro ao conectar com o servidor:', err);
-     setChatHistory(prev => [
-       ...prev,
-       { sender: 'bot', text: 'Ocorreu um erro, tente novamente mais tarde.', isError: true }
-     ]);
-
+      console.error('Erro ao conectar com o servidor:', err);
+      setChatHistory(prev => [
+        ...prev,
+        { sender: 'bot', text: 'Ocorreu um erro, tente novamente mais tarde.', isError: true }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -139,10 +139,10 @@ function App() {
         <main className={`${styles.chat} flex flex-col`}>
 
           {/* Perfil do personagem */}
-          <section className={`fixed top-0  ${styles.contantoPerson} ${!menuOpen ? styles.menuFechado : ''}`}>
+          <section className={`fixed top-0 ${styles.contantoPerson} ${!menuOpen ? styles.menuFechado : ''}`}>
             {personagem && (
               <div className='mx-auto text-center flex flex-row items-center gap-2' onClick={modalPerfil}>
-                <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className={`w-10 h-10 rounded-full object-cover shadow-2xl`} />
+                <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className='w-10 h-10 rounded-full object-cover shadow-2xl' />
                 <div className='flex flex-col gap-0 items-center justify-center'>
                   <h2>{personagem.nome}</h2>
                   <div className='w-full flex items-start'>
@@ -152,58 +152,44 @@ function App() {
               </div>
             )}
 
-            {perfilPerson && (
+            {perfilPerson && personagem && (
               <div className={styles.modalOverlay} onClick={() => setPerfilPerson(false)}>
-                <div className={`${styles.modalPerfil}`} onClick={(e) => e.stopPropagation()}>
-                  {personagem && (
-                    <div className={`${styles.containerPerfil}`}>
-                      <div className={`w-full flex items-center justify-center flex-col gap-1`}>
-                        <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className='w-20 h-20 rounded-full shadow-2xl' />
-                        <h2 className='text-xl'><strong>{personagem.nome}</strong></h2>
-                      </div>
-                      <h3 className='text-gray-950'>Descrição</h3>
-                      <p className={styles.descricao}>{personagem.descricao || "Sem Descrição."}</p>
-                      <h3 className='text-gray-950'>Criador</h3>
-                      <button
-                        className={styles.btnCriador}
-                        onClick={() => {
-                          if (personagem.usuario_id === usuarioId) {
-                            navigate(`/perfil/${usuarioId}`);
-                          } else {
-                            navigate(`/OutroPerfil/${personagem.usuario_id}`);
-                          }
-                        }}
-                      >
-                        {nome && nome.nome}
-                      </button>
+                <div className={styles.modalPerfil} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.containerPerfil}>
+                    <div className='w-full flex items-center justify-center flex-col gap-1'>
+                      <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className='w-20 h-20 rounded-full shadow-2xl' />
+                      <h2 className='text-xl'><strong>{personagem.nome}</strong></h2>
                     </div>
-                  )}
+                    <h3 className='text-gray-950'>Descrição</h3>
+                    <p className={styles.descricao}>{personagem.descricao || "Sem Descrição."}</p>
+                    <h3 className='text-gray-950'>Criador</h3>
+                    <button
+                      className={styles.btnCriador}
+                      onClick={() => {
+                        if (personagem.usuario_id === usuarioId) navigate(`/perfil/${usuarioId}`);
+                        else navigate(`/OutroPerfil/${personagem.usuario_id}`);
+                      }}
+                    >
+                      {nome && nome.nome}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </section>
 
-          <div className={`${styles.containerEmCima}`}></div>
+          <div className={styles.containerEmCima}></div>
 
           {/* Chat */}
           <section className={styles.conversas}>
             {chatHistory.map((msg, idx) => (
-              <article
-                key={idx}
-                className={`${styles.message} ${
-                  msg.sender === 'user' ? styles.userMessage : styles.botMessage
-                }`}
-              >
-                <div
-                  className={`${styles.bubble} ${
-                    msg.isError ? styles.erroMensagem : ''
-                  }`}
-                >
+              <article key={idx} className={`${styles.message} ${msg.sender === 'user' ? styles.userMessage : styles.botMessage}`}>
+                <div className={`${styles.bubble} ${msg.isError ? styles.erroMensagem : ''}`}>
                   <p>{msg.text}</p>
+                  <div className='w-full flex items-center justify-center'>{msg.figurinha && <img src={msg.figurinha} alt="figurinha" className={styles.figurinha} />}</div>
                 </div>
               </article>
             ))}
-
 
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>
@@ -216,6 +202,7 @@ function App() {
             <div ref={chatEndRef}></div>
           </section>
 
+          {/* Input de mensagem */}
           <div className={`fixed bottom-8 ${styles.containerMensagem}`}>
             <input
               className={styles.mensagem}

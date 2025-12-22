@@ -12,12 +12,11 @@ function CriacaoPerson() {
     const [nome, setNome] = useState<string>('');
     const [erro, setErro] = useState<string>('');
     const [personalidade, setPersonalidade] = useState<string>('');
-    const [feitos, setFeitos] = useState<string>('');
     const [obra, setObra] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tipo_personagem, setTipo_personagem] = useState<string>('ficcional');
     const [historia, setHistoria] = useState<string>('');
-
+    const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
     const { token } = useAuth();
 
@@ -33,7 +32,9 @@ function CriacaoPerson() {
                 try {
                     const response = await axios.get(`https://api-personia.onrender.com/dadosPersonagem/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
+                    
                     });
+                    console.log(response.data);
                     const p = response.data.personagem;
                     setNome(p.nome || '');
                     setObra(p.obra || '')
@@ -43,6 +44,7 @@ function CriacaoPerson() {
                     setRegras(p.regras || '');
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
+                    setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
                     alert('Não foi possível carregar os dados do personagem.');
@@ -56,6 +58,7 @@ function CriacaoPerson() {
                 setRegras(personagemState.regras || '');
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
+                setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""]);
             }
         };
 
@@ -66,7 +69,7 @@ function CriacaoPerson() {
     function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png"];
+            const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
             if (!tiposPermitidos.includes(file.type)) {
                 alert("Apenas imagens PNG ou JPEG são permitidas!");
                 return;
@@ -77,6 +80,25 @@ function CriacaoPerson() {
         }
     }
 
+    function converterFigurinha(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+        const file = e.target.files?.[0];
+        if (file) {
+            const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
+            if (!tiposPermitidos.includes(file.type)) {
+               alert("Apenas imagens PNG, JPEG ou WEBP são permitidas!");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const novasFigurinhas = [...figurinhas];
+                novasFigurinhas[index] = reader.result as string;
+                setFigurinhas(novasFigurinhas);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+      
     const form = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -95,15 +117,15 @@ function CriacaoPerson() {
             return;
         }
         
-        if (!/[A-Za-zÀ-ú0-9]/.test(obra)) {
-        setErro("O nome da obra deve conter letras");
-        return;
-        }
-
+        if (!obra.trim()) {
+            setErro("O nome da obra não pode estar vazio.");
+            return;
+       }
 
         //Pega os dados do formulário e envia para a API
         try {
-            const data = { fotoia, nome, personalidade, historia, regras, descricao, tipo_personagem };
+            const data = { fotoia, nome, personalidade, historia, regras, descricao, obra, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== "") };
+              console.log("Dados enviados para a API:", data);  // Adicionar log para os dados
             if (modoEdicao && id) {
                 await axios.put(`https://api-personia.onrender.com/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
@@ -117,7 +139,6 @@ function CriacaoPerson() {
             setIsSubmitting(false);
         }
     };
-    console.log("teste")
 
     return (
         <main className={styles.criacaoPerson}>
@@ -240,9 +261,31 @@ function CriacaoPerson() {
                         ></textarea>
                     </div>
 
+                    <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
+                    <section className={`gap-3 ${styles.containerFigurinhas}`}>
+                        <section className={`gap-3 ${styles.containerFigurinhas}`}>
+                            {figurinhas.map((img, index) => (
+                                <label key={index} className={styles.figurinhas}>
+                                {img ? (
+                                    <img src={img} alt={`Figurinha ${index + 1}`} className="w-full h-full object-cover" />
+                                ) : (
+                                    <img src="/image/adicionar.png" alt="Adicionar" className="w-15" />
+                                )}
+
+                                <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    hidden
+                                    onChange={(e) => converterFigurinha(e, index)}
+                                />
+                                </label>
+                            ))}
+                        </section>
+                    </section>
+                    
                     <input 
                         type="submit" 
-                        value={isSubmitting ? "Salvando..." : "Salvar"} 
+                        value={isSubmitting ? "Criando..." : "Criar"} 
                         disabled={isSubmitting} 
                         className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition"
                     />

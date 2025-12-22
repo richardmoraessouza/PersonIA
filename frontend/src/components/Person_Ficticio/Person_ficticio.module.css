@@ -57,3 +57,53 @@
     flex-direction: column;
     gap: 5px;
 }
+
+.containerFigurinhas {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+
+}
+
+.figurinhas {
+    width: calc(33.333% - 12px);
+    height: 200px;
+    background-color: rgb(255, 255, 255);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+   
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.figurinhas img {     
+    pointer-events: none;
+    
+}
+
+.figurinhas input[type="file"] {
+    position: absolute;
+    inset: 0; 
+    opacity: 0;
+    cursor: pointer;
+}
+.tituloFigurinhas {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+    .figurinhas {
+        width: calc(50% - 12px);
+    }
+}
