@@ -2,7 +2,7 @@
 
 Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/.../deploy-status)](https://app.netlify.com/sites/personia/deploys) <!-- Add actual badge if possible -->
+ -->
 
 🔗 Links
 
@@ -13,7 +13,6 @@ Plataforma web para criar e conversar com personagens virtuais usando inteligên
 
 Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/.../deploy-status)](https://app.netlify.com/sites/personia/deploys) <!-- Add actual badge if possible -->
 
 🔗 Links
 
