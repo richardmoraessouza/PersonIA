@@ -2,7 +2,6 @@
 
 Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
 
- -->
 
 🔗 Links
 
@@ -12,7 +11,6 @@ Plataforma web para criar e conversar com personagens virtuais usando inteligên
 # PersonIA
 
 Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
-
 
 🔗 Links
 
