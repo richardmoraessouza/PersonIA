@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './CriacaoPerson.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../../config/api';
 import { useAuth } from '../AuthContext/AuthContext';
 
 function CriacaoPerson() {
@@ -31,7 +32,7 @@ function CriacaoPerson() {
         const fetchPersonagem = async () => {
             if (modoEdicao && id) {
                 try {
-                    const response = await axios.get(`https://api-personia.onrender.com/dadosPersonagem/${id}`, {
+                    const response = await axios.get(`${API_URL}/dadosPersonagem/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     const p = response.data.personagem;
@@ -122,11 +123,11 @@ function CriacaoPerson() {
         try {
             const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== "") };
             if (modoEdicao && id) {
-                await axios.put(`https://api-personia.onrender.com/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
-                await axios.post('https://api-personia.onrender.com/criacao', data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
             }
-            navigate(`/`);
+            navigate(`/buscar`);
         } catch (err) {
             console.error('Erro ao salvar personagem:', err);
             alert('Ocorreu um erro ao salvar a personagem. Tente novamente.');
@@ -174,9 +175,9 @@ function CriacaoPerson() {
                         <textarea
                             placeholder='Digite a descrição do personagem'
                             id="descricao" 
-                            value={descricao} maxLength={500} 
+                            value={descricao} maxLength={200} 
                             onChange={(e) => setDescricao(e.target.value)} />
-                            <p className="text-gray-400 text-sm flex justify-end">{descricao.length}/500</p>
+                            <p className="text-gray-400 text-sm flex justify-end">{descricao.length}/200</p>
                     </div>
 
                     <div>
@@ -204,26 +205,39 @@ function CriacaoPerson() {
                         <textarea id="regras" placeholder="Digite as regras para seu personagem" value={regras} onChange={(e) => setRegras(e.target.value)} />
                     </div>
 
-                     <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
-                    <section className={`gap-3 ${styles.containerFigurinhas}`}>
-                        <section className={`gap-3 ${styles.containerFigurinhas}`}>
-                            {figurinhas.map((img, index) => (
-                                <label key={index} className={styles.figurinhas}>
-                                {img ? (
-                                    <img src={img} alt={`Figurinha ${index + 1}`} className="w-full h-full object-cover" />
-                                ) : (
-                                    <img src="/image/adicionar.png" alt="Adicionar" className="w-15" />
-                                )}
+                    <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
+                    <section className={styles.containerFigurinhas}>
+                        {figurinhas.map((img, index) => {
+                            // Lógica para decidir qual classe usar
+                            const cardClass = img 
+                                ? `${styles.figurinhas} ${styles.figurinhasPreenchida}` 
+                                : `${styles.figurinhas} ${styles.figurinhasVazia}`;
 
-                                <input
-                                    type="file"
-                                    accept="image/png,image/jpeg,image/webp"
-                                    hidden
-                                    onChange={(e) => converterFigurinha(e, index)}
-                                />
+                            return (
+                                <label key={index} className={cardClass}>
+                                    {img ? (
+                                        // Estado Preenchido: Mostra a imagem com a nova classe
+                                        <img 
+                                            src={img} 
+                                            alt={`Figurinha ${index + 1}`} 
+                                            className={styles.imgPreview} 
+                                        />
+                                    ) : (
+                                        <div className={styles.conteudoVazio}>
+                                            <i className={`fa-solid fa-image ${styles.iconAdd}`}></i>
+                                            <span className={styles.textAdd}>Adicionar</span>
+                                        </div>
+                                    )}
+
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        hidden
+                                        onChange={(e) => converterFigurinha(e, index)}
+                                    />
                                 </label>
-                            ))}
-                        </section>
+                            );
+                        })}
                     </section>
 
                     <input type="submit" value={isSubmitting ? "Salvando..." : modoEdicao ? "Salvar" : "Criar"} disabled={isSubmitting} className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition" />

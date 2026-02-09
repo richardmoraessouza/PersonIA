@@ -16,8 +16,10 @@ import CriacaoPerson from "./components/CriacaoPerson/CriacaoPerson.tsx";
 import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
 import OutroPerfil from "./components/OutroPerfil/OutroPerfil.tsx";
 import Person_Ficticio from './components/Person_Ficticio/Person_Ficticio.tsx';
+import Explorar from "./components/Explorar/Explorar.tsx";
+import PersonagemPesquisado from "./components/PersonagemPesquisado/PersonagemPesquisado.tsx";
 
-const CLIENT_ID = "468506770340-qbj9keh8dkeu2467qtq207ob1to3esog.apps.googleusercontent.com"
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const router = createBrowserRouter([
   // Rotas com layout principal
@@ -46,20 +48,24 @@ const router = createBrowserRouter([
           },
         ],
       },
-      // Rota do personagem (App) pode ficar acessível sem proteção
       {
-        path: "personagem/:id",
-        element: <App />,
+         path: "/buscar",
+         element: <Explorar />,
       },
+      {
+        path: "/teste",
+        element: <PersonagemPesquisado />,
+      }
     ],
   },
+  
   // Rotas sem layout (públicas)
   {
     element: <NoLayout />,
     children: [
       {
-        index: true,
-        element: <App />, // Home
+        path: `/personagem/:id`,
+        element: <App />,
       },
       {
         element: <PublicRoute />,

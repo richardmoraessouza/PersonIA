@@ -3,7 +3,8 @@ import axios from 'axios';
 import styles from './App.module.css';
 import { useAuth } from './components/AuthContext/AuthContext';
 import Menu from './components/Menu/Menu';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { API_URL } from './config/api';
 
 interface Personagem {
   id: number;
@@ -45,6 +46,7 @@ function App() {
   const { usuarioId } = useAuth();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
   const modalPerfil = () => setPerfilPerson(prev => !prev);
 
@@ -55,6 +57,18 @@ function App() {
     }
   }, []);
 
+  // Sincroniza personId com o param da rota (quando existe)
+  useEffect(() => {
+    console.log('App: useParams id =', id);
+    if (id) {
+      const parsed = Number(id);
+      console.log('App: parsed id =', parsed, 'current personId =', personId);
+      if (!isNaN(parsed) && parsed !== personId) {
+        setPersonId(parsed);
+      }
+    }
+  }, [id]);
+
   // Limpa chat ao trocar de personagem
   useEffect(() => setChatHistory([]), [personId]);
 
@@ -63,7 +77,7 @@ function App() {
     const nomeCriado = async () => {
       if (personagem) {
         try {
-          const res = await axios.get(`https://api-personia.onrender.com/nomeCriador/${personagem.usuario_id}`);
+          const res = await axios.get(`${API_URL}/nomeCriador/${personagem.usuario_id}`);
           setNome(res.data);
         } catch (err) {
           console.error('Erro ao carregar o nome do criador', err);
@@ -77,7 +91,8 @@ function App() {
   useEffect(() => {
     const buscarPersonagemId = async () => {
       try {
-        const res = await axios.get(`https://api-personia.onrender.com/personagens/${personId}`);
+        console.log('App: buscando personagem para personId =', personId);
+        const res = await axios.get(`${API_URL}/personagens/${personId}`);
         setPersonagem(res.data);
       } catch (err) {
         console.error('Erro ao carregar os dados do personagem', err);
@@ -105,7 +120,7 @@ function App() {
       if (usuarioId) payload.userId = usuarioId;
       else payload.anonId = localStorage.getItem("anonId");
 
-      const res = await axios.post<ChatResponse>(`https://api-personia.onrender.com/chat/${personId}`, payload);
+      const res = await axios.post<ChatResponse>(`${API_URL}/chat/${personId}`, payload);
       const botReply = res.data;
 
       setChatHistory(prev => [
@@ -210,7 +225,7 @@ function App() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={personagem ? `Converse com ${personagem.nome}` : "Fale com o personagem"}
+              placeholder={personagem ? `Conversar com ${personagem.nome}` : "Fale com o personagem"}
               disabled={isLoading}
             />
             <button onClick={enviarMensagem} disabled={isLoading}>

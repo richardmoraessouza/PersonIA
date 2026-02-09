@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './ModalSeguidores.module.css';
 import { useNavigate } from "react-router-dom";
+import { API_URL } from '../../config/api';
 
 interface Seguindor {
     id: number;
@@ -38,14 +39,15 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
         const fetchUsuarios = async () => {
             try {
                 if (tipo === 'seguidores') {
-                    const res = await axios.get(`https://api-personia.onrender.com/seguidores/${usuario}`);
+                    const res = await axios.get(`${API_URL}/seguidores/${usuario}`);
                     setUsuarios(res.data.seguidores || []);
                 } else {
-                    const res = await axios.get(`https://api-personia.onrender.com/seguindo/${usuario}`);
+                    const res = await axios.get(`${API_URL}/seguindo/${usuario}`);
                     setUsuarios(res.data.seguindo || []);
                 }
             } catch (error) {
                 console.error(`Erro ao buscar ${tipo}:`, error);
+                setUsuarios([]);
             }
         };
 
@@ -68,9 +70,9 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
                                 className={`${styles.listaUsuarios} cursor-pointer hover:bg-neutral-800 transition-colors duration-200`}
                                 onClick={() => {
                                     if (item.id === usuarioLogado) {
-                                        navigate(`/perfil/${usuarioLogado}`); // Vai para o próprio perfil
+                                        navigate(`/perfil/${usuarioLogado}`);
                                     } else {
-                                        navigate(`/outroperfil/${item.id}`); // Vai para outro perfil
+                                        navigate(`/outroperfil/${item.id}`);
                                     }
                                     onClose();
                                 }}

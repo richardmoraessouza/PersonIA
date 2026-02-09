@@ -1,0 +1,93 @@
+.container {
+  padding: 100px 16px 24px;    
+  box-sizing: border-box;
+  min-height: 100vh;
+  width: 100vw;              
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr; 
+  gap: 20px;
+}
+
+.card {
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.06);
+  padding: 14px 14px 40px 14px;
+  border-radius:18px;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  transition:transform .18s ease, box-shadow .18s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(0,0,0,0.25)}
+
+.cardHeader{width: 65%;}
+
+.avatar{
+  width:104px;height:104px;border-radius:12px;object-fit:cover;flex-shrink:0;border:2px solid rgba(59,130,246,0.18)
+}
+
+.cardBody{display:flex;flex-direction:column;gap:6px;min-width:0;width: 100%; position: relative;}
+.name{font-weight:700;font-size:1.05rem;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:11px;color:var(--textoSecundario);position:absolute;left:14px;bottom:12px}
+.desc {white-space: pre-wrap; color: var(--textoSecundario); font-size: 12px;}
+
+.interactions {
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+  color:var(--textoSecundario);
+  font-size: 11px;
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+}
+
+.likeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;;
+    padding: 4px 8px;
+}
+
+.likeButton svg {
+    width: 13px;  
+    height: 13px; 
+    transition: transform 0.2s ease;
+}
+
+.likeButton:hover svg {
+    transform: scale(1.2);
+}
+
+.actions{margin-left:auto;display:flex;gap:8px}
+.btn{background:rgba(59,130,246,0.9);color:white;padding:8px 10px;border-radius:10px;border:none;cursor:pointer}
+.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--texto);padding:8px 10px;border-radius:10px;cursor:pointer}
+
+.loader{display:flex;align-items:center;justify-content:center;padding:30px}
+.empty{padding:30px;text-align:center;color:var(--textoSecundario)}
+
+@media (min-width: 468px) {
+  .grid { grid-template-columns: repeat(2, 1fr); } 
+}
+
+@media (min-width: 562px) {
+   .desc { font-size: 13px; }
+  }
+  
+@media (min-width: 1100px) {
+    .grid { grid-template-columns: repeat(4, 1fr); }
+    .desc { font-size: 14px; }
+}
+
+@media (min-width: 750px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+}

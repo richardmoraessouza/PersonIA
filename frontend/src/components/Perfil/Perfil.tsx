@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ModalSeguidores from '../ModalSeguidores/ModalSeguidores';
-
+import { API_URL } from '../../config/api';
 
 interface Personagem {
     id: number;
@@ -80,7 +80,7 @@ function Perfil() {
         const carregarPersonagens = async () => {
             try {
                 
-                const personagensRes = await axios.get(`https://api-personia.onrender.com/buscarPerson/${usuarioId}`, {
+                const personagensRes = await axios.get(`${API_URL}/buscarPerson/${usuarioId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 
@@ -98,15 +98,15 @@ function Perfil() {
         const carregarDados = async () => {
             try {
                 const [seguidoresRes, seguindoRes] = await Promise.all([
-                    axios.get(`https://api-personia.onrender.com/seguidores/${usuarioId}`),
-                    axios.get(`https://api-personia.onrender.com/seguindo/${usuarioId}`)
+                    axios.get(`${API_URL}/seguidores/${usuarioId}`),
+                    axios.get(`${API_URL}/seguindo/${usuarioId}`)
                 ]);
 
                 setSeguidores(seguidoresRes.data.seguidores || []);
                 setSeguindo(seguindoRes.data.seguindo || []);
 
                 // Carregar dados completos do usuário
-                const usuarioRes = await axios.get(`https://api-personia.onrender.com/usuario/${usuarioId}`, {
+                const usuarioRes = await axios.get(`${API_URL}/usuario/${usuarioId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -165,7 +165,7 @@ function Perfil() {
 
         try {
             const res = await axios.put<UserUpdateResponse>(
-                `https://api-personia.onrender.com/editar/${usuarioId}`,
+                `${API_URL}/editar/${usuarioId}`,
                 {
                     nome: novoNome || nomeAtualContexto,
                     foto_perfil: imgPerfil,
@@ -208,6 +208,23 @@ function Perfil() {
         }
     };
 
+    const handleFotoPerfilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const MAX_SIZE_MB = 5;
+            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                alert(`Máximo ${MAX_SIZE_MB}MB`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImgPerfil(reader.result as string);
+                // enviar para API
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
@@ -253,41 +270,54 @@ function Perfil() {
                 </div>
             </div>
 
-            <div className={`${styles.teste}`}>
+            {/* personagens do usuário */}
+            <section className={styles.cardsPersonagens}>
                 {personagensDoUsuario.length > 0 ? (
                     personagensDoUsuario.map((personagem) => (
-                        <div key={personagem.id} className={`${styles.meusPersonagens} p-4 bg-gray-100 rounded-lg relative`}>
-                            <div className='flex flex-row items-center gap-3'>
-                                <button className={styles.btnEditar}
-                                    onClick={() => {
-                                        if (personagem.tipo_personagem === 'person') {
+                        <article key={personagem.id} className={styles.meusPersonagens}>
+
+                            <button 
+                                className={styles.btnEditar}
+                                title="Editar Personagem"
+                                onClick={() => {
+                                    if (personagem.tipo_personagem === 'person') {
                                         navigate('/criacao-person', { state: { editar: true, personagem } });
-                                        } else {
+                                    } else {
                                         navigate('/person-ficticio', { state: { editar: true, personagem } });
-                                        }
-                                    }}
-                                    >
-                                    Editar
-                                </button>
-                                <img src={personagem.fotoia || "/image/semPerfil.jpg"} alt="Erro ao carregar foto de perfil" className='w-10 h-10 rounded-full object-cover'/>
-                                <h3 className="text-lg font-semibold">{personagem.nome}</h3>
+                                    }
+                                }}
+                            >
+                                <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <div className={styles.cardHeader}>
+                                <img 
+                                    src={personagem.fotoia || "/image/semPerfil.jpg"} 
+                                    alt={personagem.nome} 
+                                    className={styles.cardImg}
+                                />
+
+                                <h3 className={styles.cardTitle}>{personagem.nome}</h3>
                             </div>
-                            <p className="text-gray-600 text-sm">{personagem.descricao || 'Sem descrição'}</p>
-                        </div>
+                           
+                            <p className={styles.cardDescription}>
+                                {personagem.descricao || 'Sem descrição para este personagem.'}
+                            </p>
+                        </article>
                     ))
                 ) : (
                     <div className={styles.semPersonagens}>
-                        <p className="text-gray-400">Sem personagens criados.</p>
+                        <i className={`fa-regular fa-face-sad-tear ${styles.iconSemPersonagens}`}></i>
+                        <p className={styles.textSemPersonagens}>Você ainda não criou nenhum personagem.</p>
                     </div>
                 )}
-            </div>
-
+            </section>
         </section>
 
         {modalDefinicoes && (
             <section className={`${styles.editarPerfil}`}>
                 <button 
-                    className="absolute top-3.5 right-3 bg-gray-800 hover:bg-gray-900 rounded-full min-w-[2rem] min-h-[2rem]"
+                    className="absolute top-3.5 right-3 bg-gray-800 hover:bg-gray-900 rounded-full min-w-[2rem] min-h-[2rem] cursor-pointer"
                     onClick={definicoes}
                 >
                     <i className="fa-solid fa-xmark"></i>
@@ -301,7 +331,7 @@ function Perfil() {
                                 <label htmlFor="foto" title="Alterar foto">
                                     <i className="fa-solid fa-pen cursor-pointer"></i>
                                 </label>
-                                <input id="foto" type="file" accept="image/*" onChange={converterBase64} className="hidden"/>
+                                <input id="foto" type="file" accept="image/*" onChange={handleFotoPerfilChange} className="hidden"/>
                             </div>
                         </div>
                         <p className="text-red-500">{erro}</p>

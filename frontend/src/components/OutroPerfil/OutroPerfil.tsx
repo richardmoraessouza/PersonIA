@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../AuthContext/AuthContext";
 import ModalSeguidores from "../ModalSeguidores/ModalSeguidores";
+import { API_URL } from '../../config/api';
 
 interface OutroUsuario {
     nome: string;
@@ -36,16 +37,16 @@ function OutroPerfil() {
         // Função para buscar os dados do perfil, seguidores e seguindo
         const fetchData = async () => {
             try {
-                const perfilRes = await axios.get(`https://api-personia.onrender.com/perfil/${id}`);
+                const perfilRes = await axios.get(`${API_URL}/perfil/${id}`);
                 setUsuarioInfor(perfilRes.data);
 
-                const seguidoresRes = await axios.get(`https://api-personia.onrender.com/seguidores/${id}`);
+                const seguidoresRes = await axios.get(`${API_URL}/seguidores/${id}`);
                 setListaSeguidores(seguidoresRes.data.seguidores || []);
 
                 const jaSegue = seguidoresRes.data.seguidores.some((s: Seguidor) => s.id === Number(usuarioId));
                 setEstaSeguindo(jaSegue);
 
-                const seguindoRes = await axios.get(`https://api-personia.onrender.com/seguindo/${id}`);
+                const seguindoRes = await axios.get(`${API_URL}/seguindo/${id}`);
                 setListaSeguindo(seguindoRes.data.seguindo || []);
             } catch (error) {
                 console.error(error);
@@ -59,19 +60,19 @@ function OutroPerfil() {
     const seguirUsuario = async () => {
         try {
             if (estaSeguindo) {
-                await axios.post("https://api-personia.onrender.com/deixar-de-seguir", {
+                await axios.post(`${API_URL}/deixar-de-seguir`, {
                     seguidor_id: Number(usuarioId),
                     seguido_id: Number(id),
                 });
                 setEstaSeguindo(false);
                 setListaSeguidores(prev => prev.filter(s => s.id !== Number(usuarioId)));
             } else {
-                await axios.post("https://api-personia.onrender.com/seguir", {
+                await axios.post(`${API_URL}/seguir`, {
                     seguidor_id: Number(usuarioId),
                     seguido_id: Number(id),
                 });
 
-                const res = await axios.get(`https://api-personia.onrender.com/perfil/${usuarioId}`);
+                const res = await axios.get(`${API_URL}/perfil/${usuarioId}`);
 
                 setEstaSeguindo(true);
                 setListaSeguidores(prev => {

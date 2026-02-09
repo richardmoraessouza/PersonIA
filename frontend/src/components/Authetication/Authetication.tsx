@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext/AuthContext.tsx';
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import { API_URL } from '../../config/api';
 
 interface ErrorResponse {
     error: string;
@@ -71,7 +72,7 @@ function Authentication({ verificar }: SituacaoProps) {
     useEffect(() => {
         const buscarDados = async () => {
             try {
-                const res = await axios.get(`https://api-personia.onrender.com/buscarUsuario/${gmail}`);
+                const res = await axios.get(`${API_URL}/buscarUsuario/${gmail}`);
                 const dados = res.data
                 setDados(dados)
             } catch (err) {
@@ -107,14 +108,14 @@ function Authentication({ verificar }: SituacaoProps) {
         try {
             if (condicaoUsuario) { // Rota de ENTRAR na conta
 
-                const res = await axios.post('https://api-personia.onrender.com/entrar', { gmail });
+                const res = await axios.post(`${API_URL}/entrar`, { gmail });
                 const usuarioData = res.data; 
                 login(usuarioData); 
                 navigate('/', { replace: true });
                 // localStorage.removeItem('ultimoGmail');
                 
             } else { // Rota de CADASTRA
-                await axios.post('https://api-personia.onrender.com/cadastra', { gmail, nome, imgPerfil })
+                await axios.post(`${API_URL}/cadastra`, { gmail, nome, imgPerfil })
                 localStorage.setItem('ultimoGmail', gmail); 
                 navigate('/entrar', { replace: true });
             }

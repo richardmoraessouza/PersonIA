@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styles from './Menu.module.css';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext/AuthContext';
-import axios from 'axios'
+import axios from 'axios';
+import { API_URL } from '../../config/api';
+import { useNavigate } from 'react-router-dom';
 
 type Personagem = {
     id: number;
@@ -11,7 +13,7 @@ type Personagem = {
 };
 
 interface MenuProps {
-    setPersonId: React.Dispatch<React.SetStateAction<number>>;
+    setPersonId?: React.Dispatch<React.SetStateAction<number>>;
     onMenuToggle?: (isOpen: boolean) => void;
 }
 
@@ -20,22 +22,12 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
     const [personagens, setPersonagens] = useState<Personagem[]>([]);
-    const [loading, setLoading] = useState(true); // 🔥 ANIMAÇÃO DE CARREGAMENTO
+    const [loading, setLoading] = useState(true);
+    const [procurarPersonagem, setProcurarPersonagem] = useState<string>('');
 
-    useEffect(() => {
-        const mostraPersonagens = async () => {
-            try {
-                const res = await axios("https://api-personia.onrender.com/personagens");
-                setPersonagens(res.data);
-            } catch (err) {
-                console.error("Erro ao carregar usuários");
-            } finally {
-                setLoading(false); // 🔥 terminou de carregar
-            }
-        };
-
-        mostraPersonagens();
-    }, []);
+    const navigate = useNavigate();
+    const modalRef = useRef<HTMLDivElement>(null);
+    const personagensFiltrados = personagens.filter((personagem) => personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase()));
 
     useEffect(() => {
         if (onMenuToggle) onMenuToggle(modalOpen);
@@ -54,6 +46,46 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
         setModaOpen(prev => !prev);
     }
 
+    function goPerson(id: number) {
+        console.log('Menu.goPerson: navegando para /personagem/', id);
+        navigate(`/personagem/${id}`);
+    }
+
+    // Mostrar o personagens
+     useEffect(() => {
+        const mostraPersonagens = async () => {
+            try {
+                const res = await axios(`${API_URL}/personagens`);
+                const data = Array.isArray(res.data) ? res.data : res.data.personagens || res.data.data || [];
+                setPersonagens(data);
+            } catch (err) {
+                console.error("Erro ao carregar personagens:", err);
+                setPersonagens([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        mostraPersonagens();
+    }, []);
+
+     // faz fechar o menu ao clicar fora dele 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+
+            if (window.innerWidth > 768) return; // Ignora em telas maiores
+
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+                setModaOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    },[]);
+
     return (
         <>
             <button onClick={modalCondicao} className={styles.btnMenu}>
@@ -64,7 +96,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
             </button>
 
             {modalOpen && (
-                <aside className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
+                <aside ref={modalRef} className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
                     <h1>
                         <a href="/" className='flex justify-center items-center w-full'>
                             <img src="/image/PersonIA.png" alt="PersonIA" className={styles.logo} />
@@ -75,6 +107,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
                             <ul className={styles.menuItems}>
+                                <li><Link to={'/buscar'}><i className="fa-solid fa-magnifying-glass"></i> Buscar</Link></li>
                                 <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar personagem</Link></li>
                                 <li><Link to={'/person-ficticio'}><i className="fa-solid fa-user"></i> Fictício</Link></li>
 
@@ -89,6 +122,17 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                     </section>
 
                     <hr className={styles.separacaoCriacao} />
+                    <div className={styles.containerBusca}>
+                        <i className="fa-solid fa-magnifying-glass"></i>
+                        <input 
+                            type="text" 
+                            onChange={(e) => {
+                                setProcurarPersonagem(e.target.value);
+                            }}
+                            placeholder="Procurar personagem..." 
+                            className={styles.inputProcurar} 
+                        />
+                    </div>
 
                     <section>
                         <h2 className={styles.subTitulo}>Personagens</h2>
@@ -96,18 +140,20 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             <ul className={styles.menuItems}>
                                 <div className={styles.containerPerson}>
 
-                                    {/* 🔥 Loader animado enquanto carrega */}
                                     {loading ? (
                                         <div className={styles.loaderContainer}>
                                             <div className={styles.spinner}></div>
                                             <p>Carregando personagens...</p>
                                         </div>
-                                    ) : (
-                                        personagens.map((item) => (
+                                    ) : personagensFiltrados.length > 0 ? (
+                                        personagensFiltrados.map((item) => (
                                             <li key={item.id}>
                                                 <button
                                                     className="w-full"
-                                                    onClick={() => setPersonId(item.id)}
+                                                    onClick={() => {
+                                                        if (setPersonId) setPersonId(item.id);
+                                                        goPerson(item.id);
+                                                    }}
                                                 >
                                                     <img
                                                         src={item.fotoia || '/image/semPerfil.jpg'}
@@ -118,6 +164,8 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                                 </button>
                                             </li>
                                         ))
+                                    ) : (
+                                        <p className='text-center text-sm text-gray-400 texte'>Nenhum personagem encontrado.</p>
                                     )}
 
                                 </div>
