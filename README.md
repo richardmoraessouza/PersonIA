@@ -1,19 +1,7 @@
-# PersonIA
-
-Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
-
-[![Netlify Status](https://api.netlify.com/api/v1/badges/.../deploy-status)](https://app.netlify.com/sites/personia/deploys) <!-- Add actual badge if possible -->
-
-🔗 Links
-
-- 🌐 **Site**: [https://personia.netlify.app/](https://personia.netlify.app/)
-- 🔧 **API Backend**: [https://github.com/richardmoraessouza/api-personia](https://github.com/richardmoraessouza/api-personia)
 
 # PersonIA
 
 Plataforma web para criar e conversar com personagens virtuais usando inteligência artificial.
-
-[![Netlify Status](https://api.netlify.com/api/v1/badges/.../deploy-status)](https://app.netlify.com/sites/personia/deploys) <!-- Add actual badge if possible -->
 
 🔗 Links
 
