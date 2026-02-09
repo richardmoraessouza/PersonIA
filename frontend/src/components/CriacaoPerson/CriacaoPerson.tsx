@@ -18,6 +18,7 @@ function CriacaoPerson() {
     const [tipo_personagem, setTipo_personagem] = useState('person');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [erro, setErro] = useState('');
+    const [bio, setBio] = useState<string>('');
     const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
     const location = useLocation();
@@ -46,6 +47,7 @@ function CriacaoPerson() {
                     setEstilo(p.estilo || '');
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
+                    setBio(p.bio || '');
                     setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
@@ -62,6 +64,7 @@ function CriacaoPerson() {
                 setEstilo(personagemState.estilo || '');
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
+                setBio(personagemState.bio || '');
                 setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""])
             }
         };
@@ -121,7 +124,7 @@ function CriacaoPerson() {
         }
 
         try {
-            const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== "") };
+            const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== ""), bio };
             if (modoEdicao && id) {
                 await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
@@ -165,6 +168,21 @@ function CriacaoPerson() {
                         <p className="text-gray-400 text-sm flex justify-end">{nome.length}/20 caracteres</p>
                     </div>
 
+                      <div>
+                        <label htmlFor="bio">Bio</label>
+                        <input
+                            type="text"
+                            placeholder="Digite a bio do personagem"
+                            required
+                            value={bio}
+                            id="bio"
+                            maxLength={50}
+                        />
+                        <p className="text-gray-400 text-sm flex justify-end">
+                            {bio.length}/50 caracteres
+                        </p>
+                    </div>
+
                     <div>
                         <label htmlFor="genero">Gênero</label>
                         <input type="text" id="genero" placeholder="Digite o gênero personagem" value={genero} maxLength={20} onChange={(e) => setGenero(e.target.value)} />
@@ -175,7 +193,7 @@ function CriacaoPerson() {
                         <textarea
                             placeholder='Digite a descrição do personagem'
                             id="descricao" 
-                            value={descricao} maxLength={200} 
+                            value={descricao} maxLength={500} 
                             onChange={(e) => setDescricao(e.target.value)} />
                             <p className="text-gray-400 text-sm flex justify-end">{descricao.length}/200</p>
                     </div>

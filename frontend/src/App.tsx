@@ -14,6 +14,7 @@ interface Personagem {
   criador?: string;
   usuario_id: number;
   figurinhas?: string[];
+  bio?: string;
   [key: string]: any;
 }
 
@@ -120,7 +121,7 @@ function App() {
       if (usuarioId) payload.userId = usuarioId;
       else payload.anonId = localStorage.getItem("anonId");
 
-      const res = await axios.post<ChatResponse>(`${API_URL}/chat/${personId}`, payload);
+      const res = await axios.post<ChatResponse>(`http://localhost:3000/chat/${personId}`, payload);
       const botReply = res.data;
 
       setChatHistory(prev => [
@@ -171,26 +172,43 @@ function App() {
               <div className={styles.modalOverlay} onClick={() => setPerfilPerson(false)}>
                 <div className={styles.modalPerfil} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.containerPerfil}>
-                    <div className='w-full flex items-center justify-center flex-col gap-1'>
-                      <img src={personagem.fotoia || '/image/semPerfil.jpg'} alt={personagem.nome} className='w-20 h-20 rounded-full shadow-2xl' />
-                      <h2 className='text-xl'><strong>{personagem.nome}</strong></h2>
+                    
+                    {/* Topo: Foto e Nome */}
+                    <div className={styles.headerCarta}>
+                      <img 
+                        src={personagem.fotoia || '/image/semPerfil.jpg'} 
+                        alt={personagem.nome} 
+                        className={styles.fotoPerfilGrande} 
+                      />
+                      <h2 className={styles.nomePersonagem}>{personagem.nome}</h2>
+                      <span className="text-sm text-gray-400">Personalidade Virtual</span>
                     </div>
-                    <h3 className='text-gray-950'>Descrição</h3>
-                    <p className={styles.descricao}>{personagem.descricao || "Sem Descrição."}</p>
-                    <h3 className='text-gray-950'>Criador</h3>
-                    <button
-                      className={styles.btnCriador}
-                      onClick={() => {
-                        if (personagem.usuario_id === usuarioId) navigate(`/perfil/${usuarioId}`);
-                        else navigate(`/OutroPerfil/${personagem.usuario_id}`);
-                      }}
-                    >
-                      {nome && nome.nome}
-                    </button>
+
+                    {/* Conteúdo: Bio e Criador */}
+                    <div className={styles.corpoCarta}>
+                      <span className={styles.labelSetor}>Sobre</span>
+                      <p className={styles.descricao}>
+                        {personagem.bio || "Este personagem ainda não possui uma biografia detalhada."}
+                      </p>
+
+                      <span className={styles.labelSetor}>Criado por</span>
+                      <button
+                        className={styles.btnCriador}
+                        onClick={() => {
+                          if (personagem.usuario_id === usuarioId) navigate(`/perfil/${usuarioId}`);
+                          else navigate(`/OutroPerfil/${personagem.usuario_id}`);
+                        }}
+                      >
+                        <i className="fa-regular fa-user"></i>
+                        {nome ? nome.nome : 'Carregando...'}
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               </div>
             )}
+           
           </section>
 
           <div className={styles.containerEmCima}></div>

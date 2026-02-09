@@ -1,0 +1,247 @@
+.cardsPersonagens {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.meusPersonagens {
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    
+    border-radius: 24px; 
+    padding: 16px;
+    position: relative;
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-height: auto;
+}
+
+.meusPersonagens:hover {
+    transform: translateY(-8px) scale(1.02); 
+    background: rgba(255, 255, 255, 0.07); 
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cardImg {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.meusPersonagens:hover .cardImg {
+    transform: rotate(-5deg) scale(1.1); 
+}
+
+.cardTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.cardDescription {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7); 
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.btnEditar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.1); 
+    color: #3b82f6;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.btnEditar:hover {
+    opacity: 1;
+    color: white;
+    transform: rotate(15deg);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+}
+
+.semPersonagens {
+    grid-column: 1 / -1; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    
+    background: rgba(255,255,255,0.02);
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 24px;
+    color: rgba(255,255,255,0.5);
+    gap: 20px;
+}
+
+.iconSemPersonagens {
+    font-size: 4rem;
+    opacity: 0.3;
+}
+
+.textSemPersonagens {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+@media (min-width: 600px) {
+    .cardImg {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .cardImg {
+        width: 65px;
+        height: 65px;
+    }
+}
+
+
+@media (min-width: 600px) {
+    .meusPersonagens {
+        padding: 20px;
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .meusPersonagens {
+        padding: 24px;
+        gap: 16px;
+    }
+}
+
+
+@media (min-width: 600px) {
+    .cardsPersonagens {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px 16px;
+    }
+}
+
+
+@media (min-width: 1024px) {
+    .cardsPersonagens {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        padding: 20px 0;
+    }
+}
+
+.btnConversarContainer {
+    position: absolute;
+    bottom: 16px;
+    right: 14px;
+}
+
+.btnConversar {
+    margin-top: auto;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btnConversar i {
+    font-size: 1.1rem;
+}
+
+.btnConversar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    filter: brightness(1.1);
+}
+
+.btnConversar:active {
+    transform: translateY(0);
+}
+
+
+.meusPersonagens {
+    min-height: 220px; 
+}
+
+.interactions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.likeButton, .commentButton {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    padding: 5px 8px;
+    border-radius: 8px;
+}
+
+.likeButton.active {
+    color: #ff4b4b;
+}
+
+.likeButton svg {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.likeButton:active svg {
+    transform: scale(1.3);
+}

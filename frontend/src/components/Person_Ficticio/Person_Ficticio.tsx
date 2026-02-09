@@ -17,6 +17,7 @@ function CriacaoPerson() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tipo_personagem, setTipo_personagem] = useState<string>('ficcional');
     const [historia, setHistoria] = useState<string>('');
+    const [bio, setBio] = useState<string>('');
     const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
     const { token } = useAuth();
@@ -46,6 +47,7 @@ function CriacaoPerson() {
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
                     setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
+                    setBio(p.bio || '');
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
                     alert('Não foi possível carregar os dados do personagem.');
@@ -59,6 +61,7 @@ function CriacaoPerson() {
                 setRegras(personagemState.regras || '');
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
+                setBio(personagemState.bio || '');
                 setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""]);
             }
         };
@@ -125,14 +128,14 @@ function CriacaoPerson() {
 
         //Pega os dados do formulário e envia para a API
         try {
-            const data = { fotoia, nome, personalidade, historia, regras, descricao, obra, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== "") };
+            const data = { fotoia, nome, personalidade, historia, regras, descricao, obra, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== ""), bio };
               console.log("Dados enviados para a API:", data);  // Adicionar log para os dados
             if (modoEdicao && id) {
                 await axios.put(`${import.meta.env.VITE_API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
                 await axios.post(`${import.meta.env.VITE_API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
             }
-            navigate(`/buscar`);
+            navigate(`/explorar`);
         } catch (err) {
             console.error('Erro ao salvar personagem:', err);
             alert('Ocorreu um erro ao salvar a personagem. Tente novamente.');
@@ -199,6 +202,21 @@ function CriacaoPerson() {
                     </div>
 
                     <div>
+                        <label htmlFor="bio">Bio</label>
+                        <input
+                            type="text"
+                            placeholder="Digite a bio do personagem"
+                            required
+                            value={bio}
+                            id="bio"
+                            maxLength={50}
+                        />
+                        <p className="text-gray-400 text-sm flex justify-end">
+                            {bio.length}/50 caracteres
+                        </p>
+                    </div>
+
+                    <div>
                         <label htmlFor="obra">Obra</label>
                         <textarea 
                             id="obra"
@@ -228,7 +246,7 @@ function CriacaoPerson() {
                             placeholder="Aparecerá no perfil do personagem"
                         ></textarea>
                          <p className="text-gray-400 text-sm flex justify-end">
-                                {descricao.length}/200 caracteres
+                                {descricao.length}/500 caracteres
                         </p>
                     </div>
 

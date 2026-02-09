@@ -5,17 +5,7 @@ import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ModalSeguidores from '../ModalSeguidores/ModalSeguidores';
 import { API_URL } from '../../config/api';
-
-interface Personagem {
-    id: number;
-    nome: string;
-    fotoia?: string;
-    descricao?: string;
-    criador?: string;
-    usuario_id: number;
-    tipo_personagem: string;
-    [key: string]: any;
-}
+import CardUsuario from '../CardUsuario/CardUsuario';
 
 interface UserUpdateResponse {
     success: boolean;
@@ -60,9 +50,6 @@ function Perfil() {
     const [abrirSeguidores, setAbrirSeguidores] = useState<boolean>(false);
     const [abrirSeguindo, setAbrirSeguindo] = useState<boolean>(false);
     const [modalDefinicoes, setModalDefinicoes] = useState<boolean>(false); 
-
-    const [personagensDoUsuario, setPersonagensDoUsuarios] = useState<Personagem[]>([]);
-
     
     function abrirModalSeguidores() {
         setAbrirSeguidores(prev => !prev);
@@ -75,22 +62,6 @@ function Perfil() {
     function definicoes() {
         setModalDefinicoes(prev => !prev);
     }
-
-    useEffect(() => {
-        const carregarPersonagens = async () => {
-            try {
-                
-                const personagensRes = await axios.get(`${API_URL}/buscarPerson/${usuarioId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                
-                setPersonagensDoUsuarios(personagensRes.data || []);
-            } catch (err) {
-                console.log("Erro ao carregar os personagens")
-            }
-        }
-        carregarPersonagens()
-    }, [usuarioId])
  
     useEffect(() => {
         if (!usuarioId || !token) return;
@@ -127,21 +98,6 @@ function Perfil() {
 
         carregarDados();
     }, [usuarioId, token]);
-
-    // Converter imagem para base64
-    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png"];
-            if (!tiposPermitidos.includes(file.type)) {
-                alert("Apenas imagens PNG ou JPEG são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => setImgPerfil(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    }
 
     // Salvar alterações
     const handleSubmit = async (e: React.FormEvent) => {
@@ -269,50 +225,9 @@ function Perfil() {
                     {descricao ? <p>{descricao}</p> : <p>{nomeAtualContexto} ainda não tem uma descrição</p>}
                 </div>
             </div>
-
-            {/* personagens do usuário */}
-            <section className={styles.cardsPersonagens}>
-                {personagensDoUsuario.length > 0 ? (
-                    personagensDoUsuario.map((personagem) => (
-                        <article key={personagem.id} className={styles.meusPersonagens}>
-
-                            <button 
-                                className={styles.btnEditar}
-                                title="Editar Personagem"
-                                onClick={() => {
-                                    if (personagem.tipo_personagem === 'person') {
-                                        navigate('/criacao-person', { state: { editar: true, personagem } });
-                                    } else {
-                                        navigate('/person-ficticio', { state: { editar: true, personagem } });
-                                    }
-                                }}
-                            >
-                                <i className="fa-solid fa-pen-to-square"></i>
-                            </button>
-
-                            <div className={styles.cardHeader}>
-                                <img 
-                                    src={personagem.fotoia || "/image/semPerfil.jpg"} 
-                                    alt={personagem.nome} 
-                                    className={styles.cardImg}
-                                />
-
-                                <h3 className={styles.cardTitle}>{personagem.nome}</h3>
-                            </div>
-                           
-                            <p className={styles.cardDescription}>
-                                {personagem.descricao || 'Sem descrição para este personagem.'}
-                            </p>
-                        </article>
-                    ))
-                ) : (
-                    <div className={styles.semPersonagens}>
-                        <i className={`fa-regular fa-face-sad-tear ${styles.iconSemPersonagens}`}></i>
-                        <p className={styles.textSemPersonagens}>Você ainda não criou nenhum personagem.</p>
-                    </div>
-                )}
-            </section>
         </section>
+
+        <CardUsuario />
 
         {modalDefinicoes && (
             <section className={`${styles.editarPerfil}`}>

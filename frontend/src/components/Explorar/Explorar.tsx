@@ -10,7 +10,7 @@ type Personagem = {
     id: number;
     nome: string;
     fotoia?: string;
-    descricao?: string;
+    bio?: string;
     usuario_id?: number;
     nome_criador?: string;
     likes?: number;
@@ -157,7 +157,7 @@ function BuscarPersonagem() {
 
                             <div className={styles.cardBody}>
                                 <div className={styles.name}>{p.nome}</div>
-                                <div className={styles.desc}>{p.descricao || 'Sem descrição'}</div>
+                                <div className={styles.desc}>{p.bio || 'Sem Bio'}</div>
                             </div>
                             <div className={styles.meta}>@{p.nome_criador}</div>
                         </article>

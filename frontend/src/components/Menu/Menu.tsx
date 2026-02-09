@@ -98,7 +98,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
             {modalOpen && (
                 <aside ref={modalRef} className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
                     <h1>
-                        <a href="/" className='flex justify-center items-center w-full'>
+                        <a href="/explorar" className='flex justify-center items-center w-full'>
                             <img src="/image/PersonIA.png" alt="PersonIA" className={styles.logo} />
                         </a>
                     </h1>
@@ -107,7 +107,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
                             <ul className={styles.menuItems}>
-                                <li><Link to={'/buscar'}><i className="fa-solid fa-magnifying-glass"></i> Buscar</Link></li>
+                                <li><Link to={'/explorar'}><i className="fa-solid fa-magnifying-glass"></i> Buscar</Link></li>
                                 <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar personagem</Link></li>
                                 <li><Link to={'/person-ficticio'}><i className="fa-solid fa-user"></i> Fictício</Link></li>
 
