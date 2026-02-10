@@ -84,8 +84,13 @@
   }
   
 @media (min-width: 1100px) {
-    .grid { grid-template-columns: repeat(4, 1fr); }
+    .grid { grid-template-columns: repeat(4, 1fr) !important; }
     .desc { font-size: 14px; }
+}
+
+@media (min-width: 1400px) {
+    .grid { grid-template-columns: repeat(5, 1fr) !important; }
+
 }
 
 @media (min-width: 750px) {

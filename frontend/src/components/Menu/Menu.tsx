@@ -18,16 +18,20 @@ interface MenuProps {
 }
 
 function Menu({ setPersonId, onMenuToggle }: MenuProps) {
-    const { usuario, fotoPerfil, estaLogado, logout } = useAuth();
+    const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token } = useAuth();
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
-    const [personagens, setPersonagens] = useState<Personagem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [favoritos, setFavoritos] = useState<Personagem[]>([]);
     const [procurarPersonagem, setProcurarPersonagem] = useState<string>('');
 
     const navigate = useNavigate();
     const modalRef = useRef<HTMLDivElement>(null);
-    const personagensFiltrados = personagens.filter((personagem) => personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase()));
+
+    // Filtra os favoritos com base no que o usuário digita na busca
+    const favoritosFiltrados = favoritos.filter((personagem) =>
+        personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase())
+    );
 
     useEffect(() => {
         if (onMenuToggle) onMenuToggle(modalOpen);
@@ -51,30 +55,38 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
         navigate(`/personagem/${id}`);
     }
 
-    // Mostrar o personagens
-     useEffect(() => {
-        const mostraPersonagens = async () => {
+    // Carregar os personagens favoritados do banco de dados
+    useEffect(() => {
+        const carregarFavoritos = async () => {
+            if (!estaLogado || !usuarioId) {
+                setLoading(false);
+                setFavoritos([]);
+                return;
+            }
+
             try {
-                const res = await axios(`${API_URL}/personagens`);
-                const data = Array.isArray(res.data) ? res.data : res.data.personagens || res.data.data || [];
-                setPersonagens(data);
+                const res = await axios.get(`${API_URL}/getFavoritosFull/${usuarioId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const data = Array.isArray(res.data) ? res.data : [];
+                console.log("Favoritos carregados no menu:", data);
+                setFavoritos(data);
             } catch (err) {
-                console.error("Erro ao carregar personagens:", err);
-                setPersonagens([]);
+                console.error("Erro ao carregar favoritos no menu:", err);
+                setFavoritos([]);
             } finally {
                 setLoading(false);
             }
         };
 
-        mostraPersonagens();
-    }, []);
+        carregarFavoritos();
+    }, [usuarioId, estaLogado, token]);
 
-     // faz fechar o menu ao clicar fora dele 
+    // Fecha o menu ao clicar fora dele (mobile)
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-
-            if (window.innerWidth > 768) return; // Ignora em telas maiores
-
+            if (window.innerWidth > 768) return; 
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
                 setModaOpen(false);
             }
@@ -84,7 +96,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    },[]);
+    }, []);
 
     return (
         <>
@@ -103,6 +115,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         </a>
                     </h1>
 
+                    {/* criação e explorar */}
                     <section>
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
@@ -122,20 +135,20 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                     </section>
 
                     <hr className={styles.separacaoCriacao} />
+                    
                     <div className={styles.containerBusca}>
                         <i className="fa-solid fa-magnifying-glass"></i>
                         <input 
                             type="text" 
-                            onChange={(e) => {
-                                setProcurarPersonagem(e.target.value);
-                            }}
-                            placeholder="Procurar personagem..." 
+                            onChange={(e) => setProcurarPersonagem(e.target.value)}
+                            placeholder="Buscar favoritos..." 
                             className={styles.inputProcurar} 
                         />
                     </div>
 
+                    {/* mostra os favoritos do usuario */}
                     <section>
-                        <h2 className={styles.subTitulo}>Personagens</h2>
+                        <h2 className={styles.subTitulo}>Favoritos</h2>
                         <nav>
                             <ul className={styles.menuItems}>
                                 <div className={styles.containerPerson}>
@@ -143,13 +156,13 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     {loading ? (
                                         <div className={styles.loaderContainer}>
                                             <div className={styles.spinner}></div>
-                                            <p>Carregando personagens...</p>
+                                            <p>Carregando...</p>
                                         </div>
-                                    ) : personagensFiltrados.length > 0 ? (
-                                        personagensFiltrados.map((item) => (
+                                    ) : favoritosFiltrados.length > 0 ? (
+                                        favoritosFiltrados.map((item) => (
                                             <li key={item.id}>
                                                 <button
-                                                    className="w-full"
+                                                    className="w-full flex items-center gap-2 p-1 hover:bg-[#2a2a2a] rounded transition-colors"
                                                     onClick={() => {
                                                         if (setPersonId) setPersonId(item.id);
                                                         goPerson(item.id);
@@ -157,7 +170,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                                 >
                                                     <img
                                                         src={item.fotoia || '/image/semPerfil.jpg'}
-                                                        alt="Foto de perfil"
+                                                        alt={item.nome}
                                                         className='w-7 h-7 rounded-full object-cover'
                                                     />
                                                     <p className={styles.nomePersonagem}>{item.nome}</p>
@@ -165,7 +178,9 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                             </li>
                                         ))
                                     ) : (
-                                        <p className='text-center text-sm text-gray-400 texte'>Nenhum personagem encontrado.</p>
+                                        <p className='text-center text-sm text-gray-400 p-4'>
+                                            {estaLogado ? "Nenhum favorito encontrado." : "Entre para ver seus favoritos."}
+                                        </p>
                                     )}
 
                                 </div>
@@ -183,7 +198,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     <div className='flex flex-row items-center gap-2'>
                                         <img
                                             src={fotoPerfil || '/image/semPerfil.jpg'}
-                                            alt='Erro ao carregar imagem'
+                                            alt='Perfil'
                                             className='w-9 h-9 rounded-full object-cover'
                                         />
                                         <p className='truncate w-48'>{usuario}</p>
@@ -192,7 +207,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     <div className='flex flex-row items-center gap-2'>
                                         <img
                                             src="/image/semPerfil.jpg"
-                                            alt="Erro ao carregar imagem"
+                                            alt="Visitante"
                                             className='w-9 h-9 rounded-full object-cover'
                                         />
                                         <p>visitante</p>
@@ -201,14 +216,17 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                             </div>
                         </div>
 
+                        {/* abre o sair e ver perfil da conta */}
                         {abrirConta && (
                             <nav className={`absolute bottom-20 left-0 w-full ${styles.navegacaoConta}`}>
                                 <ul className={styles.items}>
                                     {estaLogado ? (
                                         <>
-                                            <li><Link to={'/perfil/:usuario_id'}><i className="fa-solid fa-user"></i> Perfil</Link></li>
+                                            <li><Link to={`/perfil/${usuarioId}`}><i className="fa-solid fa-user"></i> Perfil</Link></li>
                                             <hr className={styles.separacaoConta} />
-                                            <li onClick={sairDaConta}><i className="fa-solid fa-right-from-bracket"></i> Sair</li>
+                                            <li onClick={sairDaConta} className="cursor-pointer">
+                                                <i className="fa-solid fa-right-from-bracket"></i> Sair
+                                            </li>
                                         </>
                                     ) : (
                                         <>

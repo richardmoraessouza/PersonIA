@@ -60,10 +60,8 @@ function App() {
 
   // Sincroniza personId com o param da rota (quando existe)
   useEffect(() => {
-    console.log('App: useParams id =', id);
     if (id) {
       const parsed = Number(id);
-      console.log('App: parsed id =', parsed, 'current personId =', personId);
       if (!isNaN(parsed) && parsed !== personId) {
         setPersonId(parsed);
       }
@@ -92,7 +90,6 @@ function App() {
   useEffect(() => {
     const buscarPersonagemId = async () => {
       try {
-        console.log('App: buscando personagem para personId =', personId);
         const res = await axios.get(`${API_URL}/personagens/${personId}`);
         setPersonagem(res.data);
       } catch (err) {

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from './Explorar.module.css';
-import { API_URL } from '../../config/api';
 import { useAuth } from "../AuthContext/AuthContext";
 import { useNavigate } from 'react-router-dom';
 import CampoDePesquisar from '../CampoDePesquisar/CampoDePesquisar';
+import { API_URL } from '../../config/api';
+
 
 type Personagem = {
     id: number;
@@ -15,6 +16,7 @@ type Personagem = {
     nome_criador?: string;
     likes?: number;
     curtidoPeloUsuario?: boolean;
+    favoritadoPeloUsuario?: boolean;
 };
 
 function BuscarPersonagem() {
@@ -23,7 +25,7 @@ function BuscarPersonagem() {
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
-    const { usuarioId } = useAuth();
+    const { usuarioId, token } = useAuth();
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -37,18 +39,71 @@ function BuscarPersonagem() {
                     ? resPersonagens.data
                     : resPersonagens.data.personagens || [];
 
-                // 2. Busca os IDs que o usuário curtiu (SÓ se tiver usuarioId)
+                // 2. Busca os IDs que o usuário curtiu
                 let idsCurtidos: number[] = [];
                 if (usuarioId) {
                     try {
-                        const resLikes = await axios.get(`${API_URL}/likesByUsuario/${usuarioId}`);
+                        const resLikes = await axios.get(`${API_URL}/likesByUsuario/${usuarioId}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
                         idsCurtidos = Array.isArray(resLikes.data) ? resLikes.data : [];
                     } catch (e) {
                         console.error("Erro ao buscar likes do usuário, continuando sem eles...");
                     }
                 }
 
-                // 3. Monta os detalhes de cada personagem (Nome do criador e total de likes)
+                // 3. Busca IDs favoritados do usuário (para marcar estrela)
+                let idsFavoritos: number[] = [];
+                if (usuarioId) {
+                    try {
+                        // Primeiro tenta o endpoint que retorna os detalhes completos dos favoritos
+                        const resFavsFull = await axios.get(`${API_URL}/getFavoritosFull/${usuarioId}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (Array.isArray(resFavsFull.data) && resFavsFull.data.length > 0) {
+                            idsFavoritos = resFavsFull.data.map((item: any) => Number(item.id));
+                        } else {
+                            // Se não houver dados, tenta o endpoint mais simples que pode retornar IDs
+                            try {
+                                const resFavs = await axios.get(`${API_URL}/getFavoritosByUsuario/${usuarioId}`, {
+                                    headers: { Authorization: `Bearer ${token}` }
+                                });
+                                const d = resFavs.data;
+                                if (Array.isArray(d) && d.length > 0) {
+                                    if (typeof d[0] === 'number') idsFavoritos = d.map((n: any) => Number(n));
+                                    else if (typeof d[0] === 'object') idsFavoritos = d.map((o: any) => Number(o.id ?? o.personagem_id ?? o.personagemId));
+                                }
+                            } catch (errFavSimple) {
+                                console.warn('getFavoritosByUsuario também falhou:', errFavSimple);
+                                // fallback localStorage
+                                try {
+                                    const saved = localStorage.getItem(`favoritos_${usuarioId}`);
+                                    if (saved) idsFavoritos = JSON.parse(saved).map((n: any) => Number(n));
+                                } catch (errLs) { console.error('Erro lendo localStorage favoritos', errLs); }
+                            }
+                        }
+                    } catch (errFavFull) {
+                        console.warn('getFavoritosFull falhou, tentando getFavoritosByUsuario', errFavFull);
+                        try {
+                            const resFavs = await axios.get(`${API_URL}/getFavoritosByUsuario/${usuarioId}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            const d = resFavs.data;
+                            if (Array.isArray(d) && d.length > 0) {
+                                if (typeof d[0] === 'number') idsFavoritos = d.map((n: any) => Number(n));
+                                else if (typeof d[0] === 'object') idsFavoritos = d.map((o: any) => Number(o.id ?? o.personagem_id ?? o.personagemId));
+                            }
+                        } catch (errFavSimple) {
+                            console.error('Erro ao buscar favoritos:', errFavSimple);
+                            try {
+                                const saved = localStorage.getItem(`favoritos_${usuarioId}`);
+                                if (saved) idsFavoritos = JSON.parse(saved).map((n: any) => Number(n));
+                            } catch (errLs) { console.error('Erro lendo localStorage favoritos', errLs); }
+                        }
+                    }
+                }
+
+                // 4. Monta os detalhes de cada personagem (Nome do criador e total de likes)
                 const personagensComDados = await Promise.all(
                     listaBase.map(async (p: Personagem) => {
                         let nomeCriador = 'IA';
@@ -57,9 +112,9 @@ function BuscarPersonagem() {
                         try {
                             const [nomeRes, likesRes] = await Promise.all([
                                 p.usuario_id 
-                                    ? axios.get(`${API_URL}/nomeCriador/${p.usuario_id}`) 
+                                    ? axios.get(`${API_URL}/nomeCriador/${p.usuario_id}`, { headers: { Authorization: `Bearer ${token}` } }) 
                                     : Promise.resolve({ data: { nome: 'IA' } }),
-                                axios.get(`${API_URL}/likesQuantidade/${p.id}`)
+                                axios.get(`${API_URL}/likesQuantidade/${p.id}`, { headers: { Authorization: `Bearer ${token}` } })
                             ]);
 
                             nomeCriador = nomeRes.data.nome || 'IA';
@@ -72,7 +127,8 @@ function BuscarPersonagem() {
                             ...p, 
                             nome_criador: nomeCriador, 
                             likes: qtdLikes,
-                            curtidoPeloUsuario: idsCurtidos.includes(p.id) 
+                            curtidoPeloUsuario: idsCurtidos.includes(p.id),
+                            favoritadoPeloUsuario: idsFavoritos.includes(p.id)
                         };
                     })
                 );
@@ -95,10 +151,13 @@ function BuscarPersonagem() {
         
         if (!usuarioId) {
             navigate('/entrar');
+            return;
         }
 
         try {
-            const res = await axios.post(`${API_URL}/toggleLike/${usuarioId}/${personagem_id}`);
+            const res = await axios.post(`${API_URL}/toggleLike/${usuarioId}/${personagem_id}`, null, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             const { liked } = res.data;
 
             setPersonagens(prev => prev.map(p => {
@@ -113,6 +172,45 @@ function BuscarPersonagem() {
             }));
         } catch (error) {
             console.error("Erro no toggle:", error);
+        }
+    };
+
+    // Favoritar / desfavoritar
+    const handleToggleFavorito = async (e: React.MouseEvent, personagem_id: number) => {
+        e.stopPropagation();
+
+        if (!usuarioId) {
+            navigate('/entrar');
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${API_URL}/favoritos/${usuarioId}/${personagem_id}`, null, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const statusFavorito = res.data && (res.data.favorited !== undefined ? res.data.favorited : res.data.liked);
+
+            setPersonagens(prev => {
+                const next = prev.map(p => {
+                    if (p.id === personagem_id) {
+                        return {
+                            ...p,
+                            favoritadoPeloUsuario: statusFavorito !== undefined ? statusFavorito : !p.favoritadoPeloUsuario
+                        };
+                    }
+                    return p;
+                });
+
+                try {
+                    const favoritosIds = next.filter(n => n.favoritadoPeloUsuario).map(n => n.id);
+                    if (usuarioId) localStorage.setItem(`favoritos_${usuarioId}`, JSON.stringify(favoritosIds));
+                } catch (err) { /* ignore */ }
+
+                return next;
+            });
+
+        } catch (error) {
+            console.error('Erro no toggle favorito:', error);
         }
     };
 
@@ -134,6 +232,16 @@ function BuscarPersonagem() {
                                 <img className={styles.avatar} src={p.fotoia || '/image/semPerfil.jpg'} alt={p.nome} />
 
                                 <div className={styles.interactions}>
+                                    <button className={styles.favorito} onClick={(e) => handleToggleFavorito(e, p.id)}>
+                                        <i className={`fa ${p.favoritadoPeloUsuario ? 'fa-solid fa-star' : 'fa-regular fa-star'}`} 
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            transition: 'all 0.3s',
+                                            color: p.favoritadoPeloUsuario ? '#FFD700' : '#888'
+                                        }}
+                                        ></i>
+                                    </button>
+
                                     <button 
                                         className={`${styles.likeButton} ${p.curtidoPeloUsuario ? styles.active : ''}`}
                                         onClick={(e) => handleToggleLike(e, p.id)}
@@ -150,8 +258,9 @@ function BuscarPersonagem() {
                                     </button>
 
                                     <button onClick={(e) => e.stopPropagation()}>
-                                        5 <i className="fa-solid fa-comment"></i> 
+                                        <span>0 </span> <i className="fa-solid fa-comment"></i> 
                                     </button>
+
                                 </div>
                             </div>
 

@@ -220,7 +220,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.likeButton, .commentButton {
+.likeButton, .commentButton, .favorito {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.6);

@@ -16,6 +16,7 @@ interface Personagem {
     usuario_id: number;
     tipo_personagem: string;
     curtidoPeloUsuario?: boolean;
+    favoritadoPeloUsuario?: boolean;
     [key: string]: any;
 }
 
@@ -33,6 +34,7 @@ function CardUsuario() {
       useEffect(() => {
         const carregarPersonagens = async () => {
             try {
+                // 1. Busca os personagens do usuário
                 const personagensRes = await axios.get(`${API_URL}/buscarPerson/${usuarioId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -41,48 +43,58 @@ function CardUsuario() {
                     ? personagensRes.data
                     : personagensRes.data.personagens || [];
 
-                // Busca os IDs curtidos pelo usuário atual (se houver)
+                // 2. Busca IDs curtidos
                 let idsCurtidos: number[] = [];
                 if (usuarioId) {
                     try {
                         const resLikes = await axios.get(`${API_URL}/likesByUsuario/${usuarioId}`, {
                             headers: { Authorization: `Bearer ${token}` }
                         });
-                        idsCurtidos = Array.isArray(resLikes.data) ? resLikes.data : [];
-                    } catch (e) {
-                        console.error('Erro ao buscar likes do usuário, continuando sem eles...');
-                    }
+                        idsCurtidos = Array.isArray(resLikes.data) ? resLikes.data.map((id: any) => Number(id)) : [];
+                    } catch (e) { console.error('Erro likes'); }
                 }
 
-                // Para cada personagem, busca a quantidade de likes e marca se o usuário curtiu
+                // 3. Busca IDs favoritados
+                let idsFavoritos: number[] = [];
+                if (usuarioId) {
+                    try {
+                        const resFavs = await axios.get(`${API_URL}/getFavoritosFull/${usuarioId}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+
+                        idsFavoritos = Array.isArray(resFavs.data) ? resFavs.data.map((item: any) => Number(item.id)) : [];
+                        console.log("IDs favoritados carregados (full):", idsFavoritos);
+                    } catch (e) { console.error('Erro favoritos', e); }
+                }
+
+                // 4. Monta a lista final com os estados de Like e Favorito
                 const personagensComDados = await Promise.all(
                     listaBase.map(async (p: Personagem) => {
                         let qtdLikes = 0;
                         try {
                             const likesRes = await axios.get(`${API_URL}/likesQuantidade/${p.id}`);
                             qtdLikes = likesRes.data.total || likesRes.data.likes || 0;
-                        } catch (err) {
-                            console.error(`Erro ao buscar likes do personagem ${p.id}:`, err);
-                        }
+                        } catch (err) { }
 
                         return {
                             ...p,
                             likes: qtdLikes,
-                            curtidoPeloUsuario: idsCurtidos.includes(p.id)
+                            curtidoPeloUsuario: idsCurtidos.includes(Number(p.id)),
+                            favoritadoPeloUsuario: idsFavoritos.includes(Number(p.id))
                         };
                     })
                 );
 
                 setPersonagensDoUsuarios(personagensComDados);
             } catch (err) {
-                console.log("Erro ao carregar os personagens")
+                console.log("Erro ao carregar os personagens");
             }
-        }
-        carregarPersonagens()
-    }, [usuarioId])
+        };
+        if (usuarioId) carregarPersonagens();
+    }, [usuarioId, token]);
 
     
-
+    // Adicionar os Likes
     const Like = async (e: React.MouseEvent, personagem_id: number) => {
         e.stopPropagation();
         try {
@@ -91,6 +103,7 @@ function CardUsuario() {
             });
             const { liked } = res.data;
 
+            // Atualiza a interface para refletir a mudança de like
             setPersonagensDoUsuarios(prev => prev.map(p => {
                 if (p.id === personagem_id) {
                     return {
@@ -107,6 +120,31 @@ function CardUsuario() {
         }
     }
 
+    // Adicionar os Favoritos
+    const fav = async (e: React.MouseEvent, personagem_id: number) => {
+        e.stopPropagation();
+        try {
+            const res = await axios.post(`${API_URL}/favoritos/${usuarioId}/${personagem_id}`, null, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+    
+            const statusFavorito = res.data.favorited !== undefined ? res.data.favorited : res.data.liked;
+
+            setPersonagensDoUsuarios(prev => prev.map(p => {
+                if (p.id === personagem_id) {
+                    return {
+                        ...p,
+                        favoritadoPeloUsuario: statusFavorito !== undefined ? statusFavorito : !p.favoritadoPeloUsuario
+                    };
+                }
+                return p;
+            }));
+
+        } catch (err) {
+            console.error("Erro na requisição de favorito:", err);
+        }
+    }
+    
     return (
           <section className={styles.cardsPersonagens}>
             {personagensDoUsuario.length > 0 ? (
@@ -152,6 +190,16 @@ function CardUsuario() {
 
                             <button className={styles.commentButton} onClick={(e) => e.stopPropagation()}>
                                 <span>5</span> <i className="fa-solid fa-comment"></i> 
+                            </button>
+
+                            <button className={styles.favorito} onClick={(e) => fav(e, p.id)}>
+                                <i className={`fa ${p.favoritadoPeloUsuario ? 'fa-solid fa-star' : 'fa-regular fa-star'}`} 
+                                style={{ 
+                                    cursor: 'pointer', 
+                                    transition: 'all 0.3s',
+                                    color: p.favoritadoPeloUsuario ? '#FFD700' : '#888'
+                                }}
+                                ></i>
                             </button>
                         </div>
 
