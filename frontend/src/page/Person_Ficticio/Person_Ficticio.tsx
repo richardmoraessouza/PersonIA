@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import styles from './Person_ficticio.module.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../AuthContext/AuthContext';
+import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { API_URL } from '../../config/api';
+import { converterBase64, converterFigurinha } from '../../utils/CorverteImagem/corverteImagem';
 
 function CriacaoPerson() {
     const [fotoia, setFotoia] = useState<string>('');
@@ -20,7 +21,7 @@ function CriacaoPerson() {
     const [bio, setBio] = useState<string>('');
     const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
-    const { token } = useAuth();
+    const { token, usuarioId } = useAuth();
 
     const location = useLocation();
     const modoEdicao = location.state?.editar || false;
@@ -36,8 +37,16 @@ function CriacaoPerson() {
                         headers: { Authorization: `Bearer ${token}` }
                     
                     });
-                    console.log(response.data);
+
                     const p = response.data.personagem;
+
+                    //Se o banco vier com array menor que 6, completamos aqui
+                    const figsDoBanco = p.figurinhas || [];
+                    const listaCompleta = [...figsDoBanco];
+                    while (listaCompleta.length < 6) {
+                        listaCompleta.push("");
+                    }
+
                     setNome(p.nome || '');
                     setObra(p.obra || '')
                     setDescricao(p.descricao || '');
@@ -46,7 +55,7 @@ function CriacaoPerson() {
                     setRegras(p.regras || '');
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
-                    setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
+                    setFigurinhas(listaCompleta);
                     setBio(p.bio || '');
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
@@ -68,40 +77,6 @@ function CriacaoPerson() {
 
         fetchPersonagem();
     }, [modoEdicao, id, personagemState, token]);
-
-    // Função para converter imagem para Base64
-    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
-            if (!tiposPermitidos.includes(file.type)) {
-                alert("Apenas imagens PNG ou JPEG são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => setFotoia(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function converterFigurinha(e: React.ChangeEvent<HTMLInputElement>, index: number) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
-            if (!tiposPermitidos.includes(file.type)) {
-               alert("Apenas imagens PNG, JPEG ou WEBP são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const novasFigurinhas = [...figurinhas];
-                novasFigurinhas[index] = reader.result as string;
-                setFigurinhas(novasFigurinhas);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-    
       
     const form = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,29 +100,32 @@ function CriacaoPerson() {
             setErro("O nome da obra não pode estar vazio.");
             return;
        }
-
-        //Pega os dados do formulário e envia para a API
+      
         try {
-            const data = { fotoia, nome, personalidade, historia, regras, descricao, obra, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== ""), bio };
-              console.log("Dados enviados para a API:", data);  // Adicionar log para os dados
+            // MUDANÇA AQUI: Enviamos o array 'figurinhas' completo (com as strings vazias)
+            const data = { 
+                fotoia, nome, personalidade, historia, regras, 
+                descricao, obra, tipo_personagem, bio,
+                figurinhas 
+            };
+
             if (modoEdicao && id) {
-                await axios.put(`${import.meta.env.VITE_API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
-                await axios.post(`${import.meta.env.VITE_API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
             }
-            navigate(`/explorar`);
-        } catch (err) {
-            console.error('Erro ao salvar personagem:', err);
-            alert('Ocorreu um erro ao salvar a personagem. Tente novamente.');
-        } finally {
-            setIsSubmitting(false);
-        }
+
+            navigate(`/perfil/${usuarioId}`);
+            } catch (err) {
+                // ... erro
+            } finally {
+                setIsSubmitting(false);
+            }
     };
 
     return (
         <main className={styles.criacaoPerson}>
             <section className={styles.containerCriacaoPerson}>
-
 
                 <form className='flex flex-col gap-4' onSubmit={form}>
 
@@ -167,7 +145,7 @@ function CriacaoPerson() {
                                 <input 
                                     id="foto" 
                                     type="file" 
-                                    onChange={converterBase64}
+                                    onChange={(e) => converterBase64(e, setFotoia)}
                                     accept="image/*" 
                                     className="hidden" 
                                 />
@@ -178,7 +156,7 @@ function CriacaoPerson() {
                       </h1>
                       {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
                     </div>
-
+                    
                     <div>
                         <label htmlFor="nome">Nome</label>
                         <input
@@ -194,7 +172,6 @@ function CriacaoPerson() {
                                 const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9 ]/g, '');
                                 setNome(filtrado);
                             }}
-                            
                         />
                         <p className="text-gray-400 text-sm flex justify-end">
                             {nome.length}/20 caracteres
@@ -206,10 +183,10 @@ function CriacaoPerson() {
                         <input
                             type="text"
                             placeholder="Digite a bio do personagem"
-                            required
                             value={bio}
                             id="bio"
                             maxLength={50}
+                            onChange={(e) => setBio(e.target.value)}
                         />
                         <p className="text-gray-400 text-sm flex justify-end">
                             {bio.length}/50 caracteres
@@ -231,7 +208,7 @@ function CriacaoPerson() {
                                 setObra(filtrado);
                             }}
                         ></textarea>
-                         <p className="text-gray-400 text-sm flex justify-end">
+                        <p className="text-gray-400 text-sm flex justify-end">
                             {obra.length}/50 caracteres
                         </p>
                     </div>
@@ -245,8 +222,8 @@ function CriacaoPerson() {
                             maxLength={200}
                             placeholder="Aparecerá no perfil do personagem"
                         ></textarea>
-                         <p className="text-gray-400 text-sm flex justify-end">
-                                {descricao.length}/500 caracteres
+                        <p className="text-gray-400 text-sm flex justify-end">
+                            {descricao.length}/500 caracteres
                         </p>
                     </div>
 
@@ -269,7 +246,7 @@ function CriacaoPerson() {
                             placeholder='Digite uma nova personalidade'
                         ></textarea>
                     </div>
-                    
+
                     <div>
                         <label htmlFor="regras">Regras</label>
                         <textarea 
@@ -308,13 +285,13 @@ function CriacaoPerson() {
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         hidden
-                                        onChange={(e) => converterFigurinha(e, index)}
+                                        onChange={(e) => converterFigurinha(e, index, figurinhas, setFigurinhas)}
                                     />
                                 </label>
                             );
                         })}
                     </section>
-                    
+
                     <input 
                         type="submit" 
                         value={isSubmitting ? "Criando..." : "Criar"} 

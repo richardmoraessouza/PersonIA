@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './App.module.css';
-import { useAuth } from './components/AuthContext/AuthContext';
+import { useAuth } from './hooks/AuthContext/AuthContext';
 import Menu from './components/Menu/Menu';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_URL } from './config/api';

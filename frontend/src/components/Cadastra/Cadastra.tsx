@@ -1,5 +1,5 @@
 import { useState } from "react"
-import Authetication from "../Authetication/Authetication"
+import Authetication from "../../page/Authetication/Authetication"
 
 function Cadastra() {
     const [verificar, setVerificar] = useState<boolean>(false)

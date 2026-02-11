@@ -1,22 +1,86 @@
 import { useState } from 'react';
 import styles from './CampoDePesquisar.module.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_URL } from '../../config/api';
 
-function CampoDePesquisar() {
-  const [pesquisa, setPesquisa] = useState<string>("");
+interface CampoDePesquisarProps {
+  onSearch?: (resultados: any[]) => void;
+  onSearchStart?: () => void;
+}
+
+function CampoDePesquisar({ onSearch, onSearchStart }: CampoDePesquisarProps) {
+  const [nomePersonagem, setNomePersonagem] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(`/teste`)
+
+    if (!nomePersonagem.trim()) return;
+
+    const pesquisa = async () => {
+      setIsLoading(true);
+      if (onSearchStart) {
+        onSearchStart();
+      }
+
+      try {
+        const url = `${API_URL}/buscarPersonagem?nomePersonagem=${encodeURIComponent(nomePersonagem)}`;
+        
+        const res = await axios.get(url);
+        
+        if (res.data.success) {
+          if (onSearch) {
+            onSearch(res.data.resultados || []);
+          } else {
+           navigate(`/procurar`, { 
+              state: { 
+                resultados: res.data.resultados || [],
+                termo: nomePersonagem
+              } 
+            });
+          }
+          setNomePersonagem("");
+        }
+
+      } catch (err) {
+        console.error("Erro ao Procurar o personagem:", err);
+        if (onSearch) {
+          onSearch([]);
+        } else {
+          navigate(`/procurar`, { state: { resultados: [] } });
+        }
+        setNomePersonagem("");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    pesquisa()
   }
 
   return (
     <section className={styles.campoPesquisar}>
         <form action="" onSubmit={handleSubmit}>
             <div className={styles.campoPesquisarContainer}>
-                <input type="text" value={pesquisa} onChange={(e) => setPesquisa(e.target.value)} placeholder="Procurar personagem" className={`${styles.input}`}/>
-                <button type='submit' className={`${styles.botaoPesquisar}`}><i className="fa-solid fa-magnifying-glass"></i></button>
+                <input 
+                  type="text" 
+                  value={nomePersonagem} 
+                  onChange={(e) => setNomePersonagem(e.target.value)} 
+                  placeholder="Procurar personagem" 
+                  className={`${styles.input}`}
+                  disabled={isLoading}
+                />
+                <button 
+                  type='submit' 
+                  className={`${styles.botaoPesquisar}`}
+                  disabled={isLoading}
+                >
+
+                <i className="fa-solid fa-magnifying-glass"></i>
+             
+                </button>
             </div>
         </form>
     </section>

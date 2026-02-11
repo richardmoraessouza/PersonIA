@@ -3,7 +3,9 @@ import styles from './CriacaoPerson.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../../config/api';
-import { useAuth } from '../AuthContext/AuthContext';
+import { useAuth } from '../../hooks/AuthContext/AuthContext';
+import { converterBase64, converterFigurinha } from '../../utils/CorverteImagem/corverteImagem';
+// import { converterBase64, converterFigurinha } from '../../utils/converteImagem/corverteImagem';
 
 function CriacaoPerson() {
     const [historia, setHistoria] = useState('');
@@ -26,7 +28,7 @@ function CriacaoPerson() {
     const personagemState = location.state?.personagem || null;
     const id = personagemState?.id;
 
-    const { token } = useAuth();
+    const { token, usuarioId } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,6 +39,14 @@ function CriacaoPerson() {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     const p = response.data.personagem;
+
+                    //Se o banco vier com array menor que 6, completamos aqui
+                    const figsDoBanco = p.figurinhas || [];
+                    const listaCompleta = [...figsDoBanco];
+                    while (listaCompleta.length < 6) {
+                        listaCompleta.push("");
+                    }
+                    
                     setNome(p.nome || '');
                     setGenero(p.genero || '');
                     setDescricao(p.descricao || '');
@@ -48,7 +58,7 @@ function CriacaoPerson() {
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
                     setBio(p.bio || '');
-                    setFigurinhas(p.figurinhas || ["", "", "", "", "", ""]);
+                    setFigurinhas(listaCompleta);
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
                     alert('Não foi possível carregar os dados do personagem.');
@@ -72,45 +82,6 @@ function CriacaoPerson() {
         fetchPersonagem();
     }, [modoEdicao, id, personagemState, token]);
 
-    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png", "image/jpg"];
-            if (!tiposPermitidos.includes(file.type)) {
-                alert("Apenas imagens PNG ou JPEG são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === "string") {
-                    setFotoia(reader.result);
-                } else {
-                    setFotoia('');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-        function converterFigurinha(e: React.ChangeEvent<HTMLInputElement>, index: number) {
-            const file = e.target.files?.[0];
-            if (file) {
-                const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
-                if (!tiposPermitidos.includes(file.type)) {
-                   alert("Apenas imagens PNG, JPEG ou WEBP são permitidas!");
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const novasFigurinhas = [...figurinhas];
-                    novasFigurinhas[index] = reader.result as string;
-                    setFigurinhas(novasFigurinhas);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -123,21 +94,27 @@ function CriacaoPerson() {
             return;
         }
 
-        try {
-            const data = { fotoia, nome, genero, personalidade, comportamento, estilo, historia, regras, descricao, tipo_personagem, figurinhas: figurinhas.filter(f => f && f.trim() !== ""), bio };
+         try {
+        // MUDANÇA AQUI: Enviamos o array 'figurinhas' completo (com as strings vazias)
+            const data = { 
+                fotoia, nome, personalidade, historia, regras, 
+                descricao, tipo_personagem, bio,
+                figurinhas 
+            };
+
             if (modoEdicao && id) {
                 await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
                 await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
             }
-            navigate(`/buscar`);
+
+            navigate(`/perfil/${usuarioId}`);
         } catch (err) {
-            console.error('Erro ao salvar personagem:', err);
-            alert('Ocorreu um erro ao salvar a personagem. Tente novamente.');
+            // ... erro
         } finally {
             setIsSubmitting(false);
         }
-    };
+};
 
     return (
         <main className={styles.criacaoPerson}>
@@ -154,7 +131,7 @@ function CriacaoPerson() {
                                 <label htmlFor="foto">
                                     <i className="fa-solid fa-pen cursor-pointer"></i>
                                 </label>
-                                <input id="foto" type="file" onChange={converterBase64} accept="image/*" className="hidden" />
+                                <input id="foto" type="file" onChange={(e) => converterBase64(e, setFotoia)} accept="image/*" className="hidden" />
                             </div>
                         </div>
                         <h1 className="text-center text-xl font-bold my-6">{modoEdicao ? "Editar personagem" : "Criar personagem"}</h1>
@@ -173,10 +150,10 @@ function CriacaoPerson() {
                         <input
                             type="text"
                             placeholder="Digite a bio do personagem"
-                            required
                             value={bio}
                             id="bio"
                             maxLength={50}
+                            onChange={(e) => setBio(e.target.value)}
                         />
                         <p className="text-gray-400 text-sm flex justify-end">
                             {bio.length}/50 caracteres
@@ -234,7 +211,6 @@ function CriacaoPerson() {
                             return (
                                 <label key={index} className={cardClass}>
                                     {img ? (
-                                        // Estado Preenchido: Mostra a imagem com a nova classe
                                         <img 
                                             src={img} 
                                             alt={`Figurinha ${index + 1}`} 
@@ -251,7 +227,7 @@ function CriacaoPerson() {
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         hidden
-                                        onChange={(e) => converterFigurinha(e, index)}
+                                        onChange={(e) => converterFigurinha(e, index, figurinhas, setFigurinhas)}
                                     />
                                 </label>
                             );

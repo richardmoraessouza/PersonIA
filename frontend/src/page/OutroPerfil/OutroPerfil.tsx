@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import styles from "./OutroPerfil.module.css";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../AuthContext/AuthContext";
-import ModalSeguidores from "../ModalSeguidores/ModalSeguidores";
+import { useAuth } from "../../hooks/AuthContext/AuthContext";
+import ModalSeguidores from "../../components/ModalSeguidores/ModalSeguidores";
 import { API_URL } from '../../config/api';
 
 interface OutroUsuario {

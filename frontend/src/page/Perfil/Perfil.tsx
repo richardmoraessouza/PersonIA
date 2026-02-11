@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import axios from 'axios';
-import { useAuth } from '../AuthContext/AuthContext';
+import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import ModalSeguidores from '../ModalSeguidores/ModalSeguidores';
+import ModalSeguidores from '../../components/ModalSeguidores/ModalSeguidores';
 import { API_URL } from '../../config/api';
-import CardUsuario from '../CardUsuario/CardUsuario';
+import CardUsuario from '../../components/CardUsuario/CardUsuario';
 
 interface UserUpdateResponse {
     success: boolean;

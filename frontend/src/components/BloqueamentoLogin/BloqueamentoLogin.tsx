@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../AuthContext/AuthContext";
+import { useAuth } from "../../hooks/AuthContext/AuthContext";
 
 const PublicRoute = () => {
   const { estaLogado, loading } = useAuth();

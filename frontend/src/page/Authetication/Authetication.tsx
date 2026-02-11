@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import styles from './Authetication.module.css';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../AuthContext/AuthContext.tsx';
+import { useAuth } from '../../hooks/AuthContext/AuthContext.tsx';
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import { API_URL } from '../../config/api';
+import { API_URL } from '../../config/api.ts';
 
 interface ErrorResponse {
     error: string;
