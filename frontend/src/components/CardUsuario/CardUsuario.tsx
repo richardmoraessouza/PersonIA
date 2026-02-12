@@ -91,7 +91,7 @@ function CardUsuario() {
                 className={styles.commentButton}
                 onClick={(e) => e.stopPropagation()}
               >
-                <span>5</span>
+                <span>0</span>
                 <i className="fa-solid fa-comment"></i>
               </button>
 
