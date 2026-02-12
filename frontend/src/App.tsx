@@ -93,10 +93,11 @@ function App() {
     nomeCriado();
   }, [personagem]);
 
-  // Busca personagem pelo ID da URL (evita race: sempre busca o personagem da rota atual)
+  // Busca personagem pelo ID da URL (trocar de personagem no menu atualiza aqui)
   useEffect(() => {
     if (id == null || isNaN(Number(id))) return;
     const numId = Number(id);
+    setPersonagem(null);
     let cancelado = false;
     const buscarPersonagemId = async () => {
       try {

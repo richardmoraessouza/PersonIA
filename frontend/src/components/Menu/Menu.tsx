@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import axios from 'axios';
 import { API_URL } from '../../config/api';
-import { useNavigate } from 'react-router-dom';
 
 type Personagem = {
     id: number;
@@ -25,7 +24,6 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const [favoritos, setFavoritos] = useState<Personagem[]>([]);
     const [procurarPersonagem, setProcurarPersonagem] = useState<string>('');
 
-    const navigate = useNavigate();
     const modalRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -49,10 +47,6 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
     function modalCondicao() {
         setModaOpen(prev => !prev);
-    }
-
-    function goPerson(id: number) {
-        navigate(`/personagem/${id}`);
     }
 
     // Carregar os personagens favoritados do banco de dados
@@ -164,12 +158,10 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                     ) : favoritosFiltrados.length > 0 ? (
                                         favoritosFiltrados.map((item) => (
                                             <li key={item.id}>
-                                                <button
+                                                <Link
+                                                    to={`/personagem/${item.id}`}
                                                     className="w-full flex items-center gap-2 p-1 hover:bg-[#2a2a2a] rounded transition-colors"
-                                                    onClick={() => {
-                                                        if (setPersonId) setPersonId(item.id);
-                                                        goPerson(item.id);
-                                                    }}
+                                                    onClick={() => setPersonId && setPersonId(item.id)}
                                                 >
                                                     <img
                                                         src={item.fotoia || '/image/semPerfil.jpg'}
@@ -177,7 +169,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                                         className='w-7 h-7 rounded-full object-cover'
                                                     />
                                                     <p className={styles.nomePersonagem}>{item.nome}</p>
-                                                </button>
+                                                </Link>
                                             </li>
                                         ))
                                     ) : (
