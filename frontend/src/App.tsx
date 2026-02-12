@@ -38,18 +38,25 @@ function App() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [personId, setPersonId] = useState<number>(29);
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [personId, setPersonId] = useState<number>(() => {
+    const n = id != null ? Number(id) : NaN;
+    return isNaN(n) ? 29 : n;
+  });
   const [menuOpen, setMenuOpen] = useState<boolean>(true);
   const [personagem, setPersonagem] = useState<Personagem | null>(null);
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
   const [nome, setNome] = useState<CriadorNome | null>(null);
 
-  const { usuarioId } = useAuth();
+  const { usuarioId, token } = useAuth(); // Adicione o token aqui
   const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
 
   const modalPerfil = () => setPerfilPerson(prev => !prev);
+
+  // ID numérico da URL (fonte da verdade para qual personagem mostrar)
+  const idNum = id != null ? Number(id) : NaN;
+  const personagemIdAtual = !isNaN(idNum) ? idNum : personId;
 
   // Gera ou recupera ID anônimo
   useEffect(() => {
@@ -58,9 +65,9 @@ function App() {
     }
   }, []);
 
-  // Sincroniza personId com o param da rota (quando existe)
+  // Sincroniza personId com o param da rota (para chat e menu)
   useEffect(() => {
-    if (id) {
+    if (id != null) {
       const parsed = Number(id);
       if (!isNaN(parsed) && parsed !== personId) {
         setPersonId(parsed);
@@ -69,7 +76,7 @@ function App() {
   }, [id]);
 
   // Limpa chat ao trocar de personagem
-  useEffect(() => setChatHistory([]), [personId]);
+  useEffect(() => setChatHistory([]), [personagemIdAtual]);
 
   // Busca nome do criador
   useEffect(() => {
@@ -86,18 +93,22 @@ function App() {
     nomeCriado();
   }, [personagem]);
 
-  // Busca personagem pelo ID
+  // Busca personagem pelo ID da URL (evita race: sempre busca o personagem da rota atual)
   useEffect(() => {
+    if (id == null || isNaN(Number(id))) return;
+    const numId = Number(id);
+    let cancelado = false;
     const buscarPersonagemId = async () => {
       try {
-        const res = await axios.get(`${API_URL}/personagens/${personId}`);
-        setPersonagem(res.data);
+        const res = await axios.get(`${API_URL}/personagens/${numId}`);
+        if (!cancelado) setPersonagem(res.data);
       } catch (err) {
-        console.error('Erro ao carregar os dados do personagem', err);
+        if (!cancelado) console.error('Erro ao carregar os dados do personagem', err);
       }
     };
     buscarPersonagemId();
-  }, [personId]);
+    return () => { cancelado = true; };
+  }, [id]);
 
   // Scroll automático
   useEffect(() => {
@@ -106,21 +117,36 @@ function App() {
 
   const enviarMensagem = async () => {
     if (!message.trim() || !personagem) return;
-
+  
     const userMsg = message;
     setMessage('');
     setChatHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
-
+  
     try {
       setIsLoading(true);
-
+  
       const payload: any = { message: userMsg };
-      if (usuarioId) payload.userId = usuarioId;
-      else payload.anonId = localStorage.getItem("anonId");
-
-      const res = await axios.post<ChatResponse>(`http://localhost:3000/chat/${personId}`, payload);
+      
+      // Define se envia ID do usuário logado ou ID anônimo
+      if (usuarioId) {
+        payload.userId = usuarioId;
+      } else {
+        payload.anonId = localStorage.getItem("anonId");
+      }
+  
+      // ADIÇÃO DO HEADER DE AUTORIZAÇÃO AQUI:
+      const res = await axios.post<ChatResponse>(
+        `${API_URL}/chat/${personagemIdAtual}`, 
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // Envia o token para o servidor
+          }
+        }
+      );
+  
       const botReply = res.data;
-
+  
       setChatHistory(prev => [
         ...prev,
         {
@@ -129,17 +155,22 @@ function App() {
           figurinha: botReply.figurinha || null
         }
       ]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao conectar com o servidor:', err);
+      
+      // Se o erro for 401, pode ser que o token expirou
+      const msgErro = err.response?.status === 401 
+        ? 'Sua sessão expirou. Por favor, faça login novamente.' 
+        : 'Ocorreu um erro, tente novamente mais tarde.';
+  
       setChatHistory(prev => [
         ...prev,
-        { sender: 'bot', text: 'Ocorreu um erro, tente novamente mais tarde.', isError: true }
+        { sender: 'bot', text: msgErro, isError: true }
       ]);
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading) enviarMensagem();
   };

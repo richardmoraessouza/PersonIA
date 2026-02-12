@@ -27,6 +27,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
     const navigate = useNavigate();
     const modalRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Filtra os favoritos com base no que o usuário digita na busca
     const favoritosFiltrados = favoritos.filter((personagem) =>
@@ -51,7 +52,6 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     }
 
     function goPerson(id: number) {
-        console.log('Menu.goPerson: navegando para /personagem/', id);
         navigate(`/personagem/${id}`);
     }
 
@@ -70,7 +70,6 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                 });
 
                 const data = Array.isArray(res.data) ? res.data : [];
-                console.log("Favoritos carregados no menu:", data);
                 setFavoritos(data);
             } catch (err) {
                 console.error("Erro ao carregar favoritos no menu:", err);
@@ -86,8 +85,12 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     // Fecha o menu ao clicar fora dele (mobile)
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (window.innerWidth > 768) return; 
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+            if (window.innerWidth > 768) return;
+            const target = event.target as Node;
+            const clickedOutsideModal = modalRef.current && !modalRef.current.contains(target);
+            const clickedMenuButton = buttonRef.current && buttonRef.current.contains(target);
+
+            if (clickedOutsideModal && !clickedMenuButton) {
                 setModaOpen(false);
             }
         };
@@ -100,7 +103,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
 
     return (
         <>
-            <button onClick={modalCondicao} className={styles.btnMenu}>
+            <button ref={buttonRef} onClick={modalCondicao} className={styles.btnMenu}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     strokeWidth="2" stroke="currentColor" className="w-6 h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -120,9 +123,9 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
                             <ul className={styles.menuItems}>
-                                <li><Link to={'/explorar'}><i className="fa-solid fa-magnifying-glass"></i> Buscar</Link></li>
+                                <li><Link to={'/explorar'}><i className="fa-solid fa-compass"></i>Buscar</Link></li>
                                 <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar personagem</Link></li>
-                                <li><Link to={'/person-ficticio'}><i className="fa-solid fa-user"></i> Fictício</Link></li>
+                                <li><Link to={'/person-ficticio'}><i className="fa-solid fa-hat-wizard"></i> Fictício</Link></li>
 
                                 {!estaLogado && (
                                     <>
@@ -141,7 +144,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         <input 
                             type="text" 
                             onChange={(e) => setProcurarPersonagem(e.target.value)}
-                            placeholder="Buscar favoritos..." 
+                            placeholder="Procurar" 
                             className={styles.inputProcurar} 
                         />
                     </div>

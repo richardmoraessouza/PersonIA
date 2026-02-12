@@ -39,7 +39,7 @@
 
 .interactions {
   display:flex;
-  gap:10px;
+  gap: 8px;
   margin-top:8px;
   color:var(--textoSecundario);
   font-size: 11px;
@@ -54,8 +54,8 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;;
-    padding: 4px 8px;
+    gap: 3px;;
+    padding: 4px 4px;
 }
 
 .likeButton svg {

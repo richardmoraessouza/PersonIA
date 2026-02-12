@@ -68,15 +68,6 @@ function BuscarPersonagem() {
                                 <img className={styles.avatar} src={p.fotoia || '/image/semPerfil.jpg'} alt={p.nome} />
 
                                 <div className={styles.interactions}>
-                                    <button className={styles.favorito} onClick={(e) => handleToggleFavorito(e, p.id)}>
-                                        <i className={`fa ${p.favoritadoPeloUsuario ? 'fa-solid fa-star' : 'fa-regular fa-star'}`} 
-                                        style={{ 
-                                            cursor: 'pointer', 
-                                            transition: 'all 0.3s',
-                                            color: p.favoritadoPeloUsuario ? '#FFD700' : '#888'
-                                        }}
-                                        ></i>
-                                    </button>
 
                                     <button 
                                         className={`${styles.likeButton} ${p.curtidoPeloUsuario ? styles.active : ''}`}
@@ -97,6 +88,15 @@ function BuscarPersonagem() {
                                         <span>0 </span> <i className="fa-solid fa-comment"></i> 
                                     </button>
 
+                                    <button className={styles.favorito} onClick={(e) => handleToggleFavorito(e, p.id)}>
+                                        <i className={`fa ${p.favoritadoPeloUsuario ? 'fa-solid fa-star' : 'fa-regular fa-star'}`} 
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            transition: 'all 0.3s',
+                                            color: p.favoritadoPeloUsuario ? '#FFD700' : '#888'
+                                        }}
+                                        ></i>
+                                    </button>
                                 </div>
                             </div>
 

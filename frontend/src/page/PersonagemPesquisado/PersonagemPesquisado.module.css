@@ -1,0 +1,243 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 0px;
+  width: 100vw;
+  height: 100dvh
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+
+.activeButton {
+  background: #111827;
+  color: #fff;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.inactiveButton {
+  background: transparent;
+  color: #9ca3af;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 4px solid rgba(255,255,255,0.06);
+  border-top-color: #9ca3af;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.gridCards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 90%;
+}
+
+.card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--fundoClaro);
+  border-radius: 10px;
+  align-items: flex-start;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+  cursor: pointer;
+}
+
+.cardImageContainer {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.cardImage {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cardNome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f9fafb;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.linkIcon {
+  color: #9ca3af;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.cardBio {
+  margin-top: 6px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.cardMeta {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.creator {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover {
+  background: rgba(255,255,255,0.03);
+  color: #ffffff;
+}
+
+.count {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: 6px;
+}
+
+/* estilos similares aos usados em CardUsuario */
+.interactions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.likeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.likeButton span {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.likeButton:hover { background: rgba(255,255,255,0.03); color: #fff }
+
+.active svg { filter: drop-shadow(0 0 2px rgba(255,75,75,0.2)); }
+
+.commentButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.favorito { background: transparent; border: none; padding: 6px; }
+
+.btnConversarContainer { margin-top: 10px; }
+.btnConversar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
+.emptyMessageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.emptyMessage {
+  color: #9ca3af;
+  background: rgba(255,255,255,0.02);
+  padding: 14px 18px;
+  border-radius: 8px;
+}
+
+/* small responsive tweaks */
+@media (max-width: 640px) {
+  .card {
+    padding: 10px;
+  }
+
+  .cardImage, .cardImageContainer {
+    width: 56px;
+    height: 56px;
+  }
+
+  .cardNome { font-size: 15px; }
+}
+
+@media (min-width: 641px) {
+ .gridCards {
+    width: 50%;
+ }
+ 
+  
+}
