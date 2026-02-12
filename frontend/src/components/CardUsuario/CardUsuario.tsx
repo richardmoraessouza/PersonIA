@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
-import { usePersonagensUsuario } from "../../hooks/UserPerson/UserPerson";
+import { useMeusPersonagens } from "../../hooks/UserPerson/UserPerson";
 import styles from "./CardUsuario.module.css";
 
 interface Personagem {
@@ -22,7 +22,7 @@ function CardUsuario() {
   const navigate = useNavigate();
 
   const { personagens, like, favorito } =
-    usePersonagensUsuario(usuarioId, token || '');
+    useMeusPersonagens(usuarioId, token || '');
 
   return (
     <section className={styles.cardsPersonagens}>
