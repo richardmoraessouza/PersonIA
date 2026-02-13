@@ -101,49 +101,65 @@ function Authentication({ verificar }: SituacaoProps) {
     
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoginErro(''); 
-        
-        
-        try {
-            if (condicaoUsuario) { // Rota de ENTRAR na conta
+    e.preventDefault();
+    setLoginErro(''); 
+    
+    try {
+        if (condicaoUsuario) { 
+            // LOGIN
+            const res = await axios.post(`${API_URL}/entrar`, { gmail });
+            login(res.data); 
+            navigate('/explorar', { replace: true });
+        } else { 
+            // CADASTRO
+            const res = await axios.post(`${API_URL}/cadastra`, { 
+                gmail, 
+                nome, 
+                imgPerfil 
+            });
 
-                const res = await axios.post(`${API_URL}/entrar`, { gmail });
-                const usuarioData = res.data; 
-                login(usuarioData); 
-                navigate('/', { replace: true });
-                // localStorage.removeItem('ultimoGmail');
-                
-            } else { // Rota de CADASTRA
-                await axios.post(`${API_URL}/cadastra`, { gmail, nome, imgPerfil })
-                localStorage.setItem('ultimoGmail', gmail); 
-                navigate('/entrar', { replace: true });
-            }
+            const dadosParaLogin = res.data.usuario ? res.data.usuario : { 
+                gmail: gmail, 
+                nome: nome, 
+                foto_perfil: imgPerfil || '/image/semPerfil.jpg' 
+            };
 
-        } catch (err) {
-            console.error(err);
-            
-            if (axios.isAxiosError<ErrorResponse>(err) && err.response) {
-                setLoginErro(err.response.data.error || 'Credenciais inválidas.');
-            } else {
-                setLoginErro("Erro de conexão. Tente novamente mais tarde.");
-            }
+            login(dadosParaLogin);
+            navigate('/explorar', { replace: true });
+        }
+    } catch (err: any) {
+        console.error("Erro detalhado:", err.response?.data || err.message);
+        
+        if (axios.isAxiosError(err) && err.response) {
+            setLoginErro(err.response.data.error || "Erro desconhecido. Tente novamente.");
+        } else {
+            setLoginErro("Erro de conexão. Tente novamente mais tarde.");
         }
     }
-    
+}
     return (
         <main className={`flex flex-col justify-center items-center ${styles.authentication}`}>
             {!gmail && (
-            <div className={styles.modalBemVindo}>
-                <img src="/image/PersonIA.png" alt="logo" />
-                <h2>Bem-vindo ao PersonIA</h2>
-                <div className="google-button-wrapper">
+            <div className={styles.modalBemVindoAlt}>
+                <div className={styles.topRow}>
+                    <div className={styles.logoWrap}>
+                        <img src="/image/PersonIA.png" alt="logo" />
+                    </div>
+                    <div className={styles.titleGroup}>
+                        <h2 className={styles.title}>Bem-vindo ao <span>PersonIA</span></h2>
+                        <p className={styles.subtitle}>Crie ou entre na sua conta usando seu Gmail — rápido e seguro.</p>
+                    </div>
+                </div>
+
+                <div className={styles.googleButtonWrapper}>
                     <GoogleLogin
                         onSuccess={onSuccess}
                         onError={onError}
                         auto_select={true}
-                                />
+                    />
                 </div>
+
+                <small className={styles.privacy}>Ao entrar, você concorda com nossos termos e política de privacidade.</small>
             </div>
             )}
 

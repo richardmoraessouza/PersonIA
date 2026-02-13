@@ -1,59 +1,150 @@
 .authentication {
-    /* background-color: #F4F4F4; */
     width: 100vw;
     height: 100vh;
-    /* color: var(--fundoEscuro); */
+    display: flex;
     justify-content: center;
     align-items: center;
+    background: linear-gradient(180deg, rgba(3,7,18,0.03), rgba(255,255,255,0.02));
 }
 
 .authentication h1 {
     font-size: 35px;
-    margin: 10px 0px 20px 0px;
+    margin: 10px 0 20px 0;
 }
 
 .modalBemVindo {
+    width: 92%;
+    max-width: 520px;
+    background: linear-gradient(135deg, rgba(58,50,160,0.95), rgba(37,117,252,0.95));
+    color: #fff;
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(12, 24, 60, 0.35);
+    margin: 40px auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    background: linear-gradient(135deg, #6a11cb, #2575fc); 
-    color: white;
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    width: 90%;
-    max-width: 400px;
-    margin: 50px auto;
-    text-align: center;
+    gap: 18px;
+    transform: translateY(0);
+    transition: transform .28s ease, box-shadow .28s ease;
+}
+
+.modalBemVindo:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 60px rgba(12,24,60,0.45);
+}
+
+.modalBemVindoAlt {
+    width: 92%;
+    max-width: 520px;
+    background: rgba(255,255,255,0.98);
+    color: #0b1220;
+    padding: 26px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+    margin: 40px auto;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border: 1px solid rgba(15,23,42,0.04);
 }
 
-.modalBemVindo img {
-    width: 100%;
-    height: 220px;
+.modalBemVindoAlt .topRow {
+    gap: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modalBemVindoAlt .logoWrap img {
+    width: 74px;
+    height: 74px;
+    border-radius: 12px;
+    box-shadow: none;
+    border: 1px solid rgba(2,6,23,0.04);
+}
+
+.modalBemVindoAlt .title {
+    color: #071029;
+}
+
+.modalBemVindoAlt .title span {
+    color: #0B5ED7;
+}
+
+.modalBemVindoAlt .subtitle {
+    color: #324055;
+    font-size: 0.95rem;
+}
+
+.modalBemVindoAlt .googleButtonWrapper > * {
+    max-width: 240px;
+}
+
+.modalBemVindoAlt .privacy {
+    color: #66748a;
+}
+
+.topRow {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.logoWrap img {
+    width: 86px;
+    height: 86px;
     object-fit: cover;
-    padding: 10px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
-.modalBemVindo h2 {
-    font-size: 1.8rem;
-    font-weight: bold;
+.titleGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 1.6rem;
     margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    text-align: center;
 }
 
-.modalBemVindo p {
-    font-size: 1rem;
-    margin: 0;
+.title span {
+    color: #FFD36E;
 }
 
+.subtitle {
+    margin: 4px 0 0 0;
+    color: rgba(255,255,255,0.92);
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
 
-.modalBemVindo .google-button-wrapper {
-    margin-top: 15px;
+.googleButtonWrapper {
+    margin-top: 6px;
     width: 100%;
     display: flex;
     justify-content: center;
+}
+
+.googleButtonWrapper > * {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.privacy {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.85);
+    margin-top: 4px;
+    opacity: 0.9;
 }
 
 .verificarUsuario {
@@ -64,7 +155,6 @@
     max-width: 700px;
     min-width: 200px;
 }
-
 
 .verificarUsuario input {
     margin: 2px 0px 10px 0px;
@@ -101,4 +191,26 @@
 .espaco2 {
     padding: 20px;
     height: 200px;
+}
+
+@media (min-width: 553px) {
+    .modalBemVindoAlt .topRow {
+        gap: 12px;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .title {
+        text-align: left;
+    }
+
+
+}
+
+@media (min-width: 453px) {
+    .modalBemVindoAlt .googleButtonWrapper > * {
+        max-width: 400px !important;
+        display: flex;
+        justify-content: center
+    }
 }

@@ -49,16 +49,14 @@ function App() {
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
   const [nome, setNome] = useState<CriadorNome | null>(null);
 
-  const { usuarioId, token } = useAuth(); // Adicione o token aqui
+  const { usuarioId, token } = useAuth();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const modalPerfil = () => setPerfilPerson(prev => !prev);
 
-  // ID numérico da URL (fonte da verdade para qual personagem mostrar)
   const idNum = id != null ? Number(id) : NaN;
   const personagemIdAtual = !isNaN(idNum) ? idNum : personId;
 
-  // Gera ou recupera ID anônimo
   useEffect(() => {
     if (!localStorage.getItem("anonId")) {
       localStorage.setItem("anonId", crypto.randomUUID());
@@ -159,7 +157,6 @@ function App() {
     } catch (err: any) {
       console.error('Erro ao conectar com o servidor:', err);
       
-      // Se o erro for 401, pode ser que o token expirou
       const msgErro = err.response?.status === 401 
         ? 'Sua sessão expirou. Por favor, faça login novamente.' 
         : 'Ocorreu um erro, tente novamente mais tarde.';

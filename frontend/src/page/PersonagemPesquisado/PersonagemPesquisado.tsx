@@ -49,8 +49,8 @@ function PersonagemPesquisado() {
     }
 
     const toggleLike = (id: number) => {
-        if (!estaLogado || !usuarioId || !token) {
-            navigate('/entrar');
+        if (!usuarioId || !token) {
+            console.log('Usuário não logado - redirecionar para login ou avisar');
             return;
         }
 
@@ -73,8 +73,8 @@ function PersonagemPesquisado() {
     }
 
     const toggleFavorite = (id: number) => {
-        if (!estaLogado || !usuarioId || !token) {
-            navigate('/entrar');
+        if (!usuarioId || !token) {
+            console.log('Usuário não logado - redirecionar para login ou avisar');
             return;
         }
 
@@ -91,47 +91,41 @@ function PersonagemPesquisado() {
         })();
     }
 
-    // Carregar likes e favoritos do usuário ao logar (persiste após refresh do site)
+    // Carregar likes/favoritos do usuário e contagens de likes para os resultados
     useEffect(() => {
-        if (!estaLogado || !usuarioId || !token) {
-            setLikedIds([]);
-            setFavoritedIds([]);
-            return;
-        }
         let mounted = true;
-        (async () => {
-            try {
-                const [userLikes, userFavs] = await Promise.all([
-                    buscarLikesUsuario(usuarioId, token).catch(() => []),
-                    buscarFavoritosUsuario(usuarioId, token).catch(() => []),
-                ]);
-                if (!mounted) return;
-                setLikedIds(Array.isArray(userLikes) ? userLikes : []);
-                setFavoritedIds(Array.isArray(userFavs) ? userFavs : []);
-            } catch (err) {
-                console.error('Erro ao carregar likes/favoritos do usuário', err);
-            }
-        })();
-        return () => { mounted = false; };
-    }, [estaLogado, usuarioId, token]);
+        const loadMeta = async () => {
+            if (!resultados || resultados.length === 0) return;
 
-    // Contagens de likes por personagem (quando há resultados)
-    useEffect(() => {
-        if (!resultados || resultados.length === 0) return;
-        let mounted = true;
-        (async () => {
             try {
-                const counts = await Promise.all(resultados.map((r: any) => buscarQuantidadeLikes(r.id).catch(() => 0)));
+                // buscar contagens de likes para cada personagem
+                const counts = await Promise.all(resultados.map(r => buscarQuantidadeLikes(r.id).catch(() => 0)));
                 if (!mounted) return;
                 const map: Record<number, number> = {};
-                resultados.forEach((r: any, i: number) => { map[r.id] = counts[i] || 0; });
+                resultados.forEach((r, i) => map[r.id] = counts[i] || 0);
                 setLikesCount(map);
+
+                // se usuário está logado, buscar seus likes e favoritos
+                if (estaLogado && usuarioId && token) {
+                    const [userLikes, userFavs] = await Promise.all([
+                        buscarLikesUsuario(usuarioId, token).catch(() => []),
+                        buscarFavoritosUsuario(usuarioId, token).catch(() => []),
+                    ]);
+                    if (!mounted) return;
+                    setLikedIds(userLikes || []);
+                    setFavoritedIds(userFavs || []);
+                } else {
+                    setLikedIds([]);
+                    setFavoritedIds([]);
+                }
             } catch (err) {
-                console.error('Erro ao carregar contagem de likes', err);
+                console.error('Erro ao carregar metadados dos personagens', err);
             }
-        })();
-        return () => { mounted = false; };
-    }, [resultados]);
+        }
+
+        loadMeta();
+        return () => { mounted = false; }
+    }, [resultados, estaLogado, usuarioId, token]);
 
     // Buscar nomes dos criadores quando não estiverem presentes no objeto do personagem
     useEffect(() => {
@@ -193,11 +187,7 @@ function PersonagemPesquisado() {
                 <>
                     <article className={styles.gridCards} >
                         {resultados.map((personagem: any) => (
-                            <div
-                                key={personagem.id}
-                                className={styles.card}
-                                onClick={() => navigate(`/personagem/${personagem.id}`, { state: { personagem } })}
-                            >
+                            <div key={personagem.id} className={styles.card} onClick={() => navigate(`/personagem/${personagem.id}`)}>
                                 <div className={styles.cardImageContainer}>
                                     {personagem.fotoia ? (
                                         <img 
