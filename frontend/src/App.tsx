@@ -13,7 +13,6 @@ interface Personagem {
   descricao?: string;
   criador?: string;
   usuario_id: number;
-  figurinhas?: string[];
   bio?: string;
   [key: string]: any;
 }
@@ -24,23 +23,14 @@ interface CriadorNome {
 
 interface ChatResponse {
   reply: string;
-  figurinha?: {
-    url: string;
-    sentiment?: string;
-    id?: number;
-  } | null;
+  figurinha?: string;
 }
-
 
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
   isError?: boolean;
-  figurinha?: {
-    url: string;
-    sentiment?: string;
-    id?: number;
-  } | null
+  figurinha?: string | null;
 }
 
 function App() {
@@ -58,14 +48,21 @@ function App() {
   const [perfilPerson, setPerfilPerson] = useState<boolean>(false);
   const [nome, setNome] = useState<CriadorNome | null>(null);
 
-  const { usuarioId, token } = useAuth();
+  const { usuarioId, token } = useAuth(); // Adicione o token aqui
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const modalPerfil = () => setPerfilPerson(prev => !prev);
 
+  // ID numérico da URL (fonte da verdade para qual personagem mostrar)
   const idNum = id != null ? Number(id) : NaN;
-  const personagemIdAtual = !isNaN(idNum) ? idNum : personId;
+  const personagemId = !isNaN(idNum) ? idNum : personId;
 
+  if (!personagemId) {
+  console.error("personagemId inválido! Abortando envio.");
+  return;
+}
+
+  // Gera ou recupera ID anônimo
   useEffect(() => {
     if (!localStorage.getItem("anonId")) {
       localStorage.setItem("anonId", crypto.randomUUID());
@@ -83,7 +80,7 @@ function App() {
   }, [id]);
 
   // Limpa chat ao trocar de personagem
-  useEffect(() => setChatHistory([]), [personagemIdAtual]);
+  useEffect(() => setChatHistory([]), [personagemId]);
 
   // Busca nome do criador
   useEffect(() => {
@@ -124,61 +121,49 @@ function App() {
   }, [chatHistory, isLoading]);
 
   const enviarMensagem = async () => {
-    if (!message.trim() || !personagem) return;
-  
-    const userMsg = message;
-    setMessage('');
-    setChatHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
-  
-    try {
-      setIsLoading(true);
-  
-      const payload: any = { message: userMsg };
-      
-      if (usuarioId) {
-        payload.userId = usuarioId;
-      } else {
-        payload.anonId = localStorage.getItem("anonId");
-      }
-  
-      const res = await axios.post<any>(
-        `http://localhost:3000/chat/${personagemIdAtual}`, 
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-  
-      const botReply = res.data;
-  
-      setChatHistory(prev => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: botReply.reply,
-          figurinha: typeof botReply.figurinha === 'string' 
-            ? { url: botReply.figurinha } 
-            : botReply.figurinha || null
-        }
-      ]);
+   if (!message.trim() || !personagem) return;
 
-    } catch (err: any) {
-      console.error('Erro ao conectar com o servidor:', err);
-      
-      const msgErro = err.response?.status === 401 
-        ? 'Sua sessão expirou. Por favor, faça login novamente.' 
-        : 'Ocorreu um erro, tente novamente mais tarde.';
-  
-      setChatHistory(prev => [
-        ...prev,
-        { sender: 'bot', text: msgErro, isError: true }
-      ]);
-    } finally {
-      setIsLoading(false);
+
+  const userMsg = message;
+  setMessage('');
+  setChatHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
+
+  try {
+    setIsLoading(true);
+
+    const payload: any = { message: userMsg };
+    if (usuarioId) {
+      payload.userId = usuarioId;
+    } else {
+      payload.anonId = localStorage.getItem("anonId");
     }
-  };
+
+    const res = await axios.post<ChatResponse>(
+      `${API_URL}/chat/${personagemId}`,
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const botReply = res.data;
+    setChatHistory(prev => [
+      ...prev,
+      { sender: 'bot', text: botReply.reply, figurinha: botReply.figurinha || null }
+    ]);
+
+  } catch (err: any) {
+    console.error('Erro ao conectar com o servidor:', err);
+    const msgErro = err.response?.status === 401
+      ? 'Sua sessão expirou. Faça login novamente.'
+      : 'Ocorreu um erro, tente novamente mais tarde.';
+    setChatHistory(prev => [...prev, { sender: 'bot', text: msgErro, isError: true }]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading) enviarMensagem();
   };
@@ -252,45 +237,24 @@ function App() {
           {/* Chat */}
           <section className={styles.conversas}>
             {chatHistory.map((msg, idx) => (
-              <article 
-                key={idx} 
-                className={`${styles.message} ${
-                  msg.sender === 'user' ? styles.userMessage : styles.botMessage
-                }`}
-              >
-                 {/* Dentro do chatHistory.map */}
-    <div className={`${styles.bubble} ${msg.isError ? styles.erroMensagem : ''}`}>
-      
-      {/* CORREÇÃO: Só mostra o texto se NÃO começar com [FIGURINHA] ou se não for um código gigante */}
-      {!msg.text.includes('data:image') && <p>{msg.text}</p>}
-
-      {msg.figurinha && (
-        <div className="w-full flex items-center justify-center">
-          <img 
-            src={msg.figurinha.url} 
-            alt="figurinha" 
-            className={styles.figurinha}
-          />
-        </div>
-      )}
-    </div>
+              <article key={idx} className={`${styles.message} ${msg.sender === 'user' ? styles.userMessage : styles.botMessage}`}>
+                <div className={`${styles.bubble} ${msg.isError ? styles.erroMensagem : ''}`}>
+                  <p>{msg.text}</p>
+                  <div className='w-full flex items-center justify-center'>{msg.figurinha && <img src={msg.figurinha} alt="figurinha" className={styles.figurinha} />}</div>
+                </div>
               </article>
             ))}
 
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>
                 <div className={styles.bubble}>
-                  <div className={styles.typingIndicator}>
-                    <span></span><span></span><span></span>
-                  </div>
+                  <div className={styles.typingIndicator}><span></span><span></span><span></span></div>
                 </div>
               </article>
             )}
-
             <div className={styles.espaco2}></div>
             <div ref={chatEndRef}></div>
           </section>
-
 
           {/* Input de mensagem */}
           <div className={`fixed bottom-8 ${styles.containerMensagem}`}>

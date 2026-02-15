@@ -19,7 +19,6 @@ interface Seguidor {
 }
 
 function OutroPerfil() {
-
     const [usuarioInfor, setUsuarioInfor] = useState<OutroUsuario | null>(null);
     const [listaSeguidores, setListaSeguidores] = useState<Seguidor[]>([]);
     const [listaSeguindo, setListaSeguindo] = useState<Seguidor[]>([]);
@@ -27,7 +26,6 @@ function OutroPerfil() {
     const [abrirSeguidores, setAbrirSeguidores] = useState<boolean>(false);
     const [abrirSeguindo, setAbrirSeguindo] = useState<boolean>(false);
 
-    // Pega o id do usuário e do usuario visitado
     const { id } = useParams<{ id: string }>();
     const { usuarioId } = useAuth();
 
@@ -56,39 +54,47 @@ function OutroPerfil() {
         fetchData();
     }, [id, usuarioId]);
 
-    // Função para seguir/deixar de seguir o usuário
     const seguirUsuario = async () => {
-        try {
-            if (estaSeguindo) {
-                await axios.post(`${API_URL}/deixar-de-seguir`, {
-                    seguidor_id: Number(usuarioId),
-                    seguido_id: Number(id),
-                });
-                setEstaSeguindo(false);
-                setListaSeguidores(prev => prev.filter(s => s.id !== Number(usuarioId)));
-            } else {
-                await axios.post(`${API_URL}/seguir`, {
-                    seguidor_id: Number(usuarioId),
-                    seguido_id: Number(id),
-                });
+    const token = localStorage.getItem("token"); 
 
-                const res = await axios.get(`${API_URL}/perfil/${usuarioId}`);
-
-                setEstaSeguindo(true);
-                setListaSeguidores(prev => {
-                    if (prev.some(s => s.id === Number(usuarioId))) return prev;
-                    return [...prev, {
-                        id: Number(usuarioId),
-                        nome: res.data.nome,
-                        foto_perfil: res.data.foto_perfil
-                    }];
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao seguir/deixar de seguir usuário:", error);
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
         }
     };
 
+    try {
+        if (estaSeguindo) {
+ 
+            await axios.post(`${API_URL}/deixar-de-seguir`, {
+                seguidor_id: Number(usuarioId),
+                seguido_id: Number(id),
+            }, config);
+
+            setEstaSeguindo(false);
+            setListaSeguidores(prev => prev.filter(s => s.id !== Number(usuarioId)));
+        } else {
+            await axios.post(`${API_URL}/seguir`, {
+                seguidor_id: Number(usuarioId),
+                seguido_id: Number(id),
+            }, config);
+
+            const res = await axios.get(`${API_URL}/perfil/${usuarioId}`, config);
+
+            setEstaSeguindo(true);
+            setListaSeguidores(prev => {
+                if (prev.some(s => s.id === Number(usuarioId))) return prev;
+                return [...prev, {
+                    id: Number(usuarioId),
+                    nome: res.data.nome,
+                    foto_perfil: res.data.foto_perfil
+                }];
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao seguir/deixar de seguir usuário:", error);
+    }
+};
     return (
         <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
             <section className={styles.containerItemsPerfil}>

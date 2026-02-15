@@ -33,7 +33,7 @@ function CriacaoPerson() {
         const fetchPersonagem = async () => {
             if (modoEdicao && id) {
                 try {
-                    const response = await axios.get(`http://localhost:3000/dadosPersonagem/${id}`, {
+                    const response = await axios.get(`${API_URL}/dadosPersonagem/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     const p = response.data.personagem;
@@ -97,7 +97,7 @@ function CriacaoPerson() {
             };
 
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const url = modoEdicao ? `${API_URL}/editarPerson/${id}` : `http://localhost:3000/criacao`;
+            const url = modoEdicao ? `${API_URL}/editarPerson/${id}` : `${API_URL}/criacao`;
             
             console.log("Token enviado:", token);
             if (modoEdicao) {
