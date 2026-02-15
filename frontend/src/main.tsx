@@ -2,8 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
-
 import { AuthProvider } from "./hooks/AuthContext/AuthContext.tsx";
+import { FavoritesProvider } from "./hooks/FavoritesContext/FavoritesContext.tsx";
 import App from "./App";
 import NoLayout from "./components/NoLayout/NoLayout.tsx";
 import Layout from "./components/Layout/Layout";
@@ -19,7 +19,7 @@ import Person_Ficticio from './page/Person_Ficticio/Person_Ficticio.tsx';
 import Explorar from "./page/Explorar/Explorar.tsx";
 import PersonagemPesquisado from "./page/PersonagemPesquisado/PersonagemPesquisado.tsx";
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const CLIENT_ID = '468506770340-qbj9keh8dkeu2467qtq207ob1to3esog.apps.googleusercontent.com';
 
 const router = createBrowserRouter([
   // Rotas com layout principal
@@ -89,7 +89,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={CLIENT_ID}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <FavoritesProvider>
+          <RouterProvider router={router} />
+        </FavoritesProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
   </StrictMode>

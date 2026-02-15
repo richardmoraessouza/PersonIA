@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import ModalSeguidores from '../../components/ModalSeguidores/ModalSeguidores';
 import { API_URL } from '../../config/api';
 import CardUsuario from '../../components/CardUsuario/CardUsuario';
+import { converterBase64 } from '../../utils/CorverteImagem/corverteImagem';
 
 interface UserUpdateResponse {
     success: boolean;
@@ -164,24 +165,6 @@ function Perfil() {
         }
     };
 
-    const handleFotoPerfilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const MAX_SIZE_MB = 5;
-            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-                alert(`Máximo ${MAX_SIZE_MB}MB`);
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImgPerfil(reader.result as string);
-                // enviar para API
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     return (
         <main className={`${styles.containerPerfil} min-h-screen flex flex-col items-center gap-10`}>
         <section className={styles.containerItemsPerfil}>
@@ -246,7 +229,7 @@ function Perfil() {
                                 <label htmlFor="foto" title="Alterar foto">
                                     <i className="fa-solid fa-pen cursor-pointer"></i>
                                 </label>
-                                <input id="foto" type="file" accept="image/*" onChange={handleFotoPerfilChange} className="hidden"/>
+                                <input id="foto" type="file" accept="image/*" onChange={(e) => converterBase64(e, setImgPerfil)} className="hidden"/>
                             </div>
                         </div>
                         <p className="text-red-500">{erro}</p>

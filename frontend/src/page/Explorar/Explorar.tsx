@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './Explorar.module.css';
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
+import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
 import { useNavigate } from 'react-router-dom';
 import CampoDePesquisar from '../../components/CampoDePesquisar/CampoDePesquisar';
 import { usePersonagensUsuario } from '../../hooks/UserPerson/UserPerson';
@@ -10,6 +11,7 @@ function BuscarPersonagem() {
 
     const navigate = useNavigate();
     const { usuarioId, token } = useAuth();
+    const { adicionarFavorito, removerFavorito } = useFavorites();
 
     const { personagens, like, favorito, loading } = usePersonagensUsuario(usuarioId, token);
 
@@ -37,7 +39,25 @@ function BuscarPersonagem() {
         }
 
         try {
+            const personagem = personagens.find(p => p.id === personagem_id);
+            
+            if (personagem?.favoritadoPeloUsuario) {
+                // Remover favorito
+                removerFavorito(personagem_id);
+            } else if (personagem) {
+                // Adicionar favorito
+                adicionarFavorito({
+                    id: personagem.id,
+                    nome: personagem.nome,
+                    fotoia: personagem.fotoia
+                });
+            }
+
+            // Fazer a requisição ao backend
             await favorito(personagem_id);
+
+            // Notificar que os favoritos foram atualizados
+            localStorage.setItem('favoritos_updated', Date.now().toString());
 
             try {
                 const next = personagens.map(p => p.id === personagem_id ? { ...p, favoritadoPeloUsuario: !p.favoritadoPeloUsuario } : p);

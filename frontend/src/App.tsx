@@ -24,14 +24,23 @@ interface CriadorNome {
 
 interface ChatResponse {
   reply: string;
-  figurinha?: string;
+  figurinha?: {
+    url: string;
+    sentiment?: string;
+    id?: number;
+  } | null;
 }
+
 
 interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
   isError?: boolean;
-  figurinha?: string | null;
+  figurinha?: {
+    url: string;
+    sentiment?: string;
+    id?: number;
+  } | null
 }
 
 function App() {
@@ -126,20 +135,18 @@ function App() {
   
       const payload: any = { message: userMsg };
       
-      // Define se envia ID do usuário logado ou ID anônimo
       if (usuarioId) {
         payload.userId = usuarioId;
       } else {
         payload.anonId = localStorage.getItem("anonId");
       }
   
-      // ADIÇÃO DO HEADER DE AUTORIZAÇÃO AQUI:
-      const res = await axios.post<ChatResponse>(
-        `${API_URL}/chat/${personagemIdAtual}`, 
+      const res = await axios.post<any>(
+        `http://localhost:3000/chat/${personagemIdAtual}`, 
         payload,
         {
           headers: {
-            Authorization: `Bearer ${token}` // Envia o token para o servidor
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -151,9 +158,12 @@ function App() {
         {
           sender: 'bot',
           text: botReply.reply,
-          figurinha: botReply.figurinha || null
+          figurinha: typeof botReply.figurinha === 'string' 
+            ? { url: botReply.figurinha } 
+            : botReply.figurinha || null
         }
       ]);
+
     } catch (err: any) {
       console.error('Erro ao conectar com o servidor:', err);
       
@@ -242,24 +252,45 @@ function App() {
           {/* Chat */}
           <section className={styles.conversas}>
             {chatHistory.map((msg, idx) => (
-              <article key={idx} className={`${styles.message} ${msg.sender === 'user' ? styles.userMessage : styles.botMessage}`}>
-                <div className={`${styles.bubble} ${msg.isError ? styles.erroMensagem : ''}`}>
-                  <p>{msg.text}</p>
-                  <div className='w-full flex items-center justify-center'>{msg.figurinha && <img src={msg.figurinha} alt="figurinha" className={styles.figurinha} />}</div>
-                </div>
+              <article 
+                key={idx} 
+                className={`${styles.message} ${
+                  msg.sender === 'user' ? styles.userMessage : styles.botMessage
+                }`}
+              >
+                 {/* Dentro do chatHistory.map */}
+    <div className={`${styles.bubble} ${msg.isError ? styles.erroMensagem : ''}`}>
+      
+      {/* CORREÇÃO: Só mostra o texto se NÃO começar com [FIGURINHA] ou se não for um código gigante */}
+      {!msg.text.includes('data:image') && <p>{msg.text}</p>}
+
+      {msg.figurinha && (
+        <div className="w-full flex items-center justify-center">
+          <img 
+            src={msg.figurinha.url} 
+            alt="figurinha" 
+            className={styles.figurinha}
+          />
+        </div>
+      )}
+    </div>
               </article>
             ))}
 
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>
                 <div className={styles.bubble}>
-                  <div className={styles.typingIndicator}><span></span><span></span><span></span></div>
+                  <div className={styles.typingIndicator}>
+                    <span></span><span></span><span></span>
+                  </div>
                 </div>
               </article>
             )}
+
             <div className={styles.espaco2}></div>
             <div ref={chatEndRef}></div>
           </section>
+
 
           {/* Input de mensagem */}
           <div className={`fixed bottom-8 ${styles.containerMensagem}`}>

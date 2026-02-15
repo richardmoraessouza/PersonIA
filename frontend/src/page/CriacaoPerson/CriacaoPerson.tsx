@@ -4,8 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../../config/api';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
-import { converterBase64, converterFigurinha } from '../../utils/CorverteImagem/corverteImagem';
-// import { converterBase64, converterFigurinha } from '../../utils/converteImagem/corverteImagem';
+import { converterBase64 } from '../../utils/CorverteImagem/corverteImagem';
 
 function CriacaoPerson() {
     const [historia, setHistoria] = useState('');
@@ -21,7 +20,6 @@ function CriacaoPerson() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [erro, setErro] = useState('');
     const [bio, setBio] = useState<string>('');
-    const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
 
     const location = useLocation();
     const modoEdicao = location.state?.editar || false;
@@ -35,18 +33,11 @@ function CriacaoPerson() {
         const fetchPersonagem = async () => {
             if (modoEdicao && id) {
                 try {
-                    const response = await axios.get(`${API_URL}/dadosPersonagem/${id}`, {
+                    const response = await axios.get(`http://localhost:3000/dadosPersonagem/${id}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     const p = response.data.personagem;
 
-                    //Se o banco vier com array menor que 6, completamos aqui
-                    const figsDoBanco = p.figurinhas || [];
-                    const listaCompleta = [...figsDoBanco];
-                    while (listaCompleta.length < 6) {
-                        listaCompleta.push("");
-                    }
-                    
                     setNome(p.nome || '');
                     setGenero(p.genero || '');
                     setDescricao(p.descricao || '');
@@ -58,7 +49,6 @@ function CriacaoPerson() {
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
                     setBio(p.bio || '');
-                    setFigurinhas(listaCompleta);
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
                     alert('Não foi possível carregar os dados do personagem.');
@@ -75,51 +65,59 @@ function CriacaoPerson() {
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
                 setBio(personagemState.bio || '');
-                setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""])
             }
         };
 
         fetchPersonagem();
     }, [modoEdicao, id, personagemState, token]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const form = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (isSubmitting) return;
         setIsSubmitting(true);
         setErro('');
 
+           // Não pode ter caracteres especiais
+        if (/[^A-Za-zÀ-ú0-9 ]/.test(nome)) {
+            setErro("O nome contém caracteres inválidos.");
+            return;
+        }
+        // Deve ter pelo menos uma letra
         if (!/[A-Za-zÀ-ú]/.test(nome)) {
             setErro("O nome deve conter letras.");
-            setIsSubmitting(false);
             return;
         }
 
-         try {
-        // MUDANÇA AQUI: Enviamos o array 'figurinhas' completo (com as strings vazias)
-            const data = { 
-                fotoia, nome, personalidade, historia, regras, 
-                descricao, tipo_personagem, bio,
-                figurinhas 
+        try {
+
+            const payload = {
+                nome, bio, descricao, fotoia,
+                personalidade, regras, historia, tipo_personagem,
             };
 
-            if (modoEdicao && id) {
-                await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const url = modoEdicao ? `${API_URL}/editarPerson/${id}` : `http://localhost:3000/criacao`;
+            
+            console.log("Token enviado:", token);
+            if (modoEdicao) {
+                await axios.put(url, payload, config);
             } else {
-                await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.post(url, payload, config);
             }
-
+            
             navigate(`/perfil/${usuarioId}`);
-        } catch (err) {
-            // ... erro
+        } catch (err: any) {
+            setErro(err.response?.data?.details || "Erro ao salvar.");
         } finally {
             setIsSubmitting(false);
         }
-};
+    };
 
     return (
         <main className={styles.criacaoPerson}>
             <section className={styles.containerCriacaoPerson}>
-                <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
+                <form className='flex flex-col gap-4' onSubmit={form}>
                     <div className='w-full flex justify-center items-center'>
                         <div className='relative'>
                             <img 
@@ -200,41 +198,12 @@ function CriacaoPerson() {
                         <textarea id="regras" placeholder="Digite as regras para seu personagem" value={regras} onChange={(e) => setRegras(e.target.value)} />
                     </div>
 
-                    <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
-                    <section className={styles.containerFigurinhas}>
-                        {figurinhas.map((img, index) => {
-                            // Lógica para decidir qual classe usar
-                            const cardClass = img 
-                                ? `${styles.figurinhas} ${styles.figurinhasPreenchida}` 
-                                : `${styles.figurinhas} ${styles.figurinhasVazia}`;
-
-                            return (
-                                <label key={index} className={cardClass}>
-                                    {img ? (
-                                        <img 
-                                            src={img} 
-                                            alt={`Figurinha ${index + 1}`} 
-                                            className={styles.imgPreview} 
-                                        />
-                                    ) : (
-                                        <div className={styles.conteudoVazio}>
-                                            <i className={`fa-solid fa-image ${styles.iconAdd}`}></i>
-                                            <span className={styles.textAdd}>Adicionar</span>
-                                        </div>
-                                    )}
-
-                                    <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        hidden
-                                        onChange={(e) => converterFigurinha(e, index, figurinhas, setFigurinhas)}
-                                    />
-                                </label>
-                            );
-                        })}
-                    </section>
-
-                    <input type="submit" value={isSubmitting ? "Salvando..." : modoEdicao ? "Salvar" : "Criar"} disabled={isSubmitting} className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition" />
+                    <input 
+                        type="submit" 
+                        value={isSubmitting ? "Criando..." : "Criar"} 
+                        disabled={isSubmitting} 
+                        className="bg-blue-500 border rounded-lg py-2 cursor-pointer hover:bg-blue-600 transition"
+                    />
                 </form>
             </section>
         </main>

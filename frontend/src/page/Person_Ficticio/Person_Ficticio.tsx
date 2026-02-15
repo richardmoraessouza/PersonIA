@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { API_URL } from '../../config/api';
-import { converterBase64, converterFigurinha } from '../../utils/CorverteImagem/corverteImagem';
+import { converterBase64 } from '../../utils/CorverteImagem/corverteImagem';
 
 function CriacaoPerson() {
     const [fotoia, setFotoia] = useState<string>('');
@@ -19,8 +19,6 @@ function CriacaoPerson() {
     const [tipo_personagem, setTipo_personagem] = useState<string>('ficcional');
     const [historia, setHistoria] = useState<string>('');
     const [bio, setBio] = useState<string>('');
-    const [figurinhas, setFigurinhas] = useState<string[]>(["", "", "", "", "", ""]);
-
     const { token, usuarioId } = useAuth();
 
     const location = useLocation();
@@ -40,12 +38,6 @@ function CriacaoPerson() {
 
                     const p = response.data.personagem;
 
-                    //Se o banco vier com array menor que 6, completamos aqui
-                    const figsDoBanco = p.figurinhas || [];
-                    const listaCompleta = [...figsDoBanco];
-                    while (listaCompleta.length < 6) {
-                        listaCompleta.push("");
-                    }
 
                     setNome(p.nome || '');
                     setObra(p.obra || '')
@@ -55,7 +47,6 @@ function CriacaoPerson() {
                     setRegras(p.regras || '');
                     setHistoria(p.historia || '');
                     setTipo_personagem(p.tipo_personagem || 'person');
-                    setFigurinhas(listaCompleta);
                     setBio(p.bio || '');
                 } catch (err) {
                     console.error("Erro ao buscar personagem:", err);
@@ -71,7 +62,6 @@ function CriacaoPerson() {
                 setHistoria(personagemState.historia || '');
                 setTipo_personagem(personagemState.tipo_personagem || 'person');
                 setBio(personagemState.bio || '');
-                setFigurinhas(personagemState.figurinhas || ["", "", "", "", "", ""]);
             }
         };
 
@@ -83,41 +73,46 @@ function CriacaoPerson() {
 
         if (isSubmitting) return; 
         setIsSubmitting(true);
+        setErro("");
     
 
         // Não pode ter caracteres especiais
         if (/[^A-Za-zÀ-ú0-9 ]/.test(nome)) {
             setErro("O nome contém caracteres inválidos.");
+            setIsSubmitting(false);
             return;
         }
         // Deve ter pelo menos uma letra
         if (!/[A-Za-zÀ-ú]/.test(nome)) {
             setErro("O nome deve conter letras.");
+            setIsSubmitting(false);
             return;
         }
         
         if (!obra.trim()) {
             setErro("O nome da obra não pode estar vazio.");
+            setIsSubmitting(false);
             return;
        }
       
         try {
-            // MUDANÇA AQUI: Enviamos o array 'figurinhas' completo (com as strings vazias)
+
             const data = { 
                 fotoia, nome, personalidade, historia, regras, 
-                descricao, obra, tipo_personagem, bio,
-                figurinhas 
+                descricao, obra, tipo_personagem, bio
             };
 
             if (modoEdicao && id) {
                 await axios.put(`${API_URL}/editarPerson/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
             } else {
-                await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
+                const res = await axios.post(`${API_URL}/criacao`, data, { headers: { Authorization: `Bearer ${token}` } });
+                console.log(res.data)
             }
 
             navigate(`/perfil/${usuarioId}`);
             } catch (err) {
-                // ... erro
+                console.error('Erro ao criar/editar personagem:', err);
+                setErro('Ocorreu um erro ao enviar. Tente novamente.');
             } finally {
                 setIsSubmitting(false);
             }
@@ -256,41 +251,6 @@ function CriacaoPerson() {
                             placeholder='Digite as regras'
                         ></textarea>
                     </div>
-
-                    <h2 className={styles.tituloFigurinhas}>Adicionar figurinhas</h2>
-                    <section className={styles.containerFigurinhas}>
-                        {figurinhas.map((img, index) => {
-                            // Lógica para decidir qual classe usar
-                            const cardClass = img 
-                                ? `${styles.figurinhas} ${styles.figurinhasPreenchida}` 
-                                : `${styles.figurinhas} ${styles.figurinhasVazia}`;
-
-                            return (
-                                <label key={index} className={cardClass}>
-                                    {img ? (
-                                        // Estado Preenchido: Mostra a imagem com a nova classe
-                                        <img 
-                                            src={img} 
-                                            alt={`Figurinha ${index + 1}`} 
-                                            className={styles.imgPreview} 
-                                        />
-                                    ) : (
-                                        <div className={styles.conteudoVazio}>
-                                            <i className={`fa-solid fa-image ${styles.iconAdd}`}></i>
-                                            <span className={styles.textAdd}>Adicionar</span>
-                                        </div>
-                                    )}
-
-                                    <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        hidden
-                                        onChange={(e) => converterFigurinha(e, index, figurinhas, setFigurinhas)}
-                                    />
-                                </label>
-                            );
-                        })}
-                    </section>
 
                     <input 
                         type="submit" 

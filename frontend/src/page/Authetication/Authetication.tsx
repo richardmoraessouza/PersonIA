@@ -6,14 +6,12 @@ import { useAuth } from '../../hooks/AuthContext/AuthContext.tsx';
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { API_URL } from '../../config/api.ts';
-
-interface ErrorResponse {
-    error: string;
-}
+import { converterBase64 } from '../../utils/CorverteImagem/corverteImagem.ts';
 
 interface SituacaoProps {
     verificar: boolean;
 }
+
 interface dadosUsuario {
     nome: string;
     foto_pefil: string;
@@ -26,20 +24,6 @@ function Authentication({ verificar }: SituacaoProps) {
     const [loginErro, setLoginErro] = useState<string>('');
     const [imgPerfil, setImgPerfil] = useState<string>('');
     const [dados, setDados] = useState<dadosUsuario | null>(null)
-
-    function converterBase64(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) {
-            const tiposPermitidos = ["image/jpeg", "image/png"];
-            if (!tiposPermitidos.includes(file.type)) {
-                alert("Apenas imagens PNG ou JPEG são permitidas!");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => setImgPerfil(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    }
 
     const onSuccess = async (credentialResponse: any) => {
         try {
@@ -54,7 +38,7 @@ function Authentication({ verificar }: SituacaoProps) {
         
 
             } catch (decodeErr) {
-                console.error("Erro ao decodificar o token JWT do Google:", decodeErr);
+                console.error("Erro ao fazer login", decodeErr);
             }
 
         } catch (err) {
@@ -100,43 +84,63 @@ function Authentication({ verificar }: SituacaoProps) {
     
     
 
-    const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginErro(''); 
-    
-    try {
-        if (condicaoUsuario) { 
-            // LOGIN
-            const res = await axios.post(`${API_URL}/entrar`, { gmail });
-            login(res.data); 
-            navigate('/explorar', { replace: true });
-        } else { 
-            // CADASTRO
-            const res = await axios.post(`${API_URL}/cadastra`, { 
-                gmail, 
-                nome, 
-                imgPerfil 
-            });
+   const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoginErro('');
 
-            const dadosParaLogin = res.data.usuario ? res.data.usuario : { 
-                gmail: gmail, 
-                nome: nome, 
-                foto_perfil: imgPerfil || '/image/semPerfil.jpg' 
-            };
+        try {
+            if (condicaoUsuario) {
+                // --- LOGICA DE LOGIN ---
+                const res = await axios.post(`${API_URL}/entrar`, { gmail });
+                
+                if (!res.data.token) {
+                    setLoginErro("Erro: O servidor não enviou o token de acesso.");
+                    return;
+                }
 
-            login(dadosParaLogin);
-            navigate('/explorar', { replace: true });
+                // Aqui chamamos a função login do useAuth()
+                login({
+                    id: res.data.id,
+                    nome: res.data.nome,
+                    gmail: res.data.gmail,
+                    foto_perfil: res.data.foto_perfil,
+                    descricao: res.data.descricao,
+                    token: res.data.token
+                });
+
+                navigate('/explorar', { replace: true });
+
+            } else {
+                // --- LOGICA DE CADASTRO ---
+                const res = await axios.post(`${API_URL}/cadastra`, {
+                    gmail,
+                    nome,
+                    imgPerfil
+                });
+
+                if (!res.data.token) {
+                    setLoginErro("Erro ao gerar token no cadastro.");
+                    return;
+                }
+
+                const usuarioData = res.data.usuario || res.data;
+
+                login({
+                    id: usuarioData.id,
+                    nome: usuarioData.nome,
+                    gmail: usuarioData.gmail,
+                    foto_perfil: usuarioData.foto_perfil || imgPerfil,
+                    token: res.data.token
+                });
+
+                navigate('/explorar', { replace: true });
+            }
+        } catch (err: any) {
+            console.error("Erro detalhado:", err.response?.data || err.message);
+            const mensagemErro = err.response?.data?.error || "Erro na autenticação.";
+            setLoginErro(mensagemErro);
         }
-    } catch (err: any) {
-        console.error("Erro detalhado:", err.response?.data || err.message);
-        
-        if (axios.isAxiosError(err) && err.response) {
-            setLoginErro(err.response.data.error || "Erro desconhecido. Tente novamente.");
-        } else {
-            setLoginErro("Erro de conexão. Tente novamente mais tarde.");
-        }
-    }
-}
+    };
     return (
         <main className={`flex flex-col justify-center items-center ${styles.authentication}`}>
             {!gmail && (
@@ -176,7 +180,7 @@ function Authentication({ verificar }: SituacaoProps) {
                                 <label htmlFor="foto" title="Alterar foto">
                                     <i className="fa-solid fa-pen cursor-pointer"></i>
                                 </label>
-                                <input id="foto" type="file" accept="image/*"disabled={condicaoUsuario} onChange={converterBase64} className="hidden"/>
+                                <input id="foto" type="file" accept="image/*"disabled={condicaoUsuario} onChange={(e) => converterBase64(e, setImgPerfil)} className="hidden"/>
                             </div>
                         </div>
                     </div>

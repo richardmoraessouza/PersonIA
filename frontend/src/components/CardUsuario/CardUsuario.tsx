@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
+import { useFavorites } from "../../hooks/FavoritesContext/FavoritesContext";
 import { useMeusPersonagens } from "../../hooks/UserPerson/UserPerson";
 import styles from "./CardUsuario.module.css";
 
@@ -19,10 +20,26 @@ interface Personagem {
 
 function CardUsuario() {
   const { usuarioId, token } = useAuth();
+  const { adicionarFavorito, removerFavorito } = useFavorites();
   const navigate = useNavigate();
 
   const { personagens, like, favorito } =
     useMeusPersonagens(usuarioId, token || '');
+
+  const handleFavorito = (p: Personagem) => {
+    if (p.favoritadoPeloUsuario) {
+      removerFavorito(p.id);
+    } else {
+      adicionarFavorito({
+        id: p.id,
+        nome: p.nome,
+        fotoia: p.fotoia || '/image/semPerfil.jpg'
+      });
+    }
+    // Notificar que os favoritos foram atualizados
+    localStorage.setItem('favoritos_updated', Date.now().toString());
+    favorito(p.id);
+  };
 
   return (
     <section className={styles.cardsPersonagens}>
@@ -100,7 +117,7 @@ function CardUsuario() {
                 className={styles.favorito}
                 onClick={(e) => {
                   e.stopPropagation();
-                  favorito(p.id);
+                  handleFavorito(p);
                 }}
               >
                 <i

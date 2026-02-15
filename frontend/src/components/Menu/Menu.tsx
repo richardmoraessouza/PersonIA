@@ -1,15 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import styles from './Menu.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
-import axios from 'axios';
-import { API_URL } from '../../config/api';
-
-type Personagem = {
-    id: number;
-    fotoia: string;
-    nome: string;
-};
+import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
 
 interface MenuProps {
     setPersonId?: React.Dispatch<React.SetStateAction<number>>;
@@ -18,10 +11,10 @@ interface MenuProps {
 
 function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token } = useAuth();
+    const { favoritos, loading, recarregarFavoritos } = useFavorites();
+    const location = useLocation();
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
-    const [loading, setLoading] = useState(true);
-    const [favoritos, setFavoritos] = useState<Personagem[]>([]);
     const [procurarPersonagem, setProcurarPersonagem] = useState<string>('');
 
     const modalRef = useRef<HTMLDivElement>(null);
@@ -49,32 +42,25 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
         setModaOpen(prev => !prev);
     }
 
-    // Carregar os personagens favoritados do banco de dados
+    function closeMenuOnMobile() {
+        if (window.innerWidth <= 768) {
+            setModaOpen(false);
+        }
+    }
+
+    // Recarregar favoritos quando usuário faz login ou logout
     useEffect(() => {
-        const carregarFavoritos = async () => {
-            if (!estaLogado || !usuarioId) {
-                setLoading(false);
-                setFavoritos([]);
-                return;
-            }
+        if (estaLogado && usuarioId && token) {
+            recarregarFavoritos(usuarioId, token);
+        }
+    }, [usuarioId, estaLogado, token, recarregarFavoritos]);
 
-            try {
-                const res = await axios.get(`${API_URL}/getFavoritosFull/${usuarioId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                const data = Array.isArray(res.data) ? res.data : [];
-                setFavoritos(data);
-            } catch (err) {
-                console.error("Erro ao carregar favoritos no menu:", err);
-                setFavoritos([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        carregarFavoritos();
-    }, [usuarioId, estaLogado, token]);
+    // Fecha o menu em mobile quando a rota muda (ao clicar em um personagem)
+    useEffect(() => {
+        if (window.innerWidth <= 768) {
+            setModaOpen(false);
+        }
+    }, [location.pathname]);
 
     // Fecha o menu ao clicar fora dele (mobile)
     useEffect(() => {
@@ -107,7 +93,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
             {modalOpen && (
                 <aside ref={modalRef} className={`fixed top-0 left-0 p-4 ${styles.menu}`}>
                     <h1>
-                        <a href="/explorar" className='flex justify-center items-center w-full'>
+                        <a href="/explorar" onClick={closeMenuOnMobile} className='flex justify-center items-center w-full'>
                             <img src="/image/PersonIA.png" alt="PersonIA" className={styles.logo} />
                         </a>
                     </h1>
@@ -117,14 +103,14 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         <h2 className={styles.subTitulo}>Criação</h2>
                         <nav>
                             <ul className={styles.menuItems}>
-                                <li><Link to={'/explorar'}><i className="fa-solid fa-compass"></i>Buscar</Link></li>
-                                <li><Link to={'/criacao-person'}><i className="fa-solid fa-user"></i> Criar personagem</Link></li>
-                                <li><Link to={'/person-ficticio'}><i className="fa-solid fa-hat-wizard"></i> Fictício</Link></li>
+                                <li><Link to={'/explorar'} onClick={closeMenuOnMobile}><i className="fa-solid fa-compass"></i>Buscar</Link></li>
+                                <li><Link to={'/criacao-person'} onClick={closeMenuOnMobile}><i className="fa-solid fa-user"></i> Criar personagem</Link></li>
+                                <li><Link to={'/person-ficticio'} onClick={closeMenuOnMobile}><i className="fa-solid fa-hat-wizard"></i> Fictício</Link></li>
 
                                 {!estaLogado && (
                                     <>
-                                        <li><Link to={'/entrar'}><i className="fa-solid fa-right-to-bracket"></i> Entrar</Link></li>
-                                        <li><Link to={'/cadastra'}><i className="fa-solid fa-user-plus"></i> Cadastrar</Link></li>
+                                        <li><Link to={'/entrar'} onClick={closeMenuOnMobile}><i className="fa-solid fa-right-to-bracket"></i> Entrar</Link></li>
+                                        <li><Link to={'/cadastra'} onClick={closeMenuOnMobile}><i className="fa-solid fa-user-plus"></i> Cadastrar</Link></li>
                                     </>
                                 )}
                             </ul>
@@ -161,7 +147,10 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                                 <Link
                                                     to={`/personagem/${item.id}`}
                                                     className="w-full flex items-center gap-2 p-1 hover:bg-[#2a2a2a] rounded transition-colors"
-                                                    onClick={() => setPersonId && setPersonId(item.id)}
+                                                    onClick={() => {
+                                                        setPersonId && setPersonId(item.id);
+                                                        closeMenuOnMobile();
+                                                    }}
                                                 >
                                                     <img
                                                         src={item.fotoia || '/image/semPerfil.jpg'}
@@ -217,17 +206,20 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                 <ul className={styles.items}>
                                     {estaLogado ? (
                                         <>
-                                            <li><Link to={`/perfil/${usuarioId}`}><i className="fa-solid fa-user"></i> Perfil</Link></li>
+                                            <li><Link to={`/perfil/${usuarioId}`} onClick={closeMenuOnMobile}><i className="fa-solid fa-user"></i> Perfil</Link></li>
                                             <hr className={styles.separacaoConta} />
-                                            <li onClick={sairDaConta} className="cursor-pointer">
+                                            <li onClick={() => {
+                                                sairDaConta();
+                                                closeMenuOnMobile();
+                                            }} className="cursor-pointer">
                                                 <i className="fa-solid fa-right-from-bracket"></i> Sair
                                             </li>
                                         </>
                                     ) : (
                                         <>
-                                            <li><Link to={'/entrar'}><i className="fa-solid fa-right-to-bracket"></i> Entrar</Link></li>
+                                            <li><Link to={'/entrar'} onClick={closeMenuOnMobile}><i className="fa-solid fa-right-to-bracket"></i> Entrar</Link></li>
                                             <hr className={styles.separacaoConta} />
-                                            <li><Link to={'/cadastra'}><i className="fa-solid fa-user-plus"></i> Cadastrar</Link></li>
+                                            <li><Link to={'/cadastra'} onClick={closeMenuOnMobile}><i className="fa-solid fa-user-plus"></i> Cadastrar</Link></li>
                                         </>
                                     )}
                                 </ul>

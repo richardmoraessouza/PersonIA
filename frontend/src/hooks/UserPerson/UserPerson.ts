@@ -116,9 +116,9 @@ export function useMeusPersonagens(usuarioId: number | null, token?: string | nu
     async function carregar() {
       setLoading(true);
       try {
-        const listaBase = await buscarPersonagensUsuario(usuarioId, token || '');
-        const idsCurtidos = await buscarLikesUsuario(usuarioId, token || '');
-        const idsFavoritos = await buscarFavoritosUsuario(usuarioId, token || '');
+        const listaBase = await buscarPersonagensUsuario(usuarioId!, token || '');
+        const idsCurtidos = await buscarLikesUsuario(usuarioId!, token || '');
+        const idsFavoritos = await buscarFavoritosUsuario(usuarioId!, token || '');
 
         const personagensComDados = await Promise.all(
           listaBase.map(async (p: any) => {

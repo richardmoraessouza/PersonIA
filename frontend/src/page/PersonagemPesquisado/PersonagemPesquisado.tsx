@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './PersonagemPesquisado.module.css';
 import CampoDePesquisar from '../../components/CampoDePesquisar/CampoDePesquisar';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
+import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
 import { useNavigate } from 'react-router-dom';
 import {
     buscarLikesUsuario,
@@ -21,6 +22,7 @@ function PersonagemPesquisado() {
     const [favoritedIds, setFavoritedIds] = useState<number[]>([]);
     const [likesCount, setLikesCount] = useState<Record<number, number>>({});
     const { usuarioId, token, estaLogado } = useAuth();
+    const { adicionarFavorito, removerFavorito } = useFavorites();
     const [creatorsMap, setCreatorsMap] = useState<Record<number, string>>({});
 
     const navigate = useNavigate();
@@ -56,7 +58,6 @@ function PersonagemPesquisado() {
 
         const alreadyLiked = likedIds.includes(id);
 
-        // Otimista
         setLikedIds(prev => alreadyLiked ? prev.filter(x => x !== id) : [...prev, id]);
         setLikesCount(prev => ({ ...prev, [id]: (prev[id] || 0) + (alreadyLiked ? -1 : 1) }));
 
@@ -80,6 +81,22 @@ function PersonagemPesquisado() {
 
         const alreadyFav = favoritedIds.includes(id);
         setFavoritedIds(prev => alreadyFav ? prev.filter(x => x !== id) : [...prev, id]);
+
+        if (alreadyFav) {
+            removerFavorito(id);
+        } else {
+            const favoritePersona = resultados.find(p => p.id === id);
+            if (favoritePersona) {
+                adicionarFavorito({
+                    id: favoritePersona.id,
+                    nome: favoritePersona.nome,
+                    fotoia: favoritePersona.fotoia
+                });
+            }
+        }
+
+        // Notificar que os favoritos foram atualizados
+        localStorage.setItem('favoritos_updated', Date.now().toString());
 
         (async () => {
             try {
