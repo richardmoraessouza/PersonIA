@@ -24,7 +24,7 @@ interface ChatMessage {
     url: string;
     sentiment?: string;
     id?: number;
-  } | null
+  } | null;
 }
 
 function App() {
@@ -40,13 +40,20 @@ function App() {
 
   const [menuOpen, setMenuOpen] = useState<boolean>(true);
 
-  const { usuarioId, token } = useAuth();
+  const { usuarioId, token } = useAuth(); // Adicione o token aqui
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
 
+  // ID numérico da URL (fonte da verdade para qual personagem mostrar)
   const idNum = id != null ? Number(id) : NaN;
-  const personagemIdAtual = !isNaN(idNum) ? idNum : personId;
+  const personagemId = !isNaN(idNum) ? idNum : personId;
 
+  if (!personagemId) {
+  console.error("personagemId inválido! Abortando envio.");
+  return;
+}
+
+  // Gera ou recupera ID anônimo
   useEffect(() => {
     if (!localStorage.getItem("anonId")) {
       localStorage.setItem("anonId", crypto.randomUUID());
@@ -64,7 +71,7 @@ function App() {
   }, [id]);
 
   // Limpa chat ao trocar de personagem
-  useEffect(() => setChatHistory([]), [personagemIdAtual]);
+  useEffect(() => setChatHistory([]), [personagemId]);
 
 
 
@@ -89,23 +96,10 @@ function App() {
       }
 
       const res = await axios.post<ChatResponse>(
-        `http://localhost:3001/chat_ia/${personagemIdAtual}`,
-        { message: userMsg },
-        config
+      `http://localhost:3001/chat/chat/${personagemId}`,
+      { message: userMsg },
+      config
       );
-
-      const botReply = res.data;
-
-      setChatHistory(prev => [
-        ...prev,
-        {
-          sender: 'bot',
-          text: botReply.reply,
-          figurinha: typeof botReply.figurinha === 'string'
-            ? { url: botReply.figurinha }
-            : botReply.figurinha || null
-        }
-      ]);
 
     } catch (err: any) {
       console.error('Erro ao enviar mensagem:', err);
@@ -179,13 +173,10 @@ function App() {
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>
                 <div className={styles.bubble}>
-                  <div className={styles.typingIndicator}>
-                    <span></span><span></span><span></span>
-                  </div>
+                  <div className={styles.typingIndicator}><span></span><span></span><span></span></div>
                 </div>
               </article>
             )}
-
             <div className={styles.espaco2}></div>
             <div ref={chatEndRef}></div>
           </section>

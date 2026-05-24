@@ -49,7 +49,7 @@ export async function buscarDadosUsuario(usuarioId: number, token: string) {
 }
 
 export async function editarPerfilUsuario(usuarioId: number, dados: any, token: string) {
-  const res = await axios.put(`${API_URL}/users/editProfile/${usuarioId}`, dados, {
+  const res = await axios.put(`${API_URL}/users/edit-profile/${usuarioId}`, dados, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.data;

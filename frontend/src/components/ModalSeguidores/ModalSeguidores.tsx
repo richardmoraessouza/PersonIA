@@ -34,17 +34,25 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose]);
 
-    // Busca os dados do tipo correto
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
                 if (tipo === 'seguidores') {
-                    const res = await axios.get(`${API_URL}/seguidores/${usuario}`);
-                    setUsuarios(res.data.seguidores || []);
+                    const res = await axios.get(
+                        `${API_URL}/social/users/${usuario}/followers`
+                    );
+
+                    setUsuarios(Array.isArray(res.data) ? res.data : []);
+
                 } else {
-                    const res = await axios.get(`${API_URL}/seguindo/${usuario}`);
-                    setUsuarios(res.data.seguindo || []);
+                    const res = await axios.get(
+                        `${API_URL}/social/users/${usuario}/following`
+                    );
+
+                    setUsuarios(Array.isArray(res.data) ? res.data : []);
+                    console.log(res.data);
                 }
+
             } catch (error) {
                 console.error(`Erro ao buscar ${tipo}:`, error);
                 setUsuarios([]);

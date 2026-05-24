@@ -63,42 +63,56 @@ function Perfil() {
     function definicoes() {
         setModalDefinicoes(prev => !prev);
     }
- 
+
     useEffect(() => {
-        if (!usuarioId || !token) return;
+    if (!usuarioId || !token) return;
 
-        const carregarDados = async () => {
-            try {
-                const [seguidoresRes, seguindoRes] = await Promise.all([
-                    axios.get(`${API_URL}/social/users/${usuarioId}/followers`),
-                    axios.get(`${API_URL}/social/users/${usuarioId}/following`)
-                ]);
+    const carregarDados = async () => {
+        try {
+            const [seguidoresRes, seguindoRes] = await Promise.all([
+                axios.get(
+                    `${API_URL}/social/users/${usuarioId}/followers`
+                ),
+                axios.get(
+                    `${API_URL}/social/users/${usuarioId}/following`
+                )
+            ]);
 
-                setSeguidores(Array.isArray(seguidoresRes.data) ? seguidoresRes.data : []);
-                setSeguindo(Array.isArray(seguindoRes.data) ? seguindoRes.data : []);
+            setSeguidores(
+                Array.isArray(seguidoresRes.data)
+                    ? seguidoresRes.data
+                    : []
+            );
 
-                // Carregar dados completos do usuário
-                const usuarioRes = await axios.get(`${API_URL}/users/usuario/${usuarioId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+            setSeguindo(
+                Array.isArray(seguindoRes.data)
+                    ? seguindoRes.data
+                    : []
+            );
 
-                setNovoNome(usuarioRes.data.nome || nomeAtualContexto);
-                setImgPerfil(usuarioRes.data.foto_perfil || fotoAtualContexto);
-                setDescricao(usuarioRes.data.descricao || '');
-
-            } catch (err) {
-                console.error("Erro ao carregar dados do perfil:", err);
-
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    alert("Sua sessão expirou. Você será redirecionado.");
-                    logout();
-                    navigate('/entrar');
+            const usuarioRes = await axios.get(
+                `${API_URL}/users/user/${usuarioId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            }
-        };
+            );
 
-        carregarDados();
-    }, [usuarioId, token]);
+            setNovoNome(usuarioRes.data.nome || nomeAtualContexto);
+            setImgPerfil(usuarioRes.data.foto_perfil || fotoAtualContexto);
+            setDescricao(usuarioRes.data.descricao || '');
+
+        } catch (err) {
+            console.error(
+                "Erro ao carregar dados do perfil:",
+                err
+            );
+        }
+    };
+
+    carregarDados();
+}, [usuarioId, token]);
 
     // Salvar alterações
     const handleSubmit = async (e: React.FormEvent) => {
