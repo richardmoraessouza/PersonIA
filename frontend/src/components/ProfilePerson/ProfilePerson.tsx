@@ -131,7 +131,7 @@ const ProfilePerson: React.FC<ProfilePersonProps> = ({
 
                 <article className={`flex row-auto items-center justify-center gap-4 mt-4 ${styles.interacoes}`}>
                   {/* Botão Like */}
-                  <button onClick={() => like(personagem.id)} className="flex items-center gap-2">
+                  <button onClick={() => like(personagem.id)} className="flex items-center gap-2 cursor-pointer">
                     <span>{personagem.likes ?? 0}</span>
 
                     <svg width="20" height="20" viewBox="0 0 24 24" fill={personagem.curtidoPeloUsuario ? "#ff4b4b" : "none"} stroke={personagem.curtidoPeloUsuario ? "#ff4b4b" : "currentColor"} strokeWidth="2">
@@ -142,7 +142,7 @@ const ProfilePerson: React.FC<ProfilePersonProps> = ({
                   <span className={styles.divisoria}>|</span>
 
                   {/* Botão Favorito */}
-                  <button onClick={() => handleFavorito(personagem)}>
+                  <button onClick={() => handleFavorito(personagem)} className="cursor-pointer">
                     <i className={`fa ${personagem.favoritadoPeloUsuario ? "fa-solid fa-star" : "fa-regular fa-star"}`} 
                        style={{ color: personagem.favoritadoPeloUsuario ? "#FFD700" : "#fff" }}></i>
                   </button>
