@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import styles from './Menu.module.css';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
-import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
+import { buscarFavoritosUsuario } from '../../services/personagemService';
 
 interface MenuProps {
     setPersonId?: React.Dispatch<React.SetStateAction<number>>;
@@ -11,7 +11,8 @@ interface MenuProps {
 
 function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token } = useAuth();
-    const { favoritos, loading, recarregarFavoritos } = useFavorites();
+    const [favoritos, setFavoritos] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
     const location = useLocation();
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
@@ -21,9 +22,10 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Filtra os favoritos com base no que o usuário digita na busca
-    const favoritosFiltrados = favoritos.filter((personagem) =>
-        personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase())
-    );
+    const favoritosFiltrados = favoritos.filter((personagem) => {
+        if (!personagem || !personagem.nome) return false;
+        return personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase());
+    });
 
     useEffect(() => {
         if (onMenuToggle) onMenuToggle(modalOpen);
@@ -51,9 +53,36 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     // Recarregar favoritos quando usuário faz login ou logout
     useEffect(() => {
         if (estaLogado && usuarioId && token) {
-            recarregarFavoritos(usuarioId, token);
+            setLoading(true);
+            buscarFavoritosUsuario(usuarioId)
+                .then((fav) => {
+                    setFavoritos(fav || []);
+                })
+                .catch((err) => {
+                    console.error("Erro ao carregar favoritos:", err);
+                    setFavoritos([]);
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setFavoritos([]);
         }
-    }, [usuarioId, estaLogado, token, recarregarFavoritos]);
+    }, [usuarioId, estaLogado, token]);
+
+    // Listener para mudanças de favoritos (sinal de localStorage)
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'favoritos_updated' && usuarioId) {
+                setLoading(true);
+                buscarFavoritosUsuario(usuarioId)
+                    .then((fav) => setFavoritos(fav || []))
+                    .catch((err) => console.error("Erro ao recarregar favoritos:", err))
+                    .finally(() => setLoading(false));
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [usuarioId]);
 
     // Fecha o menu em mobile quando a rota muda (ao clicar em um personagem)
     useEffect(() => {
@@ -142,25 +171,32 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                             <p>Carregando...</p>
                                         </div>
                                     ) : favoritosFiltrados.length > 0 ? (
-                                        favoritosFiltrados.map((item) => (
-                                            <li key={item.id}>
-                                                <Link
-                                                    to={`/personagem/${item.id}`}
-                                                    className="w-full flex items-center gap-2 p-1 hover:bg-[#2a2a2a] rounded transition-colors"
-                                                    onClick={() => {
-                                                        setPersonId && setPersonId(item.id);
-                                                        closeMenuOnMobile();
-                                                    }}
-                                                >
-                                                    <img
-                                                        src={item.fotoia || '/image/semPerfil.jpg'}
-                                                        alt={item.nome}
-                                                        className='w-7 h-7 rounded-full object-cover'
-                                                    />
-                                                    <p className={styles.nomePersonagem}>{item.nome}</p>
-                                                </Link>
-                                            </li>
-                                        ))
+                                        favoritosFiltrados.map((item) => {
+                                            // Verifica se item é um objeto com dados ou apenas um ID numérico
+                                            const itemId = typeof item === 'number' ? item : item?.id;
+                                            const itemNome = typeof item === 'string' || typeof item === 'number' ? `Personagem ${itemId}` : item?.nome || `Personagem ${itemId}`;
+                                            const itemFoto = typeof item === 'string' || typeof item === 'number' ? '/image/semPerfil.jpg' : item?.fotoia || '/image/semPerfil.jpg';
+                                            
+                                            return (
+                                                <li key={itemId}>
+                                                    <Link
+                                                        to={`/personagem/${itemId}`}
+                                                        className="w-full flex items-center gap-2 p-1 hover:bg-[#2a2a2a] rounded transition-colors"
+                                                        onClick={() => {
+                                                            setPersonId && setPersonId(itemId);
+                                                            closeMenuOnMobile();
+                                                        }}
+                                                    >
+                                                        <img
+                                                            src={itemFoto}
+                                                            alt={itemNome}
+                                                            className='w-7 h-7 rounded-full object-cover'
+                                                        />
+                                                        <p className={styles.nomePersonagem}>{itemNome}</p>
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })
                                     ) : (
                                         <p className='text-center text-sm text-gray-400 p-4'>
                                             {estaLogado ? "Nenhum favorito encontrado." : "Entre para ver seus favoritos."}

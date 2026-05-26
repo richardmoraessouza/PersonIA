@@ -1,0 +1,34 @@
+.containerCardFavorites {
+    max-width: 700px;
+}
+
+.interactions {
+    display: flex;
+    gap: 8px;
+    flex-flow: row nowrap;
+    margin-left: auto;
+}
+
+.likeButton, .commentButton, .favorite {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    gap: 4px;
+}
+
+.likeButton.active {
+    color: #ff4b4b;
+}
+
+.likeButton svg {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.likeButton:active svg {
+    transform: scale(1.3);
+}

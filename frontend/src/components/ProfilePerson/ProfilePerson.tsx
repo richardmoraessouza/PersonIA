@@ -5,8 +5,7 @@ import axios from 'axios';
 import { API_URL } from '../../config/api';
 import { useMeusPersonagens } from '../../hooks/UserPerson/UserPerson';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
-import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
-import Menu from '../Menu/Menu';
+import { toggleFavorito } from '../../services/personagemService';
 
 interface Personagem {
   id: number;
@@ -40,8 +39,7 @@ const ProfilePerson: React.FC<ProfilePersonProps> = ({
   perfilPerson, 
   setPerfilPerson 
 }) => {
-  const { token } = useAuth();
-  const { adicionarFavorito, removerFavorito } = useFavorites();
+  const { token, usuarioId } = useAuth();
   const [nome, setNome] = useState<CriadorNome | null>(null);
   const [status, setStatus] = useState<string>("Online");
   const navigate = useNavigate();
@@ -62,18 +60,22 @@ const ProfilePerson: React.FC<ProfilePersonProps> = ({
 
   const modalPerfil = () => setPerfilPerson(prev => !prev);
 
-  const handleFavorito = (p: Personagem) => {
-    if (p.favoritadoPeloUsuario) {
-      removerFavorito(p.id);
-    } else {
-      adicionarFavorito({
-        id: p.id,
-        nome: p.nome,
-        fotoia: p.fotoia || '/image/semPerfil.jpg'
-      });
+  const handleFavorito = async (p: Personagem) => {
+    if (!usuarioId || !token || token.trim() === '') {
+      navigate('/entrar');
+      return;
     }
-    localStorage.setItem('favoritos_updated', Date.now().toString());
-    favorito(p.id);
+    
+    try {
+      await toggleFavorito(usuarioId, p.id, token);
+      localStorage.setItem('favoritos_updated', Date.now().toString());
+      favorito(p.id);
+    } catch (err: any) {
+      console.error("Erro ao alternar favorito:", err);
+      if (err?.response?.status === 401) {
+        navigate('/entrar');
+      }
+    }
   };
 
   useEffect(() => {

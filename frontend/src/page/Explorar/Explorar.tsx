@@ -1,17 +1,12 @@
-import { useState } from 'react';
 import styles from './Explorar.module.css';
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
-import { useFavorites } from '../../hooks/FavoritesContext/FavoritesContext';
 import { useNavigate } from 'react-router-dom';
 import CampoDePesquisar from '../../components/CampoDePesquisar/CampoDePesquisar';
 import { usePersonagensUsuario } from '../../hooks/UserPerson/UserPerson';
 
 function BuscarPersonagem() {
-    const [error, setError] = useState<string | null>(null);
-
     const navigate = useNavigate();
     const { usuarioId, token } = useAuth();
-    const { adicionarFavorito, removerFavorito } = useFavorites();
 
     const { personagens, like, favorito, loading } = usePersonagensUsuario(usuarioId, token);
 
@@ -38,22 +33,15 @@ function BuscarPersonagem() {
             return;
         }
 
-        try {
-            const personagem = personagens.find(p => p.id === personagem_id);
-            
-            if (personagem?.favoritadoPeloUsuario) {
-                // Remover favorito
-                removerFavorito(personagem_id);
-            } else if (personagem) {
-                // Adicionar favorito
-                adicionarFavorito({
-                    id: personagem.id,
-                    nome: personagem.nome,
-                    fotoia: personagem.fotoia
-                });
-            }
+        if (!token || token.trim() === '') {
+            console.error('Token inválido ou vazio');
+            navigate('/entrar');
+            return;
+        }
 
-            // Fazer a requisição ao backend
+
+        try {
+            // Fazer a requisição ao favorito (já faz a requisição ao backend)
             await favorito(personagem_id);
 
             // Notificar que os favoritos foram atualizados
@@ -65,8 +53,14 @@ function BuscarPersonagem() {
                 if (usuarioId) localStorage.setItem(`favoritos_${usuarioId}`, JSON.stringify(favoritosIds));
             } catch (err) { /* ignore */ }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('Erro no toggle favorito:', err);
+            
+            // Se for erro 401 (Unauthorized), redirecionar para login
+            if (err?.response?.status === 401) {
+                console.warn('Token expirado ou inválido - redirecionando para login');
+                navigate('/entrar');
+            }
         }
     };
 
@@ -78,8 +72,6 @@ function BuscarPersonagem() {
 
             {loading ? (
                 <div className={styles.loader}>Carregando personagens...</div>
-            ) : error ? (
-                <div className={styles.empty}>{error}</div>
             ) : (
                 <section className={styles.grid}>
                     {personagens.map(p => (
