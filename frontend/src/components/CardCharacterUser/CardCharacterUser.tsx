@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
-import { useFavorites } from "../../hooks/FavoritesContext/FavoritesContext";
 import { useMeusPersonagens } from "../../hooks/UserPerson/UserPerson";
+import { toggleFavorito } from "../../services/personagemService";
 import styles from "./CardCharacterUser.module.css"
 
 interface Personagem {
@@ -20,25 +20,27 @@ interface Personagem {
 
 function CardCharacterUser() {
   const { usuarioId, token } = useAuth();
-  const { adicionarFavorito, removerFavorito } = useFavorites();
   const navigate = useNavigate();
 
   const { personagens, like, favorito } =
     useMeusPersonagens(usuarioId, token || '');
 
-  const handleFavorito = (p: Personagem) => {
-    if (p.favoritadoPeloUsuario) {
-      removerFavorito(p.id);
-    } else {
-      adicionarFavorito({
-        id: p.id,
-        nome: p.nome,
-        fotoia: p.fotoia || '/image/semPerfil.jpg'
-      });
+  const handleFavorito = async (p: Personagem) => {
+    if (!usuarioId || !token || token.trim() === '') {
+      navigate('/entrar');
+      return;
     }
-    // Notificar que os favoritos foram atualizados
-    localStorage.setItem('favoritos_updated', Date.now().toString());
-    favorito(p.id);
+    
+    try {
+      await toggleFavorito(usuarioId, p.id, token);
+      localStorage.setItem('favoritos_updated', Date.now().toString());
+      favorito(p.id);
+    } catch (err: any) {
+      console.error("Erro ao alternar favorito:", err);
+      if (err?.response?.status === 401) {
+        navigate('/entrar');
+      }
+    }
   };
 
   return (

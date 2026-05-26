@@ -4,9 +4,9 @@ import axios from 'axios';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ModalSeguidores from '../../components/ModalSeguidores/ModalSeguidores';
-import CardCharacterUser from '../../components/CardCharacterUser/CardCharacterUser';
 import { converterBase64 } from '../../utils/CorverteImagem/corverteImagem';
 import { API_URL } from "../../config/api";
+import TapsPerfil from '../../components/TapsPerfil/TapsPerfil';
 
 interface UserUpdateResponse {
     success: boolean;
@@ -224,7 +224,7 @@ function Perfil() {
             </div>
         </section>
 
-        <CardCharacterUser />
+        <TapsPerfil />
 
         {modalDefinicoes && (
             <section className={`${styles.editarPerfil}`}>

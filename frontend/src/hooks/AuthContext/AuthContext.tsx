@@ -54,20 +54,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // --- Inicializa estados a partir do localStorage ---
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedNome = localStorage.getItem('usuario_nome');
-        const storedId = localStorage.getItem('usuario_id');
-        const storedFoto = localStorage.getItem('usuario_foto');
-        const storedDescricao = localStorage.getItem('usuario_descricao');
+        const storedToken = localStorage.getItem('token')?.trim() || null;
+        const storedNome = localStorage.getItem('usuario_nome')?.trim() || null;
+        const storedId = localStorage.getItem('usuario_id')?.trim() || null;
+        const storedFoto = localStorage.getItem('usuario_foto')?.trim() || null;
+        const storedDescricao = localStorage.getItem('usuario_descricao')?.trim() || null;
 
         const parsedId = storedId ? parseInt(storedId, 10) : null;
 
         if (storedToken && storedNome && parsedId) {
-            setToken(storedToken);
-            setUsuario(storedNome);
-            setUsuarioId(parsedId);
-            setFotoPerfil(storedFoto);
-            setDescricao(storedDescricao);
+            // Validar se o token é um JWT válido (começa com ey... e tem dots)
+            if (storedToken.includes('.')) {
+                setToken(storedToken);
+                setUsuario(storedNome);
+                setUsuarioId(parsedId);
+                setFotoPerfil(storedFoto);
+                setDescricao(storedDescricao);
+            } else {
+                console.warn('[Auth] Token no localStorage parece inválido, limpando...');
+                localStorage.clear();
+            }
         }
 
         setLoading(false); // carregamento finalizado
