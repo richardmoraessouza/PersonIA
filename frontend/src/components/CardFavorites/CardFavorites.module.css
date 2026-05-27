@@ -2,11 +2,42 @@
     max-width: 700px;
 }
 
+.favoritesCharacter {
+    position: relative;
+}
+
+.favoritesCharacter:hover {
+    backdrop-filter: blur(12px); 
+}
+
+.favoritesCharacter:hover img {
+    transform: rotate(-5deg) scale(1.1);
+}
+
+.cardImg {
+    width: 50px;
+    height: 50px;
+    border-radius: 10%;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.cardBio {
+    font-size: 0.80rem;
+    color: rgba(255, 255, 255, 0.7); 
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .interactions {
-    display: flex;
-    gap: 8px;
-    flex-flow: row nowrap;
-    margin-left: auto;
+   display: flex;
+   gap: 8px;
+   flex-flow: row nowrap;
 }
 
 .likeButton, .commentButton, .favorite {
@@ -18,7 +49,6 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s;
-    gap: 4px;
 }
 
 .likeButton.active {
@@ -31,4 +61,65 @@
 
 .likeButton:active svg {
     transform: scale(1.3);
+}
+
+.iconSemPersonagens {
+    font-size: 1.8rem;
+    opacity: 0.3;
+}
+
+.noFavorites p {
+    text-align: center;
+    font-size: 0.80rem;
+    margin-top: 4px;
+    opacity: 0.9;
+}
+
+@media (min-width: 600px) {
+    .cardImg {
+        width: 60px;
+        height: 60px;
+    }
+
+    .iconSemPersonagens {
+        font-size: 2rem;
+    }
+
+    .noFavorites p {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 412px) {
+    .interactions {
+        display: flex;
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+    }
+}
+
+@media (max-width: 882px) {
+     .cardBio {
+        width: 80%;
+    }
+}
+
+@media (max-width: 710px) {
+     .cardBio {
+        width: 70%;
+    }
+}
+
+@media (max-width: 587px) {
+    .containerCardFavorites {
+         width: 90%;
+    }
+
+}
+
+@media (max-width: 483px) {
+    .containerCardFavorites {
+         width: 100%;
+    }
 }
