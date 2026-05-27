@@ -8,27 +8,45 @@ const TapsPerfil = () => {
     return (
         <section className="w-full flex justify-center items-center gap-7 mb-4 text-sm flex-col">
             <nav className="w-full flex justify-center items-center gap-4 mb-4 text-sm text-gray-400">
-                <button onClick={() => setAbaAtiva('Personagens')} className="hover:text-gray-200 transition-colors duration-200 cursor-pointer">
+                
+                {/* Botão Personagens */}
+                <button 
+                    onClick={() => setAbaAtiva('Personagens')} 
+                    className={`transition-colors duration-200 cursor-pointer ${
+                        abaAtiva === 'Personagens' ? 'text-[#FFF]' : '#FFF'
+                    }`}
+                >
                     Personagens
                 </button>
         
-                <button onClick={() => setAbaAtiva('Favoritos')} className="hover:text-gray-200 transition-colors duration-200 cursor-pointer">
+                {/* Botão Favoritos */}
+                <button 
+                    onClick={() => setAbaAtiva('Favoritos')} 
+                    className={`transition-colors duration-200 cursor-pointer ${
+                        abaAtiva === 'Favoritos' ? 'text-[#FFF]' : '#FFF'
+                    }`}
+                >
                     Favoritos
                 </button>
 
-                <button onClick={() => setAbaAtiva('Seguindo')} className="hover:text-gray-200 transition-colors duration-200 cursor-pointer">
-                    Seguindo
+                {/* Botão Recentes */}
+                <button 
+                    onClick={() => setAbaAtiva('Recentes')} 
+                    className={`transition-colors duration-200 cursor-pointer ${
+                        abaAtiva === 'Recentes' ? 'text-[#FFF]' : '#FFF'
+                    }`}
+                >
+                    Recentes
                 </button>
             </nav>
+
+            {/* Renderização condicional dos componentes */}
             {abaAtiva === 'Personagens' && <CardCharacterUser/>}
             {abaAtiva === 'Favoritos' && <CardFavorites />}
+            {/* Quando você criar o componente de Recentes, só descomentar a linha abaixo: */}
+            {/* {abaAtiva === 'Recentes' && <CardRecents />} */}
         </section>
     )
 }
 
 export default TapsPerfil;
-
-
-
-
-
