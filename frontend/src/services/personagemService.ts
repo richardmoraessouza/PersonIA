@@ -42,6 +42,28 @@ export async function buscarDadosPersonagem(personagemId: number) {
   return res.data;
 }
 
+export async function recentCharacters(usuarioId: number, personagemId: number) {
+  try {
+    const res = await axios.post(`${API_URL}/character/recent-characters/${usuarioId}/${personagemId}`);
+    return res.data;
+
+  } catch (err: any) {
+    console.error('Erro ao atualizar personagens recentes', err);
+    throw err;
+  }
+}
+
+export async function buscarPersonagensRecentes(usuarioId: number) {
+  try {
+    const res = await axios.get(`${API_URL}/character/get-recent-characters/${usuarioId}`);
+    return res.data;
+    
+  } catch (err: any) {
+    console.error('Erro ao buscar personagens recentes', err);
+    throw err;
+  }
+
+}
 // ==================== USUÁRIOS ====================
 
 export async function buscarNomeUsuario(usuarioId: number) {

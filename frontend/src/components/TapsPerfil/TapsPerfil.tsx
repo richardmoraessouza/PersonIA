@@ -1,6 +1,5 @@
 import { useState } from "react";
-import CardCharacterUser from "../CardCharacterUser/CardCharacterUser";
-import CardFavorites from "../CardFavorites/CardFavorites";
+import CharacterCard from "../CharacterCard/CharacterCard";
 
 const TapsPerfil = () => {
     const [abaAtiva, setAbaAtiva] = useState<string>('Personagens');
@@ -41,10 +40,9 @@ const TapsPerfil = () => {
             </nav>
 
             {/* Renderização condicional dos componentes */}
-            {abaAtiva === 'Personagens' && <CardCharacterUser/>}
-            {abaAtiva === 'Favoritos' && <CardFavorites />}
-            {/* Quando você criar o componente de Recentes, só descomentar a linha abaixo: */}
-            {/* {abaAtiva === 'Recentes' && <CardRecents />} */}
+            {abaAtiva === 'Personagens' && <CharacterCard type="meus-personagens" abaAtiva={abaAtiva}/>}
+            {abaAtiva === 'Favoritos' && <CharacterCard type="favoritos" abaAtiva={abaAtiva}/>}
+            {abaAtiva === 'Recentes' && <CharacterCard type="recentes" abaAtiva={abaAtiva}/>}
         </section>
     )
 }

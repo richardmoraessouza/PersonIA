@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './App.module.css';
 import { useAuth } from './hooks/AuthContext/AuthContext';
+import { recentCharacters } from './services/personagemService';
 import Menu from './components/Menu/Menu';
 import ProfilePerson from './components/ProfilePerson/ProfilePerson';
 import { useParams } from 'react-router-dom';
+import { API_URL } from './config/api';
 
 interface ChatResponse {
   reply: string;
@@ -40,7 +42,7 @@ function App() {
 
   const [menuOpen, setMenuOpen] = useState<boolean>(true);
 
-  const { usuarioId, token } = useAuth(); // Adicione o token aqui
+  const { usuarioId, token } = useAuth(); 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
 
@@ -81,6 +83,11 @@ function App() {
   }, [chatHistory, isLoading]);
 
   const enviarMensagem = async () => {
+    if (!personagemId) {
+      console.error("personagemId inválido! Abortando envio.");
+      return;
+    }
+
     if (!message.trim()) return;
 
     const userMsg = message;
@@ -95,11 +102,25 @@ function App() {
         config.headers = { Authorization: `Bearer ${token}` };
       }
 
+      // 1. Envia a mensagem para a IA
       const res = await axios.post<ChatResponse>(
-      `http://localhost:3001/chat/chat/${personagemId}`,
-      { message: userMsg },
-      config
+        `${API_URL}/chat/${personagemId}`,
+        { message: userMsg },
+        config
       );
+
+      // 2. Registra o personagem nos Recentes do usuário
+      if (usuarioId && personagemId) {
+        await recentCharacters(Number(usuarioId), Number(personagemId));
+      }
+
+      // 3. Adiciona a resposta da IA na tela
+      if (res.data && res.data.reply) {
+        setChatHistory(prev => [
+          ...prev,
+          { sender: 'bot', text: res.data.reply, figurinha: res.data.figurinha }
+        ]);
+      }
 
     } catch (err: any) {
       console.error('Erro ao enviar mensagem:', err);
@@ -121,6 +142,7 @@ function App() {
     }
   };
 
+  
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading && message.trim()) {
       enviarMensagem();
