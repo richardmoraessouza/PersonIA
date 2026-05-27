@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import styles from './Menu.module.css';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
-import { buscarFavoritosUsuario } from '../../services/personagemService';
+import { buscarPersonagensRecentes } from '../../services/personagemService';
 
 interface MenuProps {
     setPersonId?: React.Dispatch<React.SetStateAction<number>>;
@@ -11,7 +11,7 @@ interface MenuProps {
 
 function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token } = useAuth();
-    const [favoritos, setFavoritos] = useState<any[]>([]);
+    const [recentes, setRecentes] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
@@ -21,8 +21,8 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
-    // Filtra os favoritos com base no que o usuário digita na busca
-    const favoritosFiltrados = favoritos.filter((personagem) => {
+    // Filtra os personagens recentes com base no que o usuário digita na busca
+    const personagensRecentesFiltrados = recentes.filter((personagem) => {
         if (!personagem || !personagem.nome) return false;
         return personagem.nome.toLocaleLowerCase().includes(procurarPersonagem.toLocaleLowerCase());
     });
@@ -50,39 +50,24 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
         }
     }
 
-    // Recarregar favoritos quando usuário faz login ou logout
+    // Recarregar personagens recentesquando usuário faz login ou logout
     useEffect(() => {
         if (estaLogado && usuarioId && token) {
             setLoading(true);
-            buscarFavoritosUsuario(usuarioId)
-                .then((fav) => {
-                    setFavoritos(fav || []);
+            buscarPersonagensRecentes(usuarioId)
+                .then((recentes) => {
+                    setRecentes(recentes || []);
                 })
                 .catch((err) => {
-                    console.error("Erro ao carregar favoritos:", err);
-                    setFavoritos([]);
+                    console.error("Erro ao buscar os últimos personagens:", err);
+                    setRecentes([]);
                 })
                 .finally(() => setLoading(false));
         } else {
-            setFavoritos([]);
+            setRecentes([]);
         }
     }, [usuarioId, estaLogado, token]);
 
-    // Listener para mudanças de favoritos (sinal de localStorage)
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'favoritos_updated' && usuarioId) {
-                setLoading(true);
-                buscarFavoritosUsuario(usuarioId)
-                    .then((fav) => setFavoritos(fav || []))
-                    .catch((err) => console.error("Erro ao recarregar favoritos:", err))
-                    .finally(() => setLoading(false));
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, [usuarioId]);
 
     // Fecha o menu em mobile quando a rota muda (ao clicar em um personagem)
     useEffect(() => {
@@ -158,9 +143,9 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         />
                     </div>
 
-                    {/* mostra os favoritos do usuario */}
+                    {/* mostra personagens recentes do usuario */}
                     <section>
-                        <h2 className={styles.subTitulo}>Favoritos</h2>
+                        <h2 className={styles.subTitulo}>Recentes</h2>
                         <nav>
                             <ul className={styles.menuItems}>
                                 <div className={styles.containerPerson}>
@@ -170,8 +155,8 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                             <div className={styles.spinner}></div>
                                             <p>Carregando...</p>
                                         </div>
-                                    ) : favoritosFiltrados.length > 0 ? (
-                                        favoritosFiltrados.map((item) => {
+                                    ) : personagensRecentesFiltrados.length > 0 ? (
+                                        personagensRecentesFiltrados.map((item) => {
                                             // Verifica se item é um objeto com dados ou apenas um ID numérico
                                             const itemId = typeof item === 'number' ? item : item?.id;
                                             const itemNome = typeof item === 'string' || typeof item === 'number' ? `Personagem ${itemId}` : item?.nome || `Personagem ${itemId}`;
