@@ -1,0 +1,35 @@
+//show all characters in the explore page
+export interface Character {
+    id: number;
+    nome: string;
+    nome_criador: string;
+    usuario_id?: number;
+    bio?: string;
+    fotoia?: string;
+    likes?: number;
+    visualizacoes?: number;
+    curtidoPeloUsuario?: boolean;
+    favoritadoPeloUsuario?: boolean;
+    popular?: boolean;
+    destaque?: boolean;
+}
+
+
+export interface CharacterbyId {
+  id: number;
+  nome: string;
+  fotoia?: string;
+  descricao?: string;
+  usuario_id: number;
+  bio?: string;
+  criador?: string;
+  likes?: number;
+  curtidoPeloUsuario?: boolean;
+  visualizacoes?: number;
+  favoritadoPeloUsuario?: boolean;
+}
+
+// increment the number of views of the character's chat
+export interface views {
+  personagemId: number;
+}
