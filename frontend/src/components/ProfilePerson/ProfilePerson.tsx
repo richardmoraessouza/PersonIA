@@ -1,4 +1,4 @@
-import { FiMessageSquare, FiHeart, FiStar, FiEye } from "react-icons/fi"; // Adicionado FiEye aqui
+import { FiMessageSquare, FiHeart, FiStar, } from "react-icons/fi"; // Adicionado FiEye aqui
 import React, { useState, useEffect } from 'react';
 import styles from './ProfilePerson.module.css';
 import { useNavigate } from 'react-router-dom';

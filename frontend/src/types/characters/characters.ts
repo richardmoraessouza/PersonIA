@@ -1,4 +1,3 @@
-//show all characters in the explore page
 export interface Character {
     id: number;
     nome: string;
@@ -20,6 +19,14 @@ export interface CharacterbyId {
   nome: string;
   fotoia?: string;
   descricao?: string;
+  obra?: string;
+  tipo_personagem?: string;
+  historia?: string;
+  genero?: string;
+  personalidade?: string;
+  comportamento?: string;
+  estilo?: string;
+  regras?: string;
   usuario_id: number;
   bio?: string;
   criador?: string;

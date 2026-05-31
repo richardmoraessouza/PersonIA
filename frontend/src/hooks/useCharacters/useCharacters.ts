@@ -2,7 +2,9 @@ import type { Character, CharacterbyId, views } from "../../types/characters/cha
 import { 
   getCharacters, 
   searchCharacterById as searchCharacterByIdService,
-  incrementChatViews as incrementChatViewsService 
+  incrementChatViews as incrementChatViewsService, 
+  createCharacterService,
+  updateCharacterService
 } from "../../services/characters/characters";
 import { useEffect, useState, useCallback } from "react"; // Adicionado useCallback aqui
 
@@ -52,11 +54,23 @@ export function useCharacters() {
     }
   }, []);
 
+    // Create character
+  const createCharacter = useCallback(async (usuarioId: number, payload: any, token: string) => {
+      return await createCharacterService(usuarioId, payload, token);
+  }, []);
+
+  // Update character
+  const updateCharacter = useCallback(async (personagemId: number, payload: any, token: string) => {
+      return await updateCharacterService(personagemId, payload, token);
+  }, []);
+
   return {
     characters,
     loading,
     error,
     searchCharacterById,
     incrementChatViews, 
+    createCharacter,
+    updateCharacter
   };
 }

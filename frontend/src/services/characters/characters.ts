@@ -6,7 +6,7 @@ import type { Character, CharacterbyId, views } from "../../types/characters/cha
 export const getCharacters = async (): Promise<Character[]> => {
     try {
         const response = await axios.get<Character[]>(`${API_URL}/character/explore`);
-        console.log('Characters received:', response.data);
+
         if (response.status !== 200) {
             throw new Error('Error searching characters');
         }
@@ -22,7 +22,6 @@ export const getCharacters = async (): Promise<Character[]> => {
 export async function searchCharacterById(personagemId: number): Promise<CharacterbyId> {
     try {
         const res = await axios.get(`${API_URL}/character/data-character-by-id/${personagemId}`);
-        console.log('Character data received:', res.data);
 
         return res.data;
     } catch (error) {
@@ -40,11 +39,28 @@ export async function incrementChatViews(personagemId: number, token: string): P
         };
         // Mudado para .post para casar com a boa prática do backend
         const res = await axios.post<views>(`${API_URL}/character/increment-chat-views/${personagemId}`, {}, config);
-        console.log('Chat views incremented:', res.data);
 
         return res.data;
     } catch (err: any) {
         console.error('Error incrementing chat views:', err);
         throw err;
     }
+}
+
+export async function updateCharacterService(personagemId: number, payload: any, token: string): Promise<Character> {
+    const res = await axios.put(
+        `${API_URL}/character/update-character/${personagemId}`, 
+        payload, 
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data;
+}
+
+export async function createCharacterService(usuarioId: number, payload: any, token: string): Promise<Character> {
+    const res = await axios.post(
+        `${API_URL}/character/create-character/${usuarioId}`, 
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data;
 }
