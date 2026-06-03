@@ -1,7 +1,8 @@
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiscovery } from "../../hooks/useDiscovery/useDiscovety";
 import { useSocial } from "../../hooks/useSocial/useSocial";
+import { useDragScroll } from "../../hooks/useDragScroll/useDragScroll";
 import type { PopularCharacter } from "../../types/discovery";
 import styles from "./PopularWeek.module.css";
 import { FiTrendingUp, FiMessageSquare, FiChevronLeft, FiChevronRight, FiHeart } from "react-icons/fi";
@@ -10,35 +11,11 @@ import { RankBadge } from "../RankBadges/RankBadges";
 
 const PopularWeek = () => {
   const navigate = useNavigate();
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [hasDragged, setHasDragged] = useState(false);
+  const { carouselRef, hasDragged, dragProps } = useDragScroll();
   const { characters, loading, error } = useDiscovery();
   const { isLiked, handleToggleLike, getQuantityLikes } = useSocial();
   const [likesCount, setLikesCount] = useState<Record<number, number>>({});
   const [creatorNames, setCreatorNames] = useState<Record<number, string>>({});
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!trackRef.current) return;
-    setIsDragging(true);
-    setHasDragged(false);
-    setStartX(e.pageX - trackRef.current.offsetLeft);
-    setScrollLeft(trackRef.current.scrollLeft);
-  };
-
-  const handleMouseLeave = () => setIsDragging(false);
-  const handleMouseUp = () => setIsDragging(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || !trackRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - trackRef.current.offsetLeft;
-    const walk = x - startX;
-    if (Math.abs(walk) > 3) setHasDragged(true);
-    trackRef.current.scrollLeft = scrollLeft - walk;
-  };
 
   useEffect(() => {
     async function loadCreatorNames() {
@@ -76,8 +53,8 @@ const PopularWeek = () => {
   };
 
   const scroll = (dir: "left" | "right") => {
-    if (!trackRef.current) return;
-    trackRef.current.scrollBy({ left: dir === "right" ? 160 : -160, behavior: "smooth" });
+    if (!carouselRef.current) return;
+    carouselRef.current.scrollBy({ left: dir === "right" ? 160 : -160, behavior: "smooth" });
   };
 
   const handleCharacterClick = (characterId: number) => {
@@ -124,11 +101,8 @@ const PopularWeek = () => {
 
         <div
           className={styles.carouselTrack}
-          ref={trackRef}
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
+          ref={carouselRef}
+          {...dragProps}
         >
           {characters.map((character: PopularCharacter, index: number) => (
             <div

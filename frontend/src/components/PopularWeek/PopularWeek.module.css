@@ -16,17 +16,14 @@
   font-size: 16px;
   font-weight: 500;
   margin: 0;
-  background: linear-gradient(90deg, #f59e0b, #ef4444, #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+ color: var(--text-main);
   background-clip: text;
 }
 
 .headerIcon {
   display: flex;
   align-items: center;
-  color: #f59e0b;
-  -webkit-text-fill-color: #f59e0b;
+  color: var(--text-main);
   animation: pulse 1.8s ease-in-out infinite;
 }
 
@@ -42,19 +39,36 @@
   z-index: 2;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  border: 1px solid #333;
-  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  border: none;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  transition: background 0.15s;
+  color: var(--text-main);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .navBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
+}
+
+.carouselWrapper:hover .navBtn {
+  opacity: 1;
+}
+
+.navBtn svg {
+  transition: transform 0.3s ease;
+}
+
+.navBtn:hover svg {
+  transform: scale(1.2);
+}
+
+.navBtn:active svg {
+  transform: scale(0.95);
 }
 
 .navLeft  { left: 8px; }

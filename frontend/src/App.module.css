@@ -15,8 +15,8 @@
 }
 
 .chat {
-  width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  min-height: auto;
   position: relative;
   background: var(--chat-bg);
   overflow-y: auto;
