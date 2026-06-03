@@ -37,28 +37,40 @@
   z-index: 2;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--card-border, #27272a);
-  background: var(--bg-card, #18181b);
+  border-radius: 4px;
+  border: none;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-main, #ffffff);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: background 0.15s, transform 0.1s;
+  color: var(--text-main);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .navBtn:hover {
-  background: var(--bg-hover, #27272a);
+  background: transparent;
 }
 
-.navBtn:active {
-  transform: translateY(-50%) scale(0.93);
+.carouselWrapper:hover .navBtn {
+  opacity: 1;
 }
 
-.navLeft  { left: -14px; }
-.navRight { right: -14px; }
+.navBtn svg {
+  transition: transform 0.3s ease;
+}
+
+.navBtn:hover svg {
+  transform: scale(1.2);
+}
+
+.navBtn:active svg {
+  transform: scale(0.95);
+}
+
+.navLeft  { left: 8px; }
+.navRight { right: 8px; }
 
 /* CARD HORIZONTAL */
 .card {

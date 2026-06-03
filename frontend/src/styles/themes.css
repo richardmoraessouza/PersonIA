@@ -3,8 +3,6 @@
   --chat-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --chat-letter-spacing: 0.2px;
 }
-
-/* Tema Escuro (padrão) */
 :root, [data-theme="dark"] {
   --bg-main: #1e1e1e;
   --text-main: #e4e4e7;
@@ -65,7 +63,57 @@
   --settings-accent: #ffffff;
 }
 
-/* Tema Claro */
+/* Scrollbar Styles - Dark Theme */
+:root, [data-theme="dark"] {
+  scrollbar-color: #404040 #1a1a1a;
+}
+
+/* Scrollbar Styles - Light Theme */
+[data-theme="light"] {
+  scrollbar-color: #d0dce6 #f3f6fb;
+}
+
+/* WebKit Scrollbar - Dark */
+:root::-webkit-scrollbar,
+[data-theme="dark"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+:root::-webkit-scrollbar-track,
+[data-theme="dark"]::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+:root::-webkit-scrollbar-thumb,
+[data-theme="dark"]::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+:root::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"]::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* WebKit Scrollbar - Light */
+[data-theme="light"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-theme="light"]::-webkit-scrollbar-track {
+  background: #f3f6fb;
+}
+
+[data-theme="light"]::-webkit-scrollbar-thumb {
+  background: #d0dce6;
+  border-radius: 4px;
+}
+
+[data-theme="light"]::-webkit-scrollbar-thumb:hover {
+  background: #b8c5d6;
+}
+
+/* Tema Claro - CSS Variables */
 [data-theme="light"] {
   --bg-main: #fafbfc;
   --text-main: #1a1a1a;
