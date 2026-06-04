@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import "./styles/themes.css";
 import { AuthProvider } from "./hooks/AuthContext/AuthContext.tsx";
+import { setupAxiosInterceptors } from "./config/axiosConfig.ts";
 import App from "./App";
 import NoLayout from "./components/NoLayout/NoLayout.tsx";
 import Layout from "./components/Layout/Layout";
@@ -12,13 +13,16 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import Entrar from "./components/Entrar/Entrar.tsx";
 import Perfil from "./page/Perfil/Perfil.tsx";
 import ProtectedRouter from "./components/BloqueamentoNoLogin/BloqueamentoNoLogin.tsx";
-import CriacaoPerson from "./page/CriacaoPerson/CriacaoPerson.tsx";
 import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
 import OutroPerfil from "./page/OutroPerfil/OutroPerfil.tsx";
 import Explorar from "./page/Explorar/Explorar.tsx";
 import PersonagemPesquisado from "./page/PersonagemPesquisado/PersonagemPesquisado.tsx";
+import CreateCharacter from "./page/CreateCharacter/CreateCharacter.tsx";
 
-const CLIENT_ID =  import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+// Configura interceptadores globais do axios
+setupAxiosInterceptors();
+
+const CLIENT_ID =  "468506770340-qbj9keh8dkeu2467qtq207ob1to3esog.apps.googleusercontent.com";
 
 const router = createBrowserRouter([
   // Rotas com layout principal
@@ -34,8 +38,8 @@ const router = createBrowserRouter([
             element: <Perfil />,
           },
           {
-            path: "/criacao-person",
-            element: <CriacaoPerson />,
+            path: "/create-character",
+            element: <CreateCharacter />,
           },
           {
             path: "/OutroPerfil/:id",

@@ -29,6 +29,15 @@ export interface CharacterbyId {
   regras?: string;
   usuario_id: number;
   bio?: string;
+  objetivos?: string;
+  aparencia?: string;
+  desgostos?: string;
+  gostos?: string;
+  primeiramensagem?: string;
+  exemplosconversa?: string;
+  is_modo_rapido?: boolean;
+  cenario?: string;
+  relacaousuario?: string;
   criador?: string;
   likes?: number;
   curtidoPeloUsuario?: boolean;
