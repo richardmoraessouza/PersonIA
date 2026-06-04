@@ -37,7 +37,6 @@ export async function incrementChatViews(personagemId: number, token: string): P
                 Authorization: `Bearer ${token}`,
             },
         };
-        // Mudado para .post para casar com a boa prática do backend
         const res = await axios.post<views>(`${API_URL}/character/increment-chat-views/${personagemId}`, {}, config);
 
         return res.data;
@@ -49,22 +48,34 @@ export async function incrementChatViews(personagemId: number, token: string): P
 
 // update character
 export async function updateCharacterService(personagemId: number, payload: any, token: string): Promise<Character> {
-    const res = await axios.put(
-        `${API_URL}/character/update-character/${personagemId}`, 
-        payload, 
-        { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return res.data;
+    console.log('[updateCharacterService] Atualizando personagem:', { personagemId, payloadKeys: Object.keys(payload) });
+    try {
+        const res = await axios.put(
+            `${API_URL}/character/update-character/${personagemId}`, 
+            payload
+        );
+
+        return res.data;
+    } catch (err: any) {
+        console.error('[updateCharacterService] ❌ Erro ao atualizar:', err?.response?.data || err?.message);
+        throw err;
+    }
 }
 
 // create character
 export async function createCharacterService(usuarioId: number, payload: any, token: string): Promise<Character> {
-    const res = await axios.post(
-        `${API_URL}/character/create-character/${usuarioId}`, 
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return res.data;
+    console.log('[createCharacterService] Criando personagem:', { usuarioId, payloadKeys: Object.keys(payload), tokenPresent: !!token });
+    try {
+        const res = await axios.post(
+            `${API_URL}/character/create-character/${usuarioId}`, 
+            payload
+        );
+
+        return res.data;
+    } catch (err: any) {
+        console.error('[createCharacterService] ❌ Erro ao criar:', err?.response?.data || err?.message);
+        throw err;
+    }
 }
 
 /**

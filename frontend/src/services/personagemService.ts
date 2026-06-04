@@ -117,8 +117,8 @@ export async function editarPerfilUsuario(usuarioId: number, dados: any, token: 
 
 export async function buscarLikesUsuario(usuarioId: number, token?: string) {
   try {
-    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-    const res = await axios.get(`${API_URL}/social/likes-by-user/${usuarioId}`, config);
+    // Token será adicionado automaticamente pelo interceptor do axios
+    const res = await axios.get(`${API_URL}/social/likes-by-user/${usuarioId}`);
     return Array.isArray(res.data) ? res.data.map((id: any) => Number(id)) : [];
   } catch (err: any) {
     console.error('[buscarLikesUsuario] Erro:', err?.response?.status, err?.message);

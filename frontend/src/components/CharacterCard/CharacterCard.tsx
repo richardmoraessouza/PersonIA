@@ -605,7 +605,7 @@ function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: Charact
     className={styles.btnEditar}
     onClick={(e) => {
       e.stopPropagation();
-      navigate("/criacao-person", {
+      navigate("/create-character", {
         state: { editar: true, personagem: p, tipo: p.tipo_personagem }
       });
     }}
