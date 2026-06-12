@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useExplore } from "../../hooks/useExplore/useExplore";
+import { useCharacters } from "../../hooks/useCharacters/useCharacters";
 import { useSocial } from "../../hooks/useSocial/useSocial";
 import { useDragScroll } from "../../hooks/useDragScroll/useDragScroll";
 import type { Character } from "../../types/characters/characters";
 import styles from "./CardExplore.module.css";
-import { FiTrendingUp, FiMessageSquare, FiHeart, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiMessageSquare, FiHeart, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { searchCreatorNameService } from "../../services/users/userService";
 
 const CardExplore = () => {
   const navigate = useNavigate();
   const { carouselRef, hasDragged, dragProps } = useDragScroll();
-  const { characters, loading, error } = useExplore();
+  const { exploreCharacters, exploreLoading, exploreError, exploreHasMore, loadMoreExplore } = useCharacters();
   const { isLiked, handleToggleLike, getQuantityLikes } = useSocial();
   const [likesCount, setLikesCount] = useState<Record<number, number>>({});
   const [creatorNames, setCreatorNames] = useState<Record<number, string>>({});
@@ -19,7 +19,7 @@ const CardExplore = () => {
   useEffect(() => {
     async function loadCreatorNames() {
       const namesMap: Record<number, string> = {};
-      for (const character of characters) {
+      for (const character of exploreCharacters) {
         try {
           if (character.nome_criador) {
             namesMap[character.id] = character.nome_criador;
@@ -35,20 +35,28 @@ const CardExplore = () => {
       }
       setCreatorNames(namesMap);
     }
-    if (characters.length > 0) loadCreatorNames();
-  }, [characters]);
+    if (exploreCharacters.length > 0) loadCreatorNames();
+  }, [exploreCharacters]);
 
   useEffect(() => {
     async function loadLikesCount() {
       const likesMap: Record<number, number> = {};
-      for (const character of characters) {
+      for (const character of exploreCharacters) {
         const total = await getQuantityLikes(character.id);
         likesMap[character.id] = total;
       }
       setLikesCount(likesMap);
     }
-    if (characters.length > 0) loadLikesCount();
-  }, [characters]);
+    if (exploreCharacters.length > 0) loadLikesCount();
+  }, [exploreCharacters]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!exploreHasMore || exploreLoading) return;
+    const target = e.currentTarget;
+    if (target.scrollWidth - (target.scrollLeft + target.clientWidth) < 300) {
+      loadMoreExplore();
+    }
+  };
 
   const handleLikeClick = async (e: React.MouseEvent<SVGElement>, characterId: number) => {
     e.stopPropagation();
@@ -66,23 +74,23 @@ const CardExplore = () => {
     if (!hasDragged) navigate(`/personagem/${characterId}`);
   };
 
-  if (error) return (
+  if (exploreError) return (
     <article className={styles.container}>
       <div className={styles.header}><h2>Para Você</h2></div>
-      <div className={styles.error}>{error}</div>
+      <div className={styles.error}>{exploreError}</div>
     </article>
   );
 
-  if (loading) return (
+  if (exploreLoading && exploreCharacters.length === 0) return (
     <article className={styles.container}>
-      <div className={styles.header}><h2><FiTrendingUp /> Para Você</h2></div>
+      <div className={styles.header}><h2>Para Você</h2></div>
       <div className={styles.loading}>Carregando...</div>
     </article>
   );
 
-  if (!characters || characters.length === 0) return (
+  if (!exploreCharacters || exploreCharacters.length === 0) return (
     <article className={styles.container}>
-      <div className={styles.header}><h2> Para Você</h2></div>
+      <div className={styles.header}><h2>Para Você</h2></div>
       <div className={styles.empty}>Nenhum personagem encontrado.</div>
     </article>
   );
@@ -90,9 +98,7 @@ const CardExplore = () => {
   return (
     <article className={styles.container}>
       <div className={styles.header}>
-        <h2>
-          Para Você
-        </h2>
+        <h2>Para Você</h2>
       </div>
 
       <div className={styles.carouselWrapper}>
@@ -106,9 +112,10 @@ const CardExplore = () => {
         <div
           className={styles.carouselTrack}
           ref={carouselRef}
+          onScroll={handleScroll}
           {...dragProps}
         >
-          {characters.map((character: Character, index: number) => (
+          {exploreCharacters.map((character: Character, index: number) => (
             <div
               key={`${character.id}-${index}`}
               className={styles.card}
@@ -150,6 +157,13 @@ const CardExplore = () => {
               <p className={styles.author}>@{creatorNames[character.id] || "Desconhecido"}</p>
             </div>
           ))}
+
+          {exploreLoading && (
+            <div className={`${styles.card} ${styles.cardLoadingIndicator}`}>
+              <div className={styles.spinner}></div>
+              <p>Buscando mais...</p>
+            </div>
+          )}
         </div>
       </div>
     </article>

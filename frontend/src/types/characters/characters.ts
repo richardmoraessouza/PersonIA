@@ -11,8 +11,8 @@ export interface Character {
     favoritadoPeloUsuario?: boolean;
     popular?: boolean;
     destaque?: boolean;
-}
-
+  }
+  
 
 export interface CharacterbyId {
   id: number;
@@ -26,6 +26,7 @@ export interface CharacterbyId {
   personalidade?: string;
   comportamento?: string;
   estilo?: string;
+  quick_prompt?: string;
   regras?: string;
   usuario_id: number;
   bio?: string;
@@ -49,7 +50,6 @@ export interface CharacterbyId {
 export interface views {
   personagemId: number;
 }
-
 
 export interface Tag {
     id: number;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { SearchFavoritesUser, SearchLikesUser, SearchQuantityLikes, toggleFavorite, toggleLike } from "../../services/socialService";
+import { SearchFavoritesUser, SearchLikesUser, SearchQuantityLikes, toggleFavorite, toggleLike, getSeguidoresService, getSeguindoService } from "../../services/socialService";
 import { useAuth } from "../AuthContext/AuthContext";
-import type { SocialContextType } from "../../types/social/social";
+import type { SocialContextType, Seguidor } from "../../types/social/social";
+import { FRAME_UPDATED_EVENT, type FrameUpdatedDetail } from "../../utils/frame";
 
 export function useSocial(): SocialContextType {
   const { usuarioId: userId, token } = useAuth();
@@ -47,17 +48,22 @@ export function useSocial(): SocialContextType {
       setError('Usuário não autenticado');
       return;
     }
+
+    const wasLiked = likes.includes(personagemId);
+    setLikes(prev =>
+      wasLiked ? prev.filter(id => id !== personagemId) : [...prev, personagemId]
+    );
+
     try {
       await toggleLike(userId, personagemId, token);
-      setLikes(prev => 
-        prev.includes(personagemId) 
-          ? prev.filter(id => id !== personagemId)
-          : [...prev, personagemId]
-      );
       setError(null);
     } catch (err: any) {
+      setLikes(prev =>
+        wasLiked ? [...prev, personagemId] : prev.filter(id => id !== personagemId)
+      );
       console.error('[useSocial] Erro ao fazer toggle like:', err);
       setError(err?.message || 'Erro ao fazer like');
+      throw err;
     }
   };
 
@@ -107,4 +113,55 @@ export function useSocial(): SocialContextType {
     isFavorite,
     isLiked
   };
+}
+
+export function useSeguir(usuarioId: number | null, token: string | null) {
+  const [seguidores, setSeguidores] = useState<Seguidor[]>([]);
+  const [seguindo, setSeguindo] = useState<Seguidor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!usuarioId || !token) return;
+    
+    const idValido = usuarioId;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [seg, segInd] = await Promise.all([
+          getSeguidoresService(idValido),
+          getSeguindoService(idValido),
+        ]);
+        setSeguidores(seg);
+        setSeguindo(segInd);
+      } catch (err: any) {
+        console.error("Erro ao carregar seguidores:", err);
+        setError(err?.message || "Erro ao carregar seguidores");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [usuarioId, token]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const { usuarioId: updatedId, frame } = (event as CustomEvent<FrameUpdatedDetail>).detail;
+
+      setSeguidores(prev =>
+        prev.map(user => (user.id === updatedId ? { ...user, frame } : user))
+      );
+      setSeguindo(prev =>
+        prev.map(user => (user.id === updatedId ? { ...user, frame } : user))
+      );
+    };
+
+    window.addEventListener(FRAME_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(FRAME_UPDATED_EVENT, handler);
+  }, []);
+
+  return { seguidores, seguindo, loading, error };
 }

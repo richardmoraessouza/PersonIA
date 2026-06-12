@@ -6,6 +6,7 @@ interface QuickCreateModeProps {
   bio: string;
   descricao: string;
   obra: string;
+  quickPrompt: string;
   isFiccional: boolean;
   conversation_style: string;
   onNomeChange: (value: string) => void;
@@ -13,6 +14,7 @@ interface QuickCreateModeProps {
   onConversationStyleChange: (value: string) => void;
   onDescricaoChange: (value: string) => void;
   onObraChange: (value: string) => void;
+  onQuickPrompt: (value: string) => void;
 }
 const validarNome = (texto: string) => {
   // Remove caracteres especiais, mantendo apenas letras, números e espaços
@@ -27,8 +29,10 @@ export const QuickCreateMode: React.FC<QuickCreateModeProps> = ({
   conversation_style,
   descricao, 
   obra,
+  quickPrompt,
   isFiccional,
   onNomeChange,
+  onQuickPrompt,
   onBioChange,
   onConversationStyleChange,
   onDescricaoChange,
@@ -55,7 +59,7 @@ export const QuickCreateMode: React.FC<QuickCreateModeProps> = ({
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="bio_rapido">Bio (Resumo): </label>
+        <label htmlFor="bio_rapido">Bio</label>
         <input
           id="bio_rapido"
           type="text"
@@ -95,13 +99,28 @@ export const QuickCreateMode: React.FC<QuickCreateModeProps> = ({
           id="descricao_rapido"
           value={descricao}
           maxLength={500}
-          placeholder="Descreva seu personagem: aparência, personalidade, história..."
+          placeholder="Descrição para seu personagem"
           onChange={(e) => {
             onDescricaoChange(e.target.value);
           }}
           className={styles.textarea}
         />
         <p style={{ color: 'var(--input-placeholder)', fontSize: '12px', textAlign: 'right', marginTop: '4px' }}>{descricao.length}/500 caracteres</p>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="quick-prompt">Defina seu Personagem</label>
+        <textarea
+          id="quick-prompt"
+          value={quickPrompt}
+          maxLength={500}
+          placeholder="Escreva em poucas palavras como você imagina o personagem. Ex: Um guerreiro de poucas palavras, ranzinza, mas com um coração gigante..."
+          className={styles.textarea}
+          onChange={(e) => {
+            onQuickPrompt(e.target.value);
+          }}
+        />
+        <p style={{ color: 'var(--input-placeholder)', fontSize: '12px', textAlign: 'right', marginTop: '4px' }}>{quickPrompt.length}/500 caracteres</p>
       </div>
 
        <div className={styles.formGroup}>

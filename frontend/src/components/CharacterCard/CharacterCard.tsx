@@ -1,6 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiMessageSquare, FiHeart, FiEdit2, FiStar } from "react-icons/fi";
+import {
+  FiMessageSquare,
+  FiHeart,
+  FiEdit2,
+  FiStar,
+  FiUsers,
+  FiMoreVertical
+} from "react-icons/fi";
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
 import {
   useProfileCharacters,
@@ -20,6 +27,14 @@ const EMPTY_MESSAGES: Record<CharacterCardProps["type"], string> = {
   favoritos: "Nenhum personagem favoritado.",
   recentes: "Nenhum personagem visualizado recentemente."
 };
+
+const SKELETON_COUNT = 4;
+
+function formatInteractions(count: number): string {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(count);
+}
 
 function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: CharacterCardProps) {
   const { usuarioId: loggedUsuarioId, token } = useAuth();
@@ -43,6 +58,11 @@ function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: Charact
   } = useSocial();
 
   const [likesCount, setLikesCount] = useState<Record<number, number>>({});
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const isOwnProfile =
+    loggedUsuarioId != null && usuarioIdFinal === loggedUsuarioId;
 
   useEffect(() => {
     if (characters.length === 0) return;
@@ -87,6 +107,19 @@ function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: Charact
     };
   }, [characters]);
 
+  useEffect(() => {
+    if (openMenuId === null) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenuId]);
+
   const requireAuth = () => {
     if (!loggedUsuarioId || !token || token.trim() === "") {
       navigate("/entrar");
@@ -104,7 +137,7 @@ function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: Charact
       await handleToggleFavorite(p.id);
       localStorage.setItem("favoritos_updated", Date.now().toString());
 
-      if (type === "favoritos" && usuarioIdFinal === loggedUsuarioId && eraFavorito) {
+      if (type === "favoritos" && isOwnProfile && eraFavorito) {
         removeCharacter(p.id);
       }
     } catch (err: any) {
@@ -139,115 +172,159 @@ function CharacterCard({ type, abaAtiva, usuarioId: externalUsuarioId }: Charact
     }
   };
 
+  const handleEdit = (p: ProfileCharacter) => {
+    navigate("/create-character", {
+      state: { editar: true, personagem: p, tipo: p.tipo_personagem }
+    });
+  };
+
+  const handleCardClick = (personagemId: number) => {
+    navigate(`/personagem/${personagemId}`);
+  };
+
   if (loading) {
     return (
-      <article className="flex justify-center p-4">
-        <p className="text-gray-400 text-sm">Carregando...</p>
+      <article className={styles.loadingWrapper} aria-busy="true" aria-label="Carregando personagens">
+        {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+          <div key={index} className={styles.skeletonCard}>
+            <div className={styles.skeletonAvatar} />
+            <div className={styles.skeletonLines}>
+              <div className={styles.skeletonLine} />
+              <div className={`${styles.skeletonLine} ${styles.skeletonLineShort}`} />
+            </div>
+          </div>
+        ))}
       </article>
     );
   }
 
   if (characters.length === 0) {
     return (
-      <article className={`flex flex-col items-center gap-3 w-full ${styles.textSemPersonagens}`}>
+      <article className={styles.textSemPersonagens}>
+        <span className={styles.emptyIcon} aria-hidden="true">
+          <FiUsers size={32} />
+        </span>
         <p>{EMPTY_MESSAGES[type]}</p>
       </article>
     );
   }
 
   return (
-    <article className={`${styles.cardsPersonagens} grid grid-cols-1 gap-3 p-2 w-4/5`}>
-      {characters.map((p: ProfileCharacter) => (
-        <div
-          key={p.id}
-          className={`flex items-center gap-3 p-3 rounded-lg bg-[#1e1e1e] hover:bg-[#2a2a2a] transition-colors cursor-pointer ${styles.character}`}
-          onClick={(e) => {
-            const isButton = (e.target as HTMLElement).closest("button");
-            const isImg = (e.target as HTMLElement).closest("img");
-            if (!isButton && !isImg) {
-              window.location.href = `/personagem/${p.id}`;
-            }
-          }}
-        >
-          {type === "meus-personagens" && usuarioIdFinal === loggedUsuarioId && (
-            <button
-              className={styles.btnEditar}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/create-character", {
-                  state: { editar: true, personagem: p, tipo: p.tipo_personagem }
-                });
-              }}
-            >
-              <FiEdit2 size={16} />
-            </button>
-          )}
+    <article className={styles.cardsPersonagens}>
+      {characters.map((p: ProfileCharacter) => {
+        const interactions = p.visualizacoes ?? 0;
+        const likes = likesCount[p.id] ?? p.likes ?? 0;
+        const menuOpen = openMenuId === p.id;
+        const canEdit = isOwnProfile && type === "meus-personagens";
+        const liked = isLiked(p.id);
 
-          <div>
-            <img
-              src={p.fotoia || "/image/semPerfil.jpg"}
-              alt={p.nome}
-              className={`${styles.cardImg}`}
-            />
-          </div>
+        return (
+          <div
+            key={p.id}
+            className={styles.character}
+            onClick={(e) => {
+              const isInteractive = (e.target as HTMLElement).closest("button");
+              if (!isInteractive) handleCardClick(p.id);
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCardClick(p.id);
+              }
+            }}
+          >
+            <div className={styles.avatarWrapper}>
+              <img
+                src={p.fotoia || "/image/semPerfil.jpg"}
+                alt={p.nome}
+                className={styles.cardImg}
+                draggable={false}
+              />
+            </div>
 
-          <div className={`flex flex-col`}>
-            <h3 className={styles.cardTitle}>{p.nome}</h3>
-            <p className={styles.cardBio}>{p.bio || "Sem bio para este personagem."}</p>
+            <div className={styles.content}>
+              <h3 className={styles.cardTitle}>{p.nome}</h3>
+              <p className={styles.cardBio}>{p.bio || "Sem bio para este personagem."}</p>
+              <div className={styles.metadata}>
+                <span className={styles.metadataItem}>
+                  <FiMessageSquare size={12} aria-hidden="true" />
+                  {formatInteractions(interactions)}
+                </span>
+                <span className={styles.metadataDot} aria-hidden="true">·</span>
+                <span className={`${styles.metadataItem} ${liked ? styles.metadataItemLiked : ""}`}>
+                  <FiHeart size={12} aria-hidden="true" />
+                  {formatInteractions(likes)}
+                </span>
+              </div>
+            </div>
 
-            <div className={styles.interactions}>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleLike(p.id);
-                }}
-                className={`${styles.likeButton} ${isLiked(p.id) ? styles.active : ""}`}
-              >
-                <FiHeart
-                  size={17}
-                  style={{
-                    color: isLiked(p.id) ? "#ff4b4b" : "currentColor",
-                    fill: isLiked(p.id) ? "#ff4b4b" : "none",
-                    transition: "all 0.2s"
+            <div className={styles.actions}>
+              {canEdit && (
+                <button
+                  type="button"
+                  className={`${styles.actionBtn} ${styles.editBtn}`}
+                  aria-label={`Editar ${p.nome}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(p);
                   }}
-                />
-                <span>{likesCount[p.id] ?? p.likes ?? 0}</span>
-              </button>
+                >
+                  <FiEdit2 size={16} />
+                </button>
+              )}
 
-              <button
-                className={styles.commentButton}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <FiMessageSquare size={17} />
-                <span>{p.visualizacoes ?? 0}</span>
-              </button>
-
-              <button
-                className={styles.favorito}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleFavorito(p);
-                }}
-              >
-                <FiStar
-                  size={17}
-                  style={{
-                    cursor: "pointer",
-                    transition: "all 0.3s",
-                    color: isFavorite(p.id) ? "#FFD700" : "#888",
-                    fill: isFavorite(p.id) ? "#FFD700" : "none"
+              <div className={styles.menuWrapper} ref={menuOpen ? menuRef : undefined}>
+                <button
+                  type="button"
+                  className={styles.actionBtn}
+                  aria-label={`Opções de ${p.nome}`}
+                  aria-expanded={menuOpen}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuId(menuOpen ? null : p.id);
                   }}
-                />
-              </button>
+                >
+                  <FiMoreVertical size={16} />
+                </button>
+
+                {menuOpen && (
+                  <div className={styles.menuDropdown} role="menu">
+                    <button
+                      type="button"
+                      className={`${styles.menuItem} ${isLiked(p.id) ? styles.menuItemActive : ""}`}
+                      role="menuitem"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleLike(p.id);
+                      }}
+                    >
+                      <FiHeart size={14} />
+                      {isLiked(p.id) ? "Remover curtida" : "Curtir"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.menuItem} ${isFavorite(p.id) ? styles.menuItemFavorite : ""}`}
+                      role="menuitem"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        handleFavorito(p);
+                      }}
+                    >
+                      <FiStar size={14} />
+                      {isFavorite(p.id) ? "Remover dos favoritos" : "Favoritar"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </article>
   );
 }

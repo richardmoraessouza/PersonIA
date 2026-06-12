@@ -3,21 +3,24 @@ import axios from "axios";
 import type { Character, CharacterbyId, views, Tag} from "../../types/characters/characters";
 
 // show all characters in the explore page
-export const getCharacters = async (): Promise<Character[]> => {
+export const getCharactersPaginated = async (
+    limit = 20,
+    offset = 0,
+    seed = 0.5,
+): Promise<Character[]> => {
     try {
-        const response = await axios.get<Character[]>(`${API_URL}/character/explore`);
-
-        if (response.status !== 200) {
-            throw new Error('Error searching characters');
-        }
-        
-        return response.data;
-
+        const params = new URLSearchParams({
+            limit: String(limit),
+            offset: String(offset),
+            seed: String(seed),
+        });
+        const res = await axios.get<Character[]>(`${API_URL}/character/explore?${params}`);
+        return res.data;
     } catch (error) {
-        console.log(error);
+        console.error('Error fetching paginated characters:', error);
         throw error;
     }
-}
+};
 
 // Search for the character data by id
 export async function searchCharacterById(personagemId: number): Promise<CharacterbyId> {
@@ -31,6 +34,7 @@ export async function searchCharacterById(personagemId: number): Promise<Charact
     }
 }
 
+// Increments the chat view count for a character — requires a valid token
 export async function incrementChatViews(personagemId: number, token: string): Promise<views> {
     try {
         const config = {
@@ -49,18 +53,12 @@ export async function incrementChatViews(personagemId: number, token: string): P
 
 // update character
 export async function updateCharacterService(personagemId: number, payload: any, token: string): Promise<Character> {
-    console.log('[updateCharacterService] Atualizando personagem:', { personagemId, payloadKeys: Object.keys(payload) });
-    try {
-        const res = await axios.put(
-            `${API_URL}/character/update-character/${personagemId}`, 
-            payload
-        );
-
-        return res.data;
-    } catch (err: any) {
-        console.error('[updateCharacterService] ❌ Erro ao atualizar:', err?.response?.data || err?.message);
-        throw err;
-    }
+    const res = await axios.put(
+        `${API_URL}/character/update-character/${personagemId}`, 
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.data;
 }
 
 // create character
@@ -68,9 +66,13 @@ export async function createCharacterService(usuarioId: number, payload: any, to
     try {
         const res = await axios.post(
             `${API_URL}/character/create-character/${usuarioId}`, 
-            payload
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
         );
-
         return res.data;
     } catch (err: any) {
         console.error('[createCharacterService] ❌ Erro ao criar:', err?.response?.data || err?.message);
@@ -109,3 +111,25 @@ export const fetchCharactersByCategoryService = async (
         throw error;
     }
 };
+
+export async function getCharactersByUserId(usuarioId: number): Promise<Character[]> {
+    try {
+        const res = await axios.get(`${API_URL}/character/user-search-by-id/${usuarioId}`);
+        const data = res.data;
+        return Array.isArray(data) ? data : (data?.personagens || []);
+    } catch (error) {
+        console.error(`Error fetching characters for user ${usuarioId}:`, error);
+        return [];
+    }
+}
+
+export async function getRecentCharacters(usuarioId: number): Promise<Character[]> {
+    try {
+        const res = await axios.get(`${API_URL}/character/get-recent-characters/${usuarioId}`);
+        const data = res.data;
+        return Array.isArray(data) ? data : (data?.personagens || []);
+    } catch (error) {
+        console.error(`Error fetching recent characters for user ${usuarioId}:`, error);
+        return [];
+    }
+}

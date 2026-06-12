@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import styles from './TapsProfileEdit.module.css';
-import { FiEdit2 } from "react-icons/fi";
+import { FiCamera, FiUser, FiFileText, FiCheck, FiAlertCircle } from "react-icons/fi";
 import { useUsers } from '../../../../hooks/useUsers/useUsers';
 import { useAuth } from '../../../../hooks/AuthContext/AuthContext';
+import { normalizeFrame } from '../../../../utils/frame';
 
 const TapsProfileEdit: React.FC = () => {
     const { 
@@ -11,18 +12,22 @@ const TapsProfileEdit: React.FC = () => {
         fotoPerfil: ctxFotoPerfil,
         descricao: ctxDescricao,
         usuario: ctxNome,
-        updateProfile
+        updateProfile,
+        frame
     } = useAuth();
         
-    const { users, loading, error, updateCharacter } = useUsers(usuarioId);
+    const { users, loading, error, updateUser } = useUsers(usuarioId);
 
     const [imgPerfil, setImgPerfil] = useState<string>('');
     const [novoNome, setNovoNome] = useState<string>('');
     const [descricao, setDescricao] = useState<string>('');
     const [sucesso, setSucesso] = useState<string | null>(null);
     const [erro, setErro] = useState<string | null>(null);
+    const [salvando, setSalvando] = useState(false);
 
-   
+    const frameAtivo = normalizeFrame(frame);
+    const caminhoFrame = frameAtivo ? `/image/frames/${frameAtivo}` : null;
+
     useEffect(() => {
         const storedNome = localStorage.getItem('usuario_nome') || ctxNome;
         const storedFoto = localStorage.getItem('usuario_foto') || ctxFotoPerfil;
@@ -33,7 +38,6 @@ const TapsProfileEdit: React.FC = () => {
         setDescricao(storedDescricao || '');
     }, [ctxNome, ctxFotoPerfil, ctxDescricao]);
 
-    // Atualiza com dados da API se retornar algo
     useEffect(() => {
         if (users && users.length > 0) {
             const dadosUsuario = users[0];
@@ -51,14 +55,11 @@ const TapsProfileEdit: React.FC = () => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setImgPerfil(reader.result as string);
-            };
+            reader.onloadend = () => setImgPerfil(reader.result as string);
             reader.readAsDataURL(file);
         }
     };
 
-    // Submete as alterações para o servidor
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSucesso(null);
@@ -85,111 +86,144 @@ const TapsProfileEdit: React.FC = () => {
         }
 
         try {
-            await updateCharacter(usuarioId, token, {
+            setSalvando(true);
+            await updateUser(usuarioId, token, {
                 nome: novoNome,
                 foto_perfil: imgPerfil,
                 descricao: descricao
             });
 
-            // Salva no localStorage
             localStorage.setItem('usuario_nome', novoNome);
             localStorage.setItem('usuario_foto', imgPerfil);
             localStorage.setItem('usuario_descricao', descricao);
 
-            // Atualiza no contexto
             updateProfile({
                 nome: novoNome,
                 foto_perfil: imgPerfil,
                 descricao: descricao
             });
 
+            setSucesso("Perfil atualizado com sucesso!");
+            setTimeout(() => setSucesso(null), 3000);
         } catch (err) {
             console.error("Erro ao atualizar dados do perfil:", err);
             setErro("Erro ao salvar alterações. Tente novamente.");
+        } finally {
+            setSalvando(false);
         }
     };
 
-    if (loading) {
-        return <div className="text-sm text-center py-6" style={{ color: 'var(--profile-text-muted)' }}>Carregando dados do servidor...</div>;
-    }
+    if (loading) return (
+        <div className={styles.loadingState}>
+            <div className={styles.spinner} />
+            <span>Carregando dados...</span>
+        </div>
+    );
 
     return (
-        <section>
+        <section className={styles.section}>
             <form onSubmit={handleSubmit} className={styles.container}>
 
-                {/* CONTAINER DA FOTO */}
-                <div className={`flex flex-col justify-center items-center p-2 ${styles.containerFoto}`}>
-                    <div className="relative">
-                        <img 
-                            src={imgPerfil || '/image/semPerfil.jpg'} 
-                            alt="Foto Perfil" 
-                            className="w-28 h-28 rounded-full object-cover"
-                        />
-                        
-                        <div className="absolute bottom-0 right-1 w-9 h-9 rounded-full flex justify-center items-center shadow-lg transition-colors" style={{
-                        backgroundColor: 'var(--profile-modal-bg)',
-                        borderColor: 'var(--profile-border)',
-                        borderWidth: '1px'
-                    }} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
-                            <label htmlFor="foto" title="Alterar foto" className="cursor-pointer flex items-center justify-center w-full h-full" style={{ color: 'var(--text-main)' }}>
-                                <FiEdit2 size={14} />
+                {/* AVATAR */}
+                <div className={styles.avatarSection}>
+                    <div className={styles.avatarWrapOuter}>
+                        <div className={styles.avatarWrapper}>
+                            <img 
+                                src={imgPerfil || '/image/semPerfil.jpg'} 
+                                alt="Foto Perfil" 
+                                className={styles.avatar}
+                            />
+                            <label htmlFor="foto" className={styles.avatarOverlay} title="Alterar foto">
+                                <FiCamera size={18} />
+                                <span>Alterar</span>
                             </label>
                             <input 
                                 id="foto" 
                                 type="file" 
                                 accept="image/*" 
                                 onChange={converterBase64} 
-                                className="hidden"
+                                className={styles.hiddenInput}
                             />
                         </div>
+                        {caminhoFrame && (
+                            <img
+                                src={caminhoFrame}
+                                alt="Frame"
+                                className={styles.frameImg}
+                            />
+                        )}
                     </div>
-                    
-                    {/* Mensagens de feedback para o desenvolvedor e usuário */}
-                    {error && <p className="text-xs mt-2" style={{ color: '#ef4444' }}>{error}</p>}
-                    {erro && <p className="text-xs mt-2" style={{ color: '#ef4444' }}>{erro}</p>}
-                    {sucesso && <p className="text-xs mt-2" style={{ color: '#10b981' }}>{sucesso}</p>}
                 </div>
 
-                {/* INPUT NOME */}
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="nome">Nome</label>
+                {/* FEEDBACKS */}
+                {(error || erro) && (
+                    <div className={styles.feedbackError}>
+                        <FiAlertCircle size={14} />
+                        <span>{error || erro}</span>
+                    </div>
+                )}
+                {sucesso && (
+                    <div className={styles.feedbackSuccess}>
+                        <FiCheck size={14} />
+                        <span>{sucesso}</span>
+                    </div>
+                )}
+
+                {/* NOME */}
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="nome">
+                        <FiUser size={13} />
+                        Nome
+                    </label>
                     <input 
                         type="text" 
-                        id="nome" 
+                        id="nome"
+                        className={styles.input}
                         placeholder="Nome" 
                         maxLength={20} 
                         minLength={2} 
                         value={novoNome}
                         required
-                        onChange={e => {
-                            const valor = e.target.value;
-                            // Regex que remove caracteres especiais do input
-                            const filtrado = valor.replace(/[^A-Za-zÀ-ú0-9 ]/g, '');
-                            setNovoNome(filtrado);
-                        }}
+                        onChange={e => setNovoNome(e.target.value.replace(/[^A-Za-zÀ-ú0-9 ]/g, ''))}
                     />
-                    <p className="text-sm flex justify-end" style={{ color: 'var(--profile-text-muted)' }}>{novoNome.length}/20 caracteres</p>
+                    <span className={styles.counter}>{novoNome.length}/20</span>
                 </div>
 
-                {/* TEXTAREA DESCRIÇÃO */}
-                 <div className="flex flex-col gap-2">
-                    <label htmlFor="descricao">Descrição</label>
-                     <textarea 
-                        placeholder='Descrição' 
-                        maxLength={1000}
+                {/* DESCRIÇÃO */}
+                <div className={styles.field}>
+                    <label className={styles.label} htmlFor="descricao">
+                        <FiFileText size={13} />
+                        Descrição
+                    </label>
+                    <textarea 
+                        id="descricao"
+                        className={styles.textarea}
+                        placeholder="Descrição"
+                        maxLength={150}
                         value={descricao}
                         onChange={e => setDescricao(e.target.value)}
-                     />
-                     <p className="text-sm flex justify-end" style={{ color: 'var(--profile-text-muted)' }}>{descricao.length}/1000 caracteres</p>
-                 </div>
+                    />
+                    <span className={styles.counter}>{descricao.length}/150</span>
+                </div>
 
-                {/* BOTÃO SUBMIT */}
-                <input 
+                {/* SUBMIT */}
+                <button 
                     type="submit" 
-                    value="Salvar alterações" 
-                    className={`cursor-pointer bg-blue-500 border rounded-lg py-2 ${styles.button}`}
-                /> 
-
+                    className={styles.button}
+                    disabled={salvando}
+                >
+                    {salvando ? (
+                        <>
+                            <div className={styles.btnSpinner} />
+                            Salvando...
+                        </>
+                    ) : (
+                        <>
+                            <FiCheck size={14} />
+                            Salvar alterações
+                        </>
+                    )}
+                </button>
             </form>
         </section>
     );

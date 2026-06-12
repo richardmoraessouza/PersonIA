@@ -1,80 +1,122 @@
-.definicoesPerfil {
-    padding: 7px;
-    background-color: var(--fundoClaro);
-}
-
 .containerPerfil {
-    width: 100vw;
-    height: 100dvh; 
-    overflow-y: auto; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
-    box-sizing: border-box;
+  width: 100vw;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  background: var(--bg-main);
 }
 
+/* ── HERO ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px 32px;
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ── AVATAR (CÓDIGO CORRIGIDO DEFINITIVO) ── */
+.avatarWrapper {
+  position: relative;
+  width: 130px;   /* Aumentamos um pouco o container para dar espaço para a cauda */
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  /* Em vez de 100%, reduzimos a foto para ela diminuir e encaixar dentro da raposa */
+  width: 83%;  
+  height: 81%;
+  border-radius: 50%; 
+  object-fit: cover;
+  position: relative;
+  z-index: 1; 
+  border: none;
+}
+
+.frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* A moldura toma conta do tamanho total do container de forma limpa */
+  width: 100% !important;
+  height: 100% !important;
+  
+  /* VOLTOU PARA O CONTAIN: Isso garante que ela nunca mais estique ou distorça */
+  object-fit: contain; 
+  pointer-events: none;
+  z-index: 2; 
+}
+
+/* ── NOME ── */
+.nome {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+/* ── DESCRIÇÃO ── */
 .descricao {
-    margin: 20px 0px;
-    padding: 10px;
-    height: auto;
-    width: 80vw;
-    max-width: 600px;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    white-space: normal; 
-    text-align: center;
+  font-size: 0.875rem;
+  color: var(--profile-text-muted);
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
-.editarDescricao {
-    border: 1px solid var(--fundoHover);
-    border-radius: 20px;
-    height: 300px;
-    padding: 20px;
-    width: 100%;
+/* ── STATS ── */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 4px;
 }
 
-.editarPerfil {
-    background-color: var(--fundoClaro);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 20px;
-    padding: 30px;
-    width: 100%;
-    max-width: 500px;
+.statBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.editarPerfil input {
-    border: 1px solid  var(--fundoHover);
-    border-radius: 20px;
-    width: 100%;
-    height: 45px;
-    padding-left: 10px;
+.statBtn:hover {
+  background: var(--profile-accent-hover);
 }
 
-.editarPerfil input:focus {
-    border-color: #fff; 
-    outline: none;
+.statNumber {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
-.editarPerfil input[type='submit'] {
-    width: 90px;
-    padding: 5px;
-    cursor: pointer;
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--profile-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.btnStatus {
-    width: 100vw;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btnStatus button {
-    cursor: pointer;
-    margin: 5px 0px;
+.statDivider {
+  width: 1px;
+  height: 32px;
+  background: var(--card-border);
 }

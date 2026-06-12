@@ -34,7 +34,8 @@ function CreateCharacter() {
     const [relacaoUsuario, setRelacaoUsuario] = useState('');
     const [conversation_style, setConversation_style] = useState<string>('Modo Direto');
     const [cenario, setCenario] = useState('');
-    
+    const [quickPrompt, setQuickPrompt] = useState('');
+
     // Estados Modo Rápido
     const [modoRapido, setModoRapido] = useState(false);
 
@@ -73,6 +74,7 @@ function CreateCharacter() {
                     setPrimeiraMensagem(dados.primeiramensagem || '');
                     setRelacaoUsuario(dados.relacaousuario || '');
                     setCenario(dados.cenario || '');
+                    setQuickPrompt(dados.quick_prompt || '');
                     setModoRapido(dados.is_modo_rapido || false);
                     
                     if (dados.fotoia) {
@@ -132,7 +134,7 @@ function CreateCharacter() {
             aparencia, gostos, desgostos, objetivos, 
             primeiramensagem: primeiraMensagem, 
             relacaousuario: relacaoUsuario, 
-            cenario, conversation_style
+            cenario, conversation_style, quick_prompt: quickPrompt
         };
 
         if (fotoia) payload.fotoia = fotoia;
@@ -256,6 +258,7 @@ function CreateCharacter() {
                         bio={bio}
                         descricao={descricao}
                         obra={obra}
+                        quickPrompt={quickPrompt}
                         conversation_style={conversation_style}
                         isFiccional={isFiccional}
                         onNomeChange={setNome}
@@ -263,6 +266,8 @@ function CreateCharacter() {
                         onDescricaoChange={setDescricao}
                         onObraChange={setObra}
                         onConversationStyleChange={setConversation_style}
+                        onQuickPrompt={setQuickPrompt}
+
                     />
                 ) : (
                     <>
@@ -362,7 +367,7 @@ function CreateCharacter() {
                         <div className={styles.formGroup}>
                             <label>Descrição</label>
                             <textarea 
-                                placeholder="Descreva o personagem em detalhes" 
+                                placeholder="Descrição para seu personagem" 
                                 value={descricao}
                                 onChange={(e) => {
                                     setDescricao(e.target.value);

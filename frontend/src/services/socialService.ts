@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../config/api";
-import type { Favorite, FavoriteResponse, LikeResponse, LikesQuantityResponse } from "../types/social/social";
+import type { Favorite, FavoriteResponse, LikeResponse, LikesQuantityResponse, Seguidor } from "../types/social/social";
 
 // ==================== LIKES ====================
 //// Route to show likes that the user has given 
@@ -36,11 +36,11 @@ export async function toggleLike(usuarioId: number, personagemId: number, token:
 // Route to show favorites that the user has given
 export async function SearchFavoritesUser(usuarioId: number): Promise<number[] | Favorite[]> {
   const res = await axios.get(`${API_URL}/social/favorites-by-user/${usuarioId}`);
-  // Se a resposta for um array de objetos com dados completos, retorna assim
+  
   if (Array.isArray(res.data) && res.data.length > 0 && res.data[0].nome) {
     return res.data as Favorite[];
   }
-  // Caso contrário, retorna apenas os IDs como antes
+ 
   return Array.isArray(res.data) ? res.data.map((item: any) => Number(item.id || item)) : [];
 }
 
@@ -87,4 +87,16 @@ export async function toggleFavorite(usuarioId: number, personagemId: number, to
     });
     throw error;
   }
+}
+
+export async function getSeguidoresService(usuarioId: number): Promise<Seguidor[]> {
+  const response = await axios.get(`${API_URL}/social/users/${usuarioId}/followers`);
+  console.log(response.data);
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function getSeguindoService(usuarioId: number): Promise<Seguidor[]> {
+  const response = await axios.get(`${API_URL}/social/users/${usuarioId}/following`);
+  console.log(response.data);
+  return Array.isArray(response.data) ? response.data : [];
 }

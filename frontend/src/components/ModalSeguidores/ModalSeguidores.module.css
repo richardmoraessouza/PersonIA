@@ -1,156 +1,137 @@
-.containerPerfil {
-    width: 100vw;
-    height: 100dvh;
-}
+/* ============================================================
+   MODAL SEGUIDORES — modernizado com variáveis de tema
+   ============================================================ */
 
-.containerItemsPerfil {
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.descricao {
-    margin: 20px 0px;
-    padding: 10px;
-    height: auto;
-    width: 100vw; 
-    max-width: 600px; 
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    white-space: normal; 
-     text-align: center;
-}
-
-.btnStatus {
-    width: 100vw;
-    font-size: 13px;
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 998;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.btnStatus button {
-    cursor: pointer;
-    margin: 5px 0px;
-}
-
-.estaSeguindo {
-   padding: 15px;
-}
-
-.btnSeguir {
-  background-color: #3b82f6; 
-  color: white;
-  font-weight: 600;
-  border-radius: 9999px;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btnSeguir:hover {
-  background-color: #2563eb; 
-}
-
-.btnDeixarSeguir {
-  background-color: #6b7280; 
-  color: white;
-  font-weight: 600;
-  border-radius: 9999px;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btnDeixarSeguir:hover {
-  background-color: #4b5563;
-}
-
 .modalVerUsuarios {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 999;
-    position: absolute;
-    background-color: var(--fundoClaro);
-    padding: 20px;
+    position: relative;
+    background: var(--profile-modal-bg);
+    border: 0.5px solid var(--profile-border);
     border-radius: 16px;
+    padding: 24px 20px 20px;
     width: 90%;
     max-width: 400px;
-    max-height: 400px;
+    max-height: 480px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--profile-divider) transparent;
 }
 
 .modalVerUsuarios::-webkit-scrollbar {
-    width: 8px;
-    background: transparent;
+    width: 4px;
 }
-
 .modalVerUsuarios::-webkit-scrollbar-track {
     background: transparent;
 }
-
 .modalVerUsuarios::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--profile-divider);
     border-radius: 4px;
 }
 
-.modalVerUsuarios::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-
-.modalVerUsuarios {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.3) transparent;
-}
-
+/* --- Fechar --- */
 .btnFecharModal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 25px;
-    height: 25px;
+    top: 12px;
+    left: 12px;
+    padding: 5px;
     border-radius: 50%;
-    &:hover {
-        background-color: var(--fundoHover);
-    }
+    border: 0.5px solid var(--profile-border);
+    background: transparent;
+    cursor: pointer;
+    color: var(--profile-text-muted);
+    font-size: 14px;
+    transition: background 0.15s ease;
+}
+.btnFecharModal:hover {
+    background: var(--profile-accent-hover);
 }
 
-.titulo {
-    margin-bottom: 20px;
+/* --- Tabs --- */
+.tabs {
+    display: flex;
+    border-bottom: 0.5px solid var(--profile-divider);
+    margin-bottom: 8px;
+}
+.tabBtn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--profile-text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
     text-align: center;
 }
+.tabBtn.ativa {
+    color: #3b82f6;
+    font-weight: 500;
+    border-bottom-color: #3b82f6;
+}
 
+/* --- Lista --- */
 .separacao {
-    margin: 10px 0px;
+    display: none;
 }
 
 .listaUsuarios {
     display: flex;
     align-items: center;
     gap: 10px;
-    border-radius: 14px;
-    padding: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
+    transition: background 0.15s ease;
+}
+.listaUsuarios:hover {
+    background: var(--profile-accent-hover);
+}
+
+/* --- Avatar com frame --- */
+.avatarWrap {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fotoPerfil {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 0.5px solid var(--profile-border);
+    position: relative;
+    z-index: 1;
+}
+
+.frameImg {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    transition: background-color 0.3s ease;
-    &:hover {
-        background-color: var(--fundoHover);
-    }
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 2;
 }
 
-@media (max-width: 560px) {
-    .descricao {
-        width: 100%;
-    }
+.nomeUsuario {
+    font-size: 14px;
+    color: var(--text-main);
 }
-
-
