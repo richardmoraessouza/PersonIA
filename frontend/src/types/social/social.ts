@@ -42,3 +42,15 @@ export interface SocialContextType extends SocialData {
   isFavorite: (id: number) => boolean;
   isLiked: (id: number) => boolean;
 }
+
+export interface Seguidor {
+  id: number;
+  nome?: string;
+  foto_perfil?: string | null;
+  frame?: string | null;
+}
+
+export interface SeguirResponse {
+  seguidores: Seguidor[];
+  seguindo: Seguidor[];
+}

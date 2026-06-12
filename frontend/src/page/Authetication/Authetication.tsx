@@ -15,6 +15,7 @@ interface SituacaoProps {
 interface dadosUsuario {
     nome: string;
     foto_pefil: string;
+    frame: string;
 }
 
 function Authentication({ verificar }: SituacaoProps) {
@@ -80,14 +81,15 @@ function Authentication({ verificar }: SituacaoProps) {
                     return;
                 }
 
-                login({
+              login({
                     id: res.data.id,
                     nome: res.data.nome,
                     gmail: res.data.gmail,
                     foto_perfil: res.data.foto_perfil,
                     descricao: res.data.descricao,
-                    token: res.data.token
-                });
+                    token: res.data.token,
+                    frame: res.data.frame
+               });
 
                 navigate('/explorar', { replace: true });
             } else {
@@ -105,7 +107,8 @@ function Authentication({ verificar }: SituacaoProps) {
                     nome: usuarioData.nome,
                     gmail: usuarioData.gmail,
                     foto_perfil: usuarioData.foto_perfil || imgPerfil,
-                    token: res.data.token
+                    token: res.data.token,
+                    frame: usuarioData.frame
                 });
 
                 navigate('/explorar', { replace: true });
@@ -115,6 +118,9 @@ function Authentication({ verificar }: SituacaoProps) {
             setLoginErro(err.response?.data?.error || "Erro na autenticação.");
         }
     };
+
+     console.log(dados);
+
 
     return (
         <main className={styles.authentication}>
@@ -177,28 +183,35 @@ function Authentication({ verificar }: SituacaoProps) {
                     </div>
 
                     {/* Avatar */}
-                    <div className={styles.avatarWrap}>
-                        <div className={styles.avatarRel}>
-                            <img
-                                src={imgPerfil || '/image/semPerfil.jpg'}
-                                alt="Foto de perfil"
-                                className={styles.avatarImg}
-                            />
-                            <div className={styles.avatarEdit}>
-                                <label htmlFor="foto" title="Alterar foto" style={{ cursor: 'pointer', margin: 0 }}>
-                                    <i className="fa-solid fa-pen" style={{ fontSize: '11px' }}></i>
-                                </label>
-                                <input
-                                    id="foto"
-                                    type="file"
-                                    accept="image/*"
-                                    disabled={condicaoUsuario}
-                                    onChange={(e) => converterBase64(e, setImgPerfil)}
-                                    style={{ display: 'none' }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                   <div className={styles.avatarWrap}>
+    <div className={styles.avatarRel}>
+        <img
+            src={imgPerfil || '/image/semPerfil.jpg'}
+            alt="Foto de perfil"
+            className={styles.avatarImg}
+        />
+        {dados?.frame && (
+            <img
+                src={`/image/frames/${dados.frame}`}
+                alt="Frame"
+                className={styles.avatarFrame}
+            />
+        )}
+        <div className={styles.avatarEdit}>
+            <label htmlFor="foto" title="Alterar foto" style={{ cursor: 'pointer', margin: 0 }}>
+                <i className="fa-solid fa-pen" style={{ fontSize: '11px' }}></i>
+            </label>
+            <input
+                id="foto"
+                type="file"
+                accept="image/*"
+                disabled={condicaoUsuario}
+                onChange={(e) => converterBase64(e, setImgPerfil)}
+                style={{ display: 'none' }}
+            />
+        </div>
+    </div>
+</div>
 
                     {/* Erro */}
                     {loginErro && (

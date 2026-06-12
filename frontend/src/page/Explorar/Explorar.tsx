@@ -6,8 +6,8 @@ import { HeroBanner } from '../../components/HeroBanner/HeroBanner';
 import { DiscoveryCards } from '../../components/discoveryCards/discoveryCards ';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { useDiscovery, useRecommendations } from '../../hooks/useDiscovery/useDiscovety';
-
 import styles from './Explorar.module.css';
+
 
 const Explorar = () => {
     const { usuarioId: usuarioLogadoId } = useAuth();
@@ -26,7 +26,6 @@ const Explorar = () => {
             <CampoDePesquisar />
             <div className={styles.espaco}></div>
             <HeroBanner />
-            
             <CardExplore />
             
             <div className={styles.containerDiscovery}>

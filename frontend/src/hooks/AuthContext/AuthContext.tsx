@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, type ReactNode } from 'react';
+import { searchCreatorNameService } from '../../services/users/userService';
+import { dispatchFrameUpdated, normalizeFrame } from '../../utils/frame';
 
-// Tipo do Objeto de Dados que o Back-end retorna no LOGIN/EDIÇÃO
 interface UserData {
     id: number;
     nome: string;
@@ -8,28 +9,29 @@ interface UserData {
     foto_perfil?: string; 
     descricao?: string;
     token: string;
+    frame?: string | null;
 }
 
-// Tipo do Contexto (O objeto que será exposto para os componentes)
 interface AuthContextType {
     usuario: string | null;
     usuarioId: number | null;
     fotoPerfil: string | null;
     descricao: string | null;
+    frame: string | null;
     token: string | null;
     estaLogado: boolean;
     loading: boolean;
     login: (userData: UserData) => void;
     logout: () => void;
-    updateProfile: (profileData: { nome?: string; foto_perfil?: string; descricao?: string }) => void;
+    updateProfile: (profileData: { nome?: string; foto_perfil?: string; descricao?: string; frame?: string | null }) => void;
 }
 
-// Inicializamos o contexto com valores nulos e funções vazias
 const initialContextValue: AuthContextType = {
     usuario: null,
     usuarioId: null,
     fotoPerfil: null,
-    descricao: null, 
+    descricao: null,
+    frame: null,
     token: null,
     estaLogado: false,
     loading: true,
@@ -38,10 +40,8 @@ const initialContextValue: AuthContextType = {
     updateProfile: () => {},
 };
 
-// --- CRIAÇÃO DO CONTEXTO ---
 const AuthContext = createContext<AuthContextType>(initialContextValue);
 
-// --- PROVIDER ---
 interface AuthProviderProps {
     children: ReactNode;
 }
@@ -50,53 +50,85 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [usuario, setUsuario] = useState<string | null>(null);
     const [usuarioId, setUsuarioId] = useState<number | null>(null);
     const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
-    const [descricao, setDescricao] = useState<string | null>(null); 
+    const [descricao, setDescricao] = useState<string | null>(null);
+    const [frame, setFrame] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // --- Inicializa estados a partir do localStorage ---
     useEffect(() => {
-        const storedToken = localStorage.getItem('token')?.trim() || null;
-        const storedNome = localStorage.getItem('usuario_nome')?.trim() || null;
-        const storedId = localStorage.getItem('usuario_id')?.trim() || null;
-        const storedFoto = localStorage.getItem('usuario_foto')?.trim() || null;
-        const storedDescricao = localStorage.getItem('usuario_descricao')?.trim() || null;
+        const restoreSession = async () => {
+            const storedToken     = localStorage.getItem('token')?.trim() || null;
+            const storedNome      = localStorage.getItem('usuario_nome')?.trim() || null;
+            const storedId        = localStorage.getItem('usuario_id')?.trim() || null;
+            const storedFoto      = localStorage.getItem('usuario_foto')?.trim() || null;
+            const storedDescricao = localStorage.getItem('usuario_descricao')?.trim() || null;
+            const storedFrame     = localStorage.getItem('usuario_frame')?.trim() || null;
 
-        const parsedId = storedId ? parseInt(storedId, 10) : null;
+            const parsedId = storedId ? parseInt(storedId, 10) : null;
 
-        if (storedToken && storedNome && parsedId) {
-            // Validar se o token é um JWT válido (começa com ey... e tem dots)
-            if (storedToken.includes('.')) {
-                setToken(storedToken);
-                setUsuario(storedNome);
-                setUsuarioId(parsedId);
-                setFotoPerfil(storedFoto);
-                setDescricao(storedDescricao);
-            } else {
-                console.warn('[Auth] Token no localStorage parece inválido, limpando...');
-                localStorage.clear();
+            if (storedToken && storedNome && parsedId) {
+                if (storedToken.includes('.')) {
+                    setToken(storedToken);
+                    setUsuario(storedNome);
+                    setUsuarioId(parsedId);
+                    setFotoPerfil(storedFoto);
+                    setDescricao(storedDescricao);
+                    setFrame(storedFrame);
+
+                    try {
+                        const userData = await searchCreatorNameService(parsedId);
+
+                        if (userData.nome) {
+                            setUsuario(userData.nome);
+                            localStorage.setItem('usuario_nome', userData.nome);
+                        }
+
+                        if (userData.foto_perfil) {
+                            setFotoPerfil(userData.foto_perfil);
+                            localStorage.setItem('usuario_foto', userData.foto_perfil);
+                        }
+
+                        if (userData.descricao !== undefined) {
+                            setDescricao(userData.descricao || null);
+                            localStorage.setItem('usuario_descricao', userData.descricao || '');
+                        }
+
+                        if (userData.frame !== undefined) {
+                            const frameFromApi = normalizeFrame(userData.frame);
+                            setFrame(frameFromApi);
+                            localStorage.setItem('usuario_frame', frameFromApi ?? '');
+                        }
+                    } catch (err) {
+                        console.warn('[Auth] Não foi possível sincronizar perfil:', err);
+                    }
+                } else {
+                    console.warn('[Auth] Token inválido, limpando...');
+                    localStorage.clear();
+                }
             }
-        }
 
-        setLoading(false); // carregamento finalizado
+            setLoading(false);
+        };
+
+        restoreSession();
     }, []);
 
-    // --- Função de login ---
     const login = (userData: UserData) => {
-        localStorage.setItem('token', userData.token);
-        localStorage.setItem('usuario_nome', userData.nome);
-        localStorage.setItem('usuario_id', userData.id.toString());
-        localStorage.setItem('usuario_foto', userData.foto_perfil || '');
-        localStorage.setItem('usuario_descricao', userData.descricao || '');
+        localStorage.setItem('token',              userData.token);
+        localStorage.setItem('usuario_nome',       userData.nome);
+        localStorage.setItem('usuario_id',         userData.id.toString());
+        localStorage.setItem('usuario_foto',       userData.foto_perfil || '');
+        localStorage.setItem('usuario_descricao',  userData.descricao || '');
+        localStorage.setItem('usuario_frame',      userData.frame || '');
 
         setToken(userData.token);
         setUsuario(userData.nome);
         setUsuarioId(userData.id);
         setFotoPerfil(userData.foto_perfil || null);
         setDescricao(userData.descricao || null);
+        setFrame(normalizeFrame(userData.frame));
     };
 
-    // --- Função de logout ---
     const logout = () => {
         localStorage.clear();
         sessionStorage.clear();
@@ -106,12 +138,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUsuarioId(null);
         setFotoPerfil(null);
         setDescricao(null);
+        setFrame(null);
 
         window.location.href = '/';
     };
 
-    // --- Função para atualizar perfil ---
-    const updateProfile = (profileData: { nome?: string; foto_perfil?: string; descricao?: string }) => {
+    const updateProfile = (profileData: { nome?: string; foto_perfil?: string; descricao?: string; frame?: string | null }) => {
         if (profileData.nome) {
             setUsuario(profileData.nome);
             localStorage.setItem('usuario_nome', profileData.nome);
@@ -124,6 +156,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setDescricao(profileData.descricao);
             localStorage.setItem('usuario_descricao', profileData.descricao);
         }
+        if (profileData.frame !== undefined) {
+            const frameValue = normalizeFrame(profileData.frame);
+            setFrame(frameValue);
+            localStorage.setItem('usuario_frame', frameValue ?? '');
+
+            if (usuarioId) {
+                dispatchFrameUpdated(usuarioId, frameValue);
+            }
+        }
     };
 
     const contextValue: AuthContextType = {
@@ -131,6 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         usuarioId,
         fotoPerfil,
         descricao,
+        frame,
         token,
         estaLogado: !!usuarioId,
         loading,

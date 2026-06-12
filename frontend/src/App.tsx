@@ -83,7 +83,6 @@ function App() {
 
     const applyChatStyle = (style: string) => {
       const root = document.documentElement;
-      
       switch(style) {
         case 'elegante':
           root.style.setProperty('--chat-font-family', "'Georgia', 'Times New Roman', serif");
@@ -102,6 +101,12 @@ function App() {
 
     applyTheme(savedTheme);
     applyChatStyle(savedChatStyle);
+
+      const savedBotBg  = localStorage.getItem('botBg');
+      const savedUserBg = localStorage.getItem('userBg');
+      if (savedBotBg)  document.body.style.setProperty('--bot-bubble-message-bg',  savedBotBg);
+      if (savedUserBg) document.body.style.setProperty('--user-bubble-message-bg', savedUserBg);
+      
     
     // Listener para mudanças de preferência do sistema
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

@@ -1,4 +1,3 @@
-// Interface única para dados do usuário/criador
 export interface User {
     id: number;
     nome: string;
@@ -6,9 +5,9 @@ export interface User {
     foto_perfil?: string;
     descricao?: string;
     avatarUrl?: string;
+    frame: string | null;
 }
 
-// Interface para resposta de atualização do usuário
 export interface UpdateUserResponse {
     success: boolean;
     error?: string;
@@ -17,3 +16,20 @@ export interface UpdateUserResponse {
 
 // Manter compatibilidade com código existente
 export type creatorName = User;
+
+export interface MiniProfile {
+  usuarioId: number;
+  nome: string;
+  foto: string;
+  frame: string | null;
+  is_online: boolean;
+}
+
+export interface MiniProfileType {
+  usuarioId: number;
+  nome: string;
+  foto: string;
+  descricao: string;
+  frame: string | null;
+  is_online: boolean;
+}

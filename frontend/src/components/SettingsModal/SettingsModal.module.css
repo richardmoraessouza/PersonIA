@@ -39,12 +39,14 @@
   width: 100%;
   text-align: left;
   padding: 10px 14px;
+  position: relative;
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--settings-text-muted, #a1a1aa);
   cursor: pointer;
   transition: all 0.15s ease-in-out;
+  background-color: red;
   background: transparent;
   border: none;
   white-space: nowrap;
@@ -60,6 +62,13 @@
   color: var(--settings-text, #ffffff);
 }
 
+.arrowIcon {
+  position: absolute;
+  top: 40%;
+  right: 12px;
+  transform: translateY(-50%);
+}
+
 /* ===== CONTENT AREA ===== */
 .content {
   flex: 1;
@@ -67,6 +76,15 @@
   background-color: var(--settings-content-bg, #18181b);
   overflow-y: auto;
   min-width: 0;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.content::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 /* ===== MOBILE: TAB BAR NO TOPO ===== */

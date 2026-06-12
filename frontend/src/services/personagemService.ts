@@ -165,9 +165,8 @@ export async function editarPerfilUsuario(usuarioId: number, dados: any, token: 
 
 // ==================== LIKES ====================
 
-export async function buscarLikesUsuario(usuarioId: number) {
-  // Reutiliza a lógica centralizada no socialService
-  return SearchLikesUser(usuarioId);
+export async function buscarLikesUsuario(usuarioId: number, token?: string) {
+  return SearchLikesUser(usuarioId, token);
 }
 
 export async function buscarQuantidadeLikes(personagemId: number) {

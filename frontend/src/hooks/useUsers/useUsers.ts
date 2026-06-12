@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { User } from "../../types/users/users";
-import { searchCreatorNameService, updateUserService } from "../../services/users/userService";
+import { searchCreatorNameService, updateUserService, getMiniProfileService, updateFrameService} from "../../services/users/userService";
+import { FRAME_UPDATED_EVENT, type FrameUpdatedDetail } from "../../utils/frame";
 
 export function useUsers(usuarioId: number | null) {
     const [users, setUsers] = useState<User[]>([]);
@@ -28,9 +29,35 @@ export function useUsers(usuarioId: number | null) {
         loadNameUser();
     }, [usuarioId]);
 
-    const updateCharacter = useCallback(async (id: number, token: string, userData: { nome: string; foto_perfil?: string; descricao?: string }) => {
+    useEffect(() => {
+        if (!usuarioId) return;
+
+        const handler = (event: Event) => {
+            const { usuarioId: updatedId, frame } = (event as CustomEvent<FrameUpdatedDetail>).detail;
+            if (updatedId !== usuarioId) return;
+
+            setUsers(prev =>
+                prev.length > 0 ? [{ ...prev[0], frame }] : prev
+            );
+        };
+
+        window.addEventListener(FRAME_UPDATED_EVENT, handler);
+        return () => window.removeEventListener(FRAME_UPDATED_EVENT, handler);
+    }, [usuarioId]);
+
+    // update user data
+    const updateUser = useCallback(async (id: number, token: string, userData: { nome: string; foto_perfil?: string; descricao?: string }) => {
         return await updateUserService(id, token, userData);
     }, []);
 
-    return { users, loading, error, updateCharacter };
+    const updateFrame = useCallback(async (usuarioId: number, frame: string) => {
+        return await updateFrameService(usuarioId, frame);
+    }, []);
+
+    // Shows user data in mini profile
+    const getMiniProfile = useCallback(async (id: number) => {
+        return await getMiniProfileService(id);
+    }, []);
+
+    return { users, loading, error, updateUser, getMiniProfile, updateFrame};
 }

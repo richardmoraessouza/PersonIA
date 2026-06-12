@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSocial } from "../../hooks/useSocial/useSocial";
 import { useDragScroll } from "../../hooks/useDragScroll/useDragScroll";
 import { FiMessageSquare, FiChevronLeft, FiChevronRight, FiHeart } from "react-icons/fi";
-import { searchCreatorNameService } from "../../services/users/userService";
+import { searchCreatorNameService, getMiniProfileService } from "../../services/users/userService";
+import { FRAME_UPDATED_EVENT, type FrameUpdatedDetail } from "../../utils/frame";
 import { RankBadge } from "../RankBadges/RankBadges";
+import MiniProfile from "../MiniProfile/MiniProfile";
+import type { MiniProfileType } from "../../types/users/users";
 import styles from "./discoveryCards.module.css";
 
 interface DiscoveryCharacter {
@@ -42,18 +45,68 @@ export const DiscoveryCards = ({
   const navigate = useNavigate();
   const { carouselRef, hasDragged, dragProps } = useDragScroll();
   const { isLiked, handleToggleLike, getQuantityLikes } = useSocial();
-  
+
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [likesCount, setLikesCount] = useState<Record<number, number>>({});
   const [creatorNames, setCreatorNames] = useState<Record<number, string>>({});
+  const [activeProfile, setActiveProfile] = useState<MiniProfileType | null>(null);
+  const [activeCardId, setActiveCardId] = useState<number | null>(null);
 
-  // Busca apenas nomes de criadores que ainda não estão no estado
+  const loadMiniProfileData = useCallback(async (userId: number) => {
+    try {
+      const data = await getMiniProfileService(userId);
+      setActiveProfile(data);
+    } catch (err) {
+      console.error("Erro ao carregar dados do mini perfil:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const { usuarioId, frame } = (event as CustomEvent<FrameUpdatedDetail>).detail;
+
+      setActiveProfile(prev =>
+        prev && prev.usuarioId === usuarioId ? { ...prev, frame } : prev
+      );
+    };
+
+    window.addEventListener(FRAME_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(FRAME_UPDATED_EVENT, handler);
+  }, []);
+
+  const handleMouseEnterAuthor = (userId: number, characterId: number) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    
+    hoverTimerRef.current = setTimeout(async () => {
+      setActiveCardId(characterId);
+      await loadMiniProfileData(userId);
+    }, 200);
+  };
+
+  const handleMouseLeaveAuthor = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setActiveCardId(null);
+    setActiveProfile(null);
+  };
+
+  const handleAuthorClick = async (e: React.MouseEvent, userId: number, characterId: number) => {
+    e.stopPropagation();
+    if (activeProfile && activeCardId === characterId) {
+      setActiveProfile(null);
+      setActiveCardId(null);
+    } else {
+      setActiveCardId(characterId);
+      await loadMiniProfileData(userId);
+    }
+  };
+
   useEffect(() => {
     async function loadCreatorNames() {
       const namesMap: Record<number, string> = { ...creatorNames };
       let needUpdate = false;
 
       for (const character of characters) {
-        if (!character.usuario_id || namesMap[character.usuario_id]) continue; 
+        if (!character.usuario_id || namesMap[character.usuario_id]) continue;
 
         try {
           const creator = await searchCreatorNameService(character.usuario_id);
@@ -69,7 +122,6 @@ export const DiscoveryCards = ({
     if (characters.length > 0) loadCreatorNames();
   }, [characters]);
 
-  // Busca quantidade de likes apenas dos novos personagens
   useEffect(() => {
     async function loadLikesCount() {
       const likesMap: Record<number, number> = { ...likesCount };
@@ -87,7 +139,6 @@ export const DiscoveryCards = ({
     if (characters.length > 0) loadLikesCount();
   }, [characters, getQuantityLikes]);
 
-  // Gatilho do scroll infinito horizontal
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!onLoadMore || !hasMore || loading) return;
 
@@ -154,10 +205,10 @@ export const DiscoveryCards = ({
           <FiChevronRight size={16} />
         </button>
 
-        <div 
-          className={styles.carouselTrack} 
-          ref={carouselRef} 
-          onScroll={handleScroll} 
+        <div
+          className={styles.carouselTrack}
+          ref={carouselRef}
+          onScroll={handleScroll}
           {...dragProps}
         >
           {characters.map((character, index) => (
@@ -198,9 +249,31 @@ export const DiscoveryCards = ({
                 </div>
               </div>
 
-              <p className={styles.author}>
-                @{character.usuario_id ? (creatorNames[character.usuario_id] || "Desconhecido") : "Desconhecido"}
-              </p>
+              <div
+                className={styles.authorContainer}
+                onMouseEnter={() => character.usuario_id && handleMouseEnterAuthor(character.usuario_id, character.id)}
+                onMouseLeave={handleMouseLeaveAuthor}
+                onClick={(e) => character.usuario_id && handleAuthorClick(e, character.usuario_id, character.id)}
+              >
+                <p className={styles.author}>
+                  @{character.usuario_id ? (creatorNames[character.usuario_id] || "Desconhecido") : "Desconhecido"}
+                </p>
+
+                {activeProfile && activeCardId === character.id && (
+                  <div className={styles.popoverWrapper}>
+                    <MiniProfile
+                      usuarioId={activeProfile.usuarioId}
+                      nome={activeProfile.nome}
+                      foto={activeProfile.foto}
+                      descricao={activeProfile.descricao}
+                      frame={activeProfile.frame}
+                      is_online={activeProfile.is_online}
+                      onClose={() => { setActiveProfile(null); setActiveCardId(null); }}
+                    />
+                  </div>
+                )}
+              </div>
+
             </div>
           ))}
           {loading && (

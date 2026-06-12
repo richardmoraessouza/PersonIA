@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './SettingsModal.module.css';
-import { FiImage, FiLogIn, FiSliders, FiUser } from "react-icons/fi";
+import TapsFrames from './Taps/TapsFrames/TapsFrames';
+import { FiLogIn, FiSliders, FiUser, FiImage, FiLayout, FiChevronDown } from "react-icons/fi";
 import TapsProfileEdit from './Taps/TapsProfileEdit/TapsProfileEdit';
 import TapsPreferencesTheme from './Taps/TapsPreferencesTheme/TapsPreferencesTheme';
 
@@ -10,10 +11,15 @@ interface SettingsModalProps {
 }
 
 const TABS = [
-   { id: 'perfil', label: 'Perfil', icon: <FiUser size={15} /> },
+  { id: 'perfil', label: 'Perfil', icon: <FiUser size={15} /> },
   { id: 'conta', label: 'Conta', icon: <FiLogIn size={15} /> },
   { id: 'preferencias', label: 'Preferências', icon: <FiSliders size={15} /> },
-  { id: 'molduras', label: 'Molduras', icon: <FiImage size={15} /> },
+];
+
+const PROFILE_SUB_TABS = [
+  { id: 'perfil', label: 'Perfil', icon: <FiUser size={13} /> },
+  { id: 'frame', label: 'Frame', icon: <FiImage size={13} /> },
+  { id: 'miniPerfil', label: 'MiniPerfil', icon: <FiLayout size={13} /> },
 ];
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
@@ -21,7 +27,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [activeProfileSubTab, setActiveProfileSubTab] = useState<string>('perfil');
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
-  // Fecha com ESC
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -45,12 +50,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 <TapsProfileEdit />
               </div>
             )}
-            {activeProfileSubTab === 'moldura' && (
+            {activeProfileSubTab === 'frame' && (
               <div>
-                <h2 className="text-2xl font-bold mb-6">Moldura</h2>
-                <p style={{ color: 'var(--settings-text-muted, #a1a1aa)' }} className="text-sm">
-                  Escolha as molduras de avatar disponíveis para o seu perfil.
-                </p>
+                <TapsFrames />
               </div>
             )}
             {activeProfileSubTab === 'miniPerfil' && (
@@ -93,15 +95,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <TapsPreferencesTheme />
           </div>
         );
-      case 'molduras':
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Molduras</h2>
-            <p style={{ color: 'var(--settings-text-muted, #a1a1aa)' }} className="text-sm">
-              Escolha as molduras de avatar disponíveis para o seu perfil.
-            </p>
-          </div>
-        );
       default:
         return null;
     }
@@ -110,24 +103,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm" style={{ zIndex: 99998 }}>
       
-      {/* Overlay para fechar clicando fora */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
 
-      {/* Container Principal */}
       <div
         className={`${styles.modalContainer} relative flex w-full max-w-4xl h-[560px] rounded-2xl overflow-hidden shadow-2xl`}
         style={{ flexDirection: 'row' }}
       >
-        {/* Botão Fechar */}
-        <button onClick={onClose} className={styles.closeBtn} aria-label="Fechar">
-          ✕
-        </button>
+        <button onClick={onClose} className={styles.closeBtn} aria-label="Fechar">✕</button>
 
-        {/* ── SIDEBAR (desktop/tablet) ── */}
+        {/* ── SIDEBAR ── */}
         <aside className={styles.sidebar}>
           <div className={styles.containerBtn}>
             {TABS.map((tab) => (
@@ -147,44 +131,58 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   }}
                   className={`${styles.navButton} ${activeTab === tab.id && tab.id !== 'perfil' ? styles.active : ''}`}
                 >
-                  {tab.label}
+                  <span className="flex items-center gap-2">
+                    {tab.icon}
+                    {tab.label}
+                  </span>
+                  {tab.id === 'perfil' && (
+                    <FiChevronDown
+                      size={13}
+                      className={styles.arrowIcon}
+                      style={{
+                        transform: isProfileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s',
+                        marginLeft: 'auto',
+                      }}
+                    />
+                  )}
                 </button>
-                
-                {/* Sub-abas de Perfil */}
+
                 {isProfileOpen && tab.id === 'perfil' && (
-                  <div className={`pl-4 flex flex-col gap-2 mt-1 ${styles.subNav}`}>
-                    {['perfil', 'moldura', 'miniPerfil'].map((subTab) => (
+                  <div className={`pl-4 flex flex-col gap-1 mt-1 ${styles.subNav}`}>
+                    {PROFILE_SUB_TABS.map((subTab) => (
                       <button
-                        key={subTab}
+                        key={subTab.id}
                         onClick={() => {
                           setActiveTab('perfil');
-                          setActiveProfileSubTab(subTab);
+                          setActiveProfileSubTab(subTab.id);
                         }}
-                        className="text-left px-3 py-2 rounded-lg text-xs font-medium"
+                        className="text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2"
                         style={{
-                          color: activeProfileSubTab === subTab 
-                            ? 'var(--settings-text, #fff)' 
+                          color: activeProfileSubTab === subTab.id
+                            ? 'var(--settings-text, #fff)'
                             : 'var(--settings-text-muted, #a1a1aa)',
-                          backgroundColor: activeProfileSubTab === subTab 
+                          backgroundColor: activeProfileSubTab === subTab.id
                             ? 'var(--settings-hover, #3f3f46)'
                             : 'transparent',
-                          transition: 'all 0.3s ease',
+                          transition: 'all 0.2s ease',
                           cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => {
-                          if (activeProfileSubTab !== subTab) {
-                            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--settings-hover, #3f3f46)';
-                            (e.target as HTMLButtonElement).style.color = 'var(--settings-text, #fff)';
+                          if (activeProfileSubTab !== subTab.id) {
+                            e.currentTarget.style.backgroundColor = 'var(--settings-hover, #3f3f46)';
+                            e.currentTarget.style.color = 'var(--settings-text, #fff)';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (activeProfileSubTab !== subTab) {
-                            (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
-                            (e.target as HTMLButtonElement).style.color = 'var(--settings-text-muted, #a1a1aa)';
+                          if (activeProfileSubTab !== subTab.id) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = 'var(--settings-text-muted, #a1a1aa)';
                           }
                         }}
                       >
-                        {subTab === 'perfil' ? 'Perfil' : subTab === 'moldura' ? 'Moldura' : 'MiniPerfil'}
+                        {subTab.icon}
+                        {subTab.label}
                       </button>
                     ))}
                   </div>
@@ -194,10 +192,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           </div>
         </aside>
 
-        {/* ── WRAPPER direita: tab bar (mobile) + conteúdo ── */}
+        {/* ── WRAPPER direita ── */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          
-          {/* Tab bar horizontal — visível só no mobile via CSS */}
+
+          {/* Tab bar mobile */}
           <nav className={styles.tabBar} aria-label="Navegação de configurações">
             <div className={styles.tabBarInner} style={{ display: 'flex', alignItems: 'center' }}>
               {TABS.map((tab) => (
@@ -217,23 +215,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     }}
                     className={`${styles.tabButton} ${activeTab === tab.id && tab.id !== 'perfil' ? styles.active : ''}`}
                   >
-                    {tab.label}
+                    <span className="flex items-center gap-1">
+                      {tab.icon}
+                      {tab.label}
+                    </span>
                   </button>
 
-                  {/* Sub-abas de Perfil ao lado do botão principal */}
                   {isProfileOpen && tab.id === 'perfil' && (
-                    <div style={{ display: 'flex', gap: '8px', borderLeft: '1px solid var(--settings-border, #27272a)', paddingLeft: '8px', flexShrink: 0 }}>
-                      {['perfil', 'moldura', 'miniPerfil'].map((subTab) => (
+                    <div style={{ display: 'flex', gap: '6px', borderLeft: '1px solid var(--settings-border, #27272a)', paddingLeft: '8px', flexShrink: 0 }}>
+                      {PROFILE_SUB_TABS.map((subTab) => (
                         <button
-                          key={subTab}
+                          key={subTab.id}
                           onClick={() => {
                             setActiveTab('perfil');
-                            setActiveProfileSubTab(subTab);
+                            setActiveProfileSubTab(subTab.id);
                           }}
-                          className={`${styles.tabButton} ${activeProfileSubTab === subTab ? styles.active : ''}`}
-                          style={{ fontSize: '0.75rem', padding: '8px 12px', minWidth: 'auto', transition: 'all 0.3s ease' }}
+                          className={`${styles.tabButton} ${activeProfileSubTab === subTab.id ? styles.active : ''}`}
+                          style={{ fontSize: '0.75rem', padding: '8px 10px', minWidth: 'auto', transition: 'all 0.2s ease' }}
                         >
-                          {subTab === 'perfil' ? 'Perfil' : subTab === 'moldura' ? 'Moldura' : 'MiniPerfil'}
+                          <span className="flex items-center gap-1">
+                            {subTab.icon}
+                            {subTab.label}
+                          </span>
                         </button>
                       ))}
                     </div>

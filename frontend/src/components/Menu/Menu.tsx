@@ -3,6 +3,7 @@ import styles from './Menu.module.css';
 import { FiSearch, FiPlusCircle, FiUserPlus, FiLogIn, FiLogOut, FiSettings, FiUser} from "react-icons/fi";
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
+import { normalizeFrame } from '../../utils/frame';
 import { buscarPersonagensRecentes } from '../../services/personagemService';
 import SettingsModal from '../SettingsModal/SettingsModal';
 
@@ -12,7 +13,7 @@ interface MenuProps {
 }
 
 function Menu({ setPersonId, onMenuToggle }: MenuProps) {
-    const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token } = useAuth();
+    const { usuario, fotoPerfil, estaLogado, logout, usuarioId, token, frame } = useAuth();
     const [recentes, setRecentes] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
@@ -20,6 +21,9 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
     const [abrirConta, setAbrirConta] = useState<boolean>(false);
     const [modalOpen, setModaOpen] = useState<boolean>(true);
     const [procurarPersonagem, setProcurarPersonagem] = useState<string>('');
+
+    const frameAtivo = normalizeFrame(frame);
+    const caminhoFrame = frameAtivo ? `/image/frames/${frameAtivo}` : null;
 
     const modalRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -200,14 +204,23 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                         >
                             <div className={styles.person}>
                                 {estaLogado ? (
-                                    <div className='flex flex-row items-center gap-2'>
+                                   <div className='flex flex-row items-center gap-2'>
+                                        <div className={styles.avatarWrapper}>
                                         <img
                                             src={fotoPerfil || '/image/semPerfil.jpg'}
                                             alt='Perfil'
-                                            className='w-9 h-9 rounded-full object-cover'
+                                            className={styles.avatarMenu}
                                         />
+                                        {caminhoFrame && (
+                                            <img
+                                            src={caminhoFrame}
+                                            alt="Frame"
+                                            className={styles.frameMenu}
+                                            />
+                                        )}
+                                        </div>
                                         <p className='truncate w-48'>{usuario}</p>
-                                    </div>
+                                   </div>
                                 ) : (
                                     <div className='flex flex-row items-center gap-2'>
                                         <img

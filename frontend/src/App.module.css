@@ -18,7 +18,6 @@
   width: 100%;
   min-height: auto;
   position: relative;
-  background: var(--chat-bg);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -31,9 +30,9 @@
   padding-bottom: 20px;
   overflow-y: auto;
   flex: 1;
-  /* Esconde a barra de scroll */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE */
+
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
   font-family: var(--chat-font-family);
   letter-spacing: var(--chat-letter-spacing);
 }
@@ -71,9 +70,9 @@
 }
 
 .botMessage .bubble {
-  background: var(--bot-bubble-bg);
-  border: 1px solid var(--bot-bubble-border);
-  color: var(--bot-bubble-color);
+  background-color: var(--bot-bubble-message-bg);
+  border: 1px solid var(--bot-bubble-message-border);
+  color: var(--text-main);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -88,13 +87,13 @@
 }
 
 .userMessage .bubble {
-  background: var(--accent-color);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  background-color: var(--user-bubble-message-bg);
+  color: var(--text-main);
+  box-shadow: var(--user-bubble-message-shadow);
 }
 
 .userMessage .bubble:hover {
-  background: var(--accent-hover);
+  background: var(--user-bubble-hover);
 }
 
 /* Mensagem de Erro */
@@ -126,8 +125,8 @@
   transform: translateX(-50%);
   width: 90%;
   max-width: 600px;
-  background: var(--message-container-bg);
-  border: 1px solid var(--message-container-border);
+  background-color: var(--send-message);
+  border: 1px solid var(--send-message-border);
   border-radius: 12px;
   padding: 8px 12px;
   display: flex;

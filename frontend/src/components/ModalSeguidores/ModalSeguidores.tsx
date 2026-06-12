@@ -3,12 +3,14 @@ import axios from 'axios';
 import styles from './ModalSeguidores.module.css';
 import { useNavigate } from "react-router-dom";
 import { API_URL } from '../../config/api';
+import { FiX } from "react-icons/fi";
+import { FRAME_UPDATED_EVENT, normalizeFrame, type FrameUpdatedDetail } from '../../utils/frame';
 
-// Corrigido: Seguindor -> Seguidor
 interface Seguidor {
     id: number;
     nome?: string;
     foto_perfil?: string | null;
+    frame?: string | null;
 }
 
 interface ModalSeguidoresProps {
@@ -21,12 +23,10 @@ interface ModalSeguidoresProps {
 
 function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: ModalSeguidoresProps) {
     const [usuarios, setUsuarios] = useState<Seguidor[]>(lista);
-    // Adicionado: Estado para gerenciar a aba ativa (permite trocar dentro do modal)
     const [abaAtiva, setAbaAtiva] = useState<'seguidores' | 'seguindo'>(tipo);
     const modalRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
-    // Fecha o modal ao clicar fora
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -37,18 +37,15 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [onClose]);
 
-    // Dispara a requisição sempre que o usuário ou a aba ativa mudar
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                // Simplificação da lógica de endpoint
                 const endpoint = abaAtiva === 'seguidores' 
                     ? `${API_URL}/social/users/${usuario}/followers`
                     : `${API_URL}/social/users/${usuario}/following`;
 
                 const res = await axios.get(endpoint);
                 setUsuarios(Array.isArray(res.data) ? res.data : []);
-
             } catch (error) {
                 console.error(`Erro ao buscar ${abaAtiva}:`, error);
                 setUsuarios([]);
@@ -58,37 +55,52 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
         fetchUsuarios();
     }, [abaAtiva, usuario]);
 
+    useEffect(() => {
+        const handler = (event: Event) => {
+            const { usuarioId, frame } = (event as CustomEvent<FrameUpdatedDetail>).detail;
+
+            setUsuarios(prev =>
+                prev.map(item =>
+                    item.id === usuarioId ? { ...item, frame: normalizeFrame(frame) } : item
+                )
+            );
+        };
+
+        window.addEventListener(FRAME_UPDATED_EVENT, handler);
+        return () => window.removeEventListener(FRAME_UPDATED_EVENT, handler);
+    }, []);
+
     return (
         <div className={styles.overlay}>
             <section className={styles.modalVerUsuarios} ref={modalRef}>
                 <button className={styles.btnFecharModal} onClick={onClose}>
-                    <i className="fa-solid fa-xmark"></i>
+                    <FiX />
                 </button>
-                
-                <div className={`w-full flex justify-center items-center gap-4 mb-4`}>
-                    <button 
+
+                <div className={styles.tabs}>
+                    <button
                         onClick={() => setAbaAtiva('seguidores')}
-                        className={abaAtiva === 'seguidores' ? 'font-bold' : ''}
+                        className={`${styles.tabBtn} ${abaAtiva === 'seguidores' ? styles.ativa : ''}`}
                     >
                         Seguidores
                     </button>
-                    <span className="mx-2">|</span>
-                    <button 
+                    <button
                         onClick={() => setAbaAtiva('seguindo')}
-                        className={abaAtiva === 'seguindo' ? 'font-bold' : ''}
+                        className={`${styles.tabBtn} ${abaAtiva === 'seguindo' ? styles.ativa : ''}`}
                     >
                         Seguindo
                     </button>
                 </div>
-                
-                <hr className={styles.separacao}/>
-                
+
                 {usuarios.length > 0 ? (
                     <ul>
-                        {usuarios.map((item) => (
+                        {usuarios.map((item) => {
+                            const frameAtivo = normalizeFrame(item.frame);
+
+                            return (
                             <li
                                 key={item.id}
-                                className={`${styles.listaUsuarios} cursor-pointer hover:bg-neutral-800 transition-colors duration-200`}
+                                className={styles.listaUsuarios}
                                 onClick={() => {
                                     if (item.id === usuarioLogado) {
                                         navigate(`/perfil/${usuarioLogado}`);
@@ -98,14 +110,26 @@ function ModalSeguidores({ tipo, lista = [], onClose, usuario, usuarioLogado }: 
                                     onClose();
                                 }}
                             >
-                                <img
-                                    src={item.foto_perfil || '/image/semPerfil.jpg'}
-                                    alt={item.nome || `Usuário ${item.id}`}
-                                    className={`w-8 h-8 rounded-full object-cover shadow-md ${styles.fotoPerfil}`}
-                                />
-                                {item.nome || `Usuário ${item.id}`}
+                                <div className={styles.avatarWrap}>
+                                    <img
+                                        src={item.foto_perfil || '/image/semPerfil.jpg'}
+                                        alt={item.nome || `Usuário ${item.id}`}
+                                        className={styles.fotoPerfil}
+                                    />
+                                    {frameAtivo && (
+                                        <img
+                                            src={`/image/frames/${frameAtivo}`}
+                                            alt="Frame"
+                                            className={styles.frameImg}
+                                        />
+                                    )}
+                                </div>
+                                <span className={styles.nomeUsuario}>
+                                    {item.nome || `Usuário ${item.id}`}
+                                </span>
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 ) : (
                     <p className="text-center mt-4">
