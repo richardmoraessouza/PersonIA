@@ -185,7 +185,7 @@ function Menu({ setPersonId, onMenuToggle }: MenuProps) {
                                                 <img
                                                     src={itemFoto}
                                                     alt={itemNome}
-                                                    className='w-7 h-7 rounded-full object-cover'
+                                                    className={`${styles.avatarRecent} w-7 h-7 rounded-full object-cover`}
                                                 />
                                                 <p className={styles.nomePersonagem}>{itemNome}</p>
                                             </Link>

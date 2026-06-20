@@ -5,7 +5,7 @@
   padding: 4px 2px;
 }
 
-/* ── PREVIEW GRANDE (IGUAL AO PERFIL DEFINITIVO) ── */
+/* ── PREVIEW GRANDE ── */
 .previewBig {
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@
   gap: 10px;
 }
 
-/* Usando a estrutura idêntica do Perfil */
+
 .previewBigWrapper {
   position: relative;
   width: 130px;   
@@ -24,7 +24,11 @@
 }
 
 .previewBigAvatar {
-  width: 83%;  
+  width: 83%;
+  -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;        
+  -webkit-user-drag: none;
   height: 83%;
   border-radius: 50%;
   object-fit: cover;
@@ -98,11 +102,15 @@
 }
 
 .previewAvatar {
-  width: 79%;  /* Mantém a proporção da raposa/frames mesmo pequeno */
+  width: 79%;
   height: 79%;
   border-radius: 50%;
   object-fit: cover;
   position: relative;
+   -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;        
+  -webkit-user-drag: none;
   z-index: 1;
 }
 

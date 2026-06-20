@@ -15,7 +15,6 @@
   width: 80%;
 }
 
-
 @media (min-width: 750px) {
   .hero {
     width: 80%;
@@ -139,6 +138,10 @@
 
 .heroImage {
   width: 300px;
+  -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;        
+  -webkit-user-drag: none;
   border-radius: 20px;
   box-shadow: 0 0 60px rgba(139, 92, 246, 0.2);
 }
@@ -171,6 +174,10 @@
 .chatHeaderAvatar {
   width: 32px;
   height: 32px;
+  -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;        
+  -webkit-user-drag: none;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(139, 92, 246, 0.4);
@@ -215,6 +222,10 @@
   height: 26px;
   border-radius: 50%;
   object-fit: cover;
+  -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;        
+  -webkit-user-drag: none;
   flex-shrink: 0;
   border: 1.5px solid rgba(255, 255, 255, 0.1);
 }

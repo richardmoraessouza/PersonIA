@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
-import styles from "./OutroPerfil.module.css";
+import styles from "./UserProfile.module.css";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../hooks/AuthContext/AuthContext";
 import ModalSeguidores from "../../components/ModalSeguidores/ModalSeguidores";
-import TapsPerfil from "../../components/TapsPerfil/TapsPerfil";
+import TapsProfile from "../../components/TapsProfile/TapsProfile";
 import { API_URL } from "../../config/api";
 import { useSeguir } from "../../hooks/useSocial/useSocial";
 import { FRAME_UPDATED_EVENT, normalizeFrame, type FrameUpdatedDetail } from "../../utils/frame";
 
-interface OutroUsuario {
+interface UserProfile {
     nome: string;
     foto_perfil: string;
     descricao: string;
     frame?: string | null;
 }
 
-function OutroPerfil() {
-    const [usuarioInfor, setUsuarioInfor] = useState<OutroUsuario | null>(null);
+function UserProfile() {
+    const [usuarioInfor, setUsuarioInfor] = useState<UserProfile | null>(null);
     const [estaSeguindo, setEstaSeguindo] = useState<boolean>(false);
     const [abrirSeguidores, setAbrirSeguidores] = useState<boolean>(false);
     const [abrirSeguindo, setAbrirSeguindo] = useState<boolean>(false);
@@ -156,10 +156,10 @@ function OutroPerfil() {
             </section>
 
             <section className="w-full">
-                <TapsPerfil usuarioId={Number(id)} />
+                <TapsProfile usuarioId={Number(id)} />
             </section>
         </main>
     );
 }
 
-export default OutroPerfil;
+export default UserProfile;

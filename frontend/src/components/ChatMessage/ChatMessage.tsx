@@ -48,6 +48,8 @@ export function ChatMessage({
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
 
+  
+
   const handleCopy = () => { navigator.clipboard.writeText(msg.text); setMenuOpen(false); };
   const handleReply = () => { onReply(msg); setMenuOpen(false); };
   const handleDelete = () => { onDelete(msg); setMenuOpen(false); };

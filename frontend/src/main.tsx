@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import "./styles/themes.css";
 import { AuthProvider } from "./hooks/AuthContext/AuthContext.tsx";
@@ -11,75 +11,103 @@ import Layout from "./components/Layout/Layout";
 import Cadastra from "./components/Cadastra/Cadastra";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Entrar from "./components/Entrar/Entrar.tsx";
-import Perfil from "./page/Perfil/Perfil.tsx";
+import Profile from "./page/profile/Profile.tsx";
 import ProtectedRouter from "./components/BloqueamentoNoLogin/BloqueamentoNoLogin.tsx";
 import PublicRoute from "./components/BloqueamentoLogin/BloqueamentoLogin.tsx";
-import OutroPerfil from "./page/OutroPerfil/OutroPerfil.tsx";
+import UserProfile from "./page/UserProfile/UserProfile.tsx";
 import Explorar from "./page/Explorar/Explorar.tsx";
 import PersonagemPesquisado from "./page/PersonagemPesquisado/PersonagemPesquisado.tsx";
 import CreateCharacter from "./page/CreateCharacter/CreateCharacter.tsx";
+import TermsPage from "./page/TermsPage/TermsPage.tsx";
+import PrivacyPage from "./page/PrivacyPage/PrivacyPage.tsx";
+import SafetyPage from "./page/SafetyPage/SafetyPage.tsx";
+import AboutPage from "./page/AboutPage/AboutPage.tsx";
+import HelpCenter from "./page/HelpCenter/HelpCenter.tsx";
+import Feedback from "./page/Feedback/Feedback.tsx";
 
-// Configura interceptadores globais do axios
 setupAxiosInterceptors();
 
-const CLIENT_ID =  "468506770340-qbj9keh8dkeu2467qtq207ob1to3esog.apps.googleusercontent.com";
+const CLIENT_ID = "468506770340-qbj9keh8dkeu2467qtq207ob1to3esog.apps.googleusercontent.com";
 
 const router = createBrowserRouter([
-  // Rota raiz redireciona para /explorar
-  // {
-  //   path: "/",
-  //   element: <Navigate to="/explorar" replace />,
-  // },
-  // Rotas com layout principal
+  // 1. ROTAS COM LAYOUT (Menu, Barra Lateral e Footer)
   {
     path: "/",
     element: <Layout />,
     children: [
       {
+        index: true,
+        element: <Explorar />,
+      },
+      {
+        path: "explorar", 
+        element: <Explorar />,
+      },
+      {
+        path: "procurar",
+        element: <PersonagemPesquisado />,
+      },
+      {
         element: <ProtectedRouter />,
         children: [
           {
-            path: "/perfil/:usuario_id",
-            element: <Perfil />,
+            path: "perfil/:usuario_id",
+            element: <Profile />,
           },
           {
-            path: "/create-character",
+            path: "create-character",
             element: <CreateCharacter />,
           },
           {
-            path: "/OutroPerfil/:id",
-            element: <OutroPerfil />,
+            path: "OutroPerfil/:id",
+            element: <UserProfile />,
           },
         ],
       },
-      {
-         path: "/explorar",
-         element: <Explorar />,
-      },
-      {
-        path: "/procurar",
-        element: <PersonagemPesquisado />,
-      }
     ],
   },
   
-  // Rotas sem layout (públicas)
+  // 2. ROTAS TELA CHEIA (Sem Menu, Sem Botão Voltar e Sem Footer)
   {
     element: <NoLayout />,
     children: [
       {
-        path: `/personagem/:id`,
+        path: "personagem/:id",
         element: <App />,
+      },
+      {
+        path: "terms",
+        element: <TermsPage />,
+      },
+      {
+        path: "privacy",
+        element: <PrivacyPage />,
+      },
+      {
+        path: "safety",
+        element: <SafetyPage />,
+      },
+      {
+        path: "about",
+        element: <AboutPage />,
+      },
+      {
+        path: "help",
+        element: <HelpCenter />,
+      },
+      {
+        path: "feedback",
+        element: <Feedback />,
       },
       {
         element: <PublicRoute />,
         children: [
           {
-            path: "/cadastra",
+            path: "cadastra",
             element: <Cadastra />,
           },
           {
-            path: "/entrar",
+            path: "entrar",
             element: <Entrar />,
           },
         ],
@@ -87,7 +115,6 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -33,6 +33,7 @@ export function useChat(personagemId: number) {
   const [pinnedMessages, setPinnedMessages] = useState<ChatMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isLoadingPinned, setIsLoadingPinned] = useState(false);
   
   // Pagination States
@@ -75,25 +76,26 @@ export function useChat(personagemId: number) {
     setPinnedMessages([]);
     setOffset(0);
     setHasMore(true);
+    setIsLoadingHistory(true);
     
     if (!personagemId || isNaN(personagemId)) return;
 
     async function loadInitialHistory() {
-      try {
-        setIsLoading(true);
-        const history = await chatApiService.fetchChatHistory(personagemId, token, 30, 0);
-        setChatHistory(history);
-        
-        if (history.length < 30) {
-          setHasMore(false);
+        try {
+          setIsLoadingHistory(true); // <- troca de setIsLoading(true)
+          const history = await chatApiService.fetchChatHistory(personagemId, token, 30, 0);
+          setChatHistory(history);
+
+          if (history.length < 30) {
+            setHasMore(false);
+          }
+        } catch (err) {
+          console.error('[ChatHook Error] Could not load initial history:', err);
+        } finally {
+          setIsLoadingHistory(false); // <- troca de setIsLoading(false)
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'auto' }), 50);
         }
-      } catch (err) {
-        console.error('[ChatHook Error] Could not load initial history:', err);
-      } finally {
-        setIsLoading(false);
-        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'auto' }), 50);
       }
-    }
 
     async function loadPinned() {
       try {
@@ -178,9 +180,6 @@ export function useChat(personagemId: number) {
     }
   };
 
-  /**
-   * Sends the typed text state downstream, logging metrics sequentially
-   */
  /**
    * Sends the typed text state downstream, logging metrics sequentially
    */
@@ -238,15 +237,20 @@ export function useChat(personagemId: number) {
           setIsLoading(true);
 
           await new Promise(r => setTimeout(r, i * 800));
-          
+
+          const refId = data.replyToIds?.[i] ?? null;
+          const quoteData = refId ? data.quotes?.[refId] : null;
+
           setChatHistory((prev) => [
             ...prev,
-            { 
-              id: data.id ? data.id + i : Date.now(), 
-              sender: 'model', 
-              text: mensagens[i], 
+            {
+              id: data.replyIds?.[i] ?? (data.id ? data.id + i : Date.now()),
+              sender: 'model',
+              text: mensagens[i],
               pinned: false,
-              isError: false 
+              isError: false,
+              reply_to_id: refId,
+              quote: quoteData ?? undefined,
             },
           ]);
           setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -325,6 +329,7 @@ export function useChat(personagemId: number) {
     chatEndRef,
     scrollContainerRef,
     handleScroll,
+    isLoadingHistory,
     enviarMensagem,
     handleKeyPress,
     handleDeleteMessage,

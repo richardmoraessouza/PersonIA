@@ -19,18 +19,21 @@
   max-width: 640px;
 }
 
-/* ── AVATAR (CÓDIGO CORRIGIDO DEFINITIVO) ── */
+/* ── AVATAR ── */
 .avatarWrapper {
   position: relative;
-  width: 130px;   /* Aumentamos um pouco o container para dar espaço para a cauda */
+  width: 130px;   
   height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-user-select: none; 
+  -ms-user-select: none;     
+  user-select: none;        
+  -webkit-user-drag: none;
 }
 
 .avatar {
-  /* Em vez de 100%, reduzimos a foto para ela diminuir e encaixar dentro da raposa */
   width: 83%;  
   height: 81%;
   border-radius: 50%; 
@@ -38,6 +41,10 @@
   position: relative;
   z-index: 1; 
   border: none;
+  -webkit-user-select: none; 
+  -ms-user-select: none;    
+  user-select: none;       
+  -webkit-user-drag: none;
 }
 
 .frame {
@@ -45,12 +52,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
-  /* A moldura toma conta do tamanho total do container de forma limpa */
   width: 100% !important;
   height: 100% !important;
-  
-  /* VOLTOU PARA O CONTAIN: Isso garante que ela nunca mais estique ou distorça */
   object-fit: contain; 
   pointer-events: none;
   z-index: 2; 

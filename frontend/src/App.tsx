@@ -11,6 +11,7 @@ import Menu from './components/Menu/Menu';
 import { PinnedMessage } from './components/PinnedMessage/PinnedMessage';
 import ProfilePerson from './components/CharacteProfile/CharacteProfile';
 import { useAuth } from './hooks/AuthContext/AuthContext';
+import { ChatMessageSkeleton } from './components/ChatMessage/ChatMessageSkeleton/ChatMessageSkeleton';
 
 function App() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +49,7 @@ function App() {
     setMessage,
     replyTo,
     setReplyTo,
+    isLoadingHistory,
     chatHistory,
     isLoading,
     isLoadingMore,
@@ -110,18 +112,22 @@ function App() {
               </div>
             )}
 
-            {chatHistory.map((msg) => (
-              <ChatMessage
-                key={msg.id} 
-                msg={msg}
-                characterName={character?.nome ?? 'Personagem'}
-                onReply={(msg) => setReplyTo({ sender: msg.sender, text: msg.text, id: msg.id })}
-     
-                onDelete={(msg) => handleDeleteMessage(msg)}
-                
-                onPin={(msg) => handleTogglePinMessage(msg)}
-              />
-            ))}
+            {isLoadingHistory ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <ChatMessageSkeleton key={i} isUser={i % 3 === 0} bubbleWidth={50 + (i % 3) * 15} />
+                ))
+              ) : (
+                chatHistory.map((msg) => (
+                  <ChatMessage
+                    key={msg.id}
+                    msg={msg}
+                    characterName={character?.nome ?? 'Personagem'}
+                    onReply={(msg) => setReplyTo({ sender: msg.sender, text: msg.text, id: msg.id })}
+                    onDelete={(msg) => handleDeleteMessage(msg)}
+                    onPin={(msg) => handleTogglePinMessage(msg)}
+                  />
+                ))
+              )}
 
             {isLoading && (
               <article className={`${styles.message} ${styles.botMessage}`}>

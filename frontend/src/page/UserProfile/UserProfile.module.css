@@ -20,6 +20,10 @@
     height: 112px;
     display: flex;
     align-items: center;
+    -webkit-user-select: none; 
+    -ms-user-select: none;   
+    user-select: none;        
+    -webkit-user-drag: none;
     justify-content: center;
 }
 
@@ -30,6 +34,10 @@
     object-fit: cover;
     position: relative;
     z-index: 1;
+    -webkit-user-select: none; 
+    -ms-user-select: none;    
+    user-select: none;       
+    -webkit-user-drag: none;
 }
 
 .frame {

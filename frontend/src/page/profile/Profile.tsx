@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import styles from './Perfil.module.css';
+import styles from './Profile.module.css';
 import { useAuth } from '../../hooks/AuthContext/AuthContext';
 import { normalizeFrame } from '../../utils/frame';
 import { useSeguir } from '../../hooks/useSocial/useSocial';
 import ModalSeguidores from '../../components/ModalSeguidores/ModalSeguidores';
-import TapsPerfil from '../../components/TapsPerfil/TapsPerfil';
+import TapsProfile from '../../components/TapsProfile/TapsProfile';
 
-function Perfil() {
+function Profile() {
   const {
     usuario: nome,
     usuarioId,
@@ -67,7 +67,7 @@ function Perfil() {
 
       </section>
 
-      <TapsPerfil />
+      <TapsProfile />
 
       {abrirSeguidores && (
         <ModalSeguidores
@@ -91,4 +91,4 @@ function Perfil() {
   );
 }
 
-export default Perfil;
+export default Profile;
